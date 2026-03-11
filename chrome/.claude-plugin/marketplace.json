@@ -1,0 +1,46 @@
+{
+  "name": "chrome",
+  "description": "My local plugins",
+  "owner": {
+    "name": "mzpk",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "create",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./create"
+    },
+    {
+      "name": "write",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./write"
+    },
+    {
+      "name": "setup",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./setup"
+    },
+    {
+      "name": "knowledge",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./knowledge"
+    },
+    {
+      "name": "code",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./code"
+    },
+    {
+      "name": "agents",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./agents"
+    }
+  ]
+}

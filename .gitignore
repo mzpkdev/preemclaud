@@ -1,0 +1,25 @@
+# IDE
+.idea/
+
+# Claude Code
+backups/
+cache/
+file-history/
+history.jsonl
+paste-cache/
+plans/
+projects/
+session-env/
+shell-snapshots/
+telemetry/
+policy-limits.json
+
+# Local plugins & scripts
+plugins/
+update.py
+
+# IDE integration
+ide/
+
+# Memory (personal, not shared)
+**/memory/
