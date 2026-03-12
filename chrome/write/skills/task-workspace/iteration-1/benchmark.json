@@ -1,0 +1,146 @@
+{
+  "metadata": {
+    "skill_name": "write-task",
+    "skill_path": "/Users/mzpk/.claude/chrome/write/skills/task/",
+    "executor_model": "claude-opus-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-12T18:42:42Z",
+    "evals_run": ["webhook-spec-decomposition", "dark-mode-standalone", "auth-migration-complex"],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_name": "webhook-spec-decomposition",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 7,
+      "total": 7,
+      "time_seconds": 162.1,
+      "tokens": 27094,
+      "assertions": [
+        {"text": "has-overview-table", "passed": true},
+        {"text": "every-task-has-context", "passed": true},
+        {"text": "every-task-has-acceptance-criteria", "passed": true},
+        {"text": "every-task-has-dependencies", "passed": true},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "webhook-spec-decomposition",
+      "configuration": "without_skill",
+      "pass_rate": 0.43,
+      "passed": 3,
+      "total": 7,
+      "time_seconds": 54.7,
+      "tokens": 12497,
+      "assertions": [
+        {"text": "has-overview-table", "passed": false},
+        {"text": "every-task-has-context", "passed": false},
+        {"text": "every-task-has-acceptance-criteria", "passed": true},
+        {"text": "every-task-has-dependencies", "passed": false},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": false}
+      ]
+    },
+    {
+      "eval_name": "dark-mode-standalone",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 7,
+      "total": 7,
+      "time_seconds": 156.8,
+      "tokens": 18992,
+      "assertions": [
+        {"text": "has-overview-table", "passed": true},
+        {"text": "every-task-has-context", "passed": true},
+        {"text": "every-task-has-acceptance-criteria", "passed": true},
+        {"text": "every-task-has-dependencies", "passed": true},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "dark-mode-standalone",
+      "configuration": "without_skill",
+      "pass_rate": 0.43,
+      "passed": 3,
+      "total": 7,
+      "time_seconds": 72.6,
+      "tokens": 12238,
+      "assertions": [
+        {"text": "has-overview-table", "passed": false},
+        {"text": "every-task-has-context", "passed": false},
+        {"text": "every-task-has-acceptance-criteria", "passed": true},
+        {"text": "every-task-has-dependencies", "passed": false},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": false}
+      ]
+    },
+    {
+      "eval_name": "auth-migration-complex",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 7,
+      "total": 7,
+      "time_seconds": 148.2,
+      "tokens": 18558,
+      "assertions": [
+        {"text": "has-overview-table", "passed": true},
+        {"text": "every-task-has-context", "passed": true},
+        {"text": "every-task-has-acceptance-criteria", "passed": true},
+        {"text": "every-task-has-dependencies", "passed": true},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "auth-migration-complex",
+      "configuration": "without_skill",
+      "pass_rate": 0.29,
+      "passed": 2,
+      "total": 7,
+      "time_seconds": 93.9,
+      "tokens": 13670,
+      "assertions": [
+        {"text": "has-overview-table", "passed": false},
+        {"text": "every-task-has-context", "passed": false},
+        {"text": "every-task-has-acceptance-criteria", "passed": false},
+        {"text": "every-task-has-dependencies", "passed": false},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": false}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": "1.00 ± 0.00",
+      "mean_time_seconds": 155.7,
+      "mean_tokens": 21548
+    },
+    "without_skill": {
+      "pass_rate": "0.38 ± 0.08",
+      "mean_time_seconds": 73.7,
+      "mean_tokens": 12802
+    },
+    "delta": {
+      "pass_rate": "+0.62",
+      "time_seconds": "+82.0",
+      "tokens": "+8746"
+    }
+  },
+  "notes": [
+    "With-skill achieves 100% pass rate across all 3 evals (21/21 assertions)",
+    "Without-skill averages 38% (8/21 assertions) — consistently fails on structure, context, and dependencies",
+    "Non-discriminating assertions: no-spec-backreferences (6/6), tasks-cover-full-scope (6/6) — both always pass",
+    "Highly discriminating assertions: every-task-has-context (3/3 with, 0/3 without), follows-template-structure (3/3 with, 0/3 without)",
+    "With-skill uses ~2x more tokens and ~2x more time — the extra investment goes into context richness and structured output",
+    "Auth migration baseline produced 18 fine-grained tasks (Phase/subtask numbering) vs 6 chunky self-contained tasks with skill — different granularity philosophies"
+  ]
+}

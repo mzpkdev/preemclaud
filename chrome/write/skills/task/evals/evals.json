@@ -1,0 +1,53 @@
+{
+  "skill_name": "write-task",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Here's a spec for a webhook notification system. Break it into tasks I can delegate to different developers.",
+      "expected_output": "A task document with multiple self-contained tasks covering the webhook registry, delivery pipeline, and management UI. Each task should have enough context to work independently.",
+      "files": ["webhook-spec.md"],
+      "assertions": [
+        {"id": "has-overview-table", "text": "Output contains a task overview or summary table listing all tasks"},
+        {"id": "every-task-has-description", "text": "Every task section includes a Description subsection with narrative context (not code)"},
+        {"id": "given-when-then-criteria", "text": "Every task section includes acceptance criteria using Given/When/Then scenarios"},
+        {"id": "every-task-has-out-of-scope", "text": "Every task section includes an Out of Scope subsection"},
+        {"id": "no-spec-backreferences", "text": "No task punts context to 'see the spec' or 'refer to the spec' — all context is inline"},
+        {"id": "tasks-cover-full-scope", "text": "Tasks collectively cover webhook registry, delivery pipeline, and management UI"},
+        {"id": "follows-template-structure", "text": "Document uses Goal / Task Overview table / numbered Task sections pattern"},
+        {"id": "no-implementation-details", "text": "Output does not contain fenced code blocks, exact line number references (e.g., 'line 42'), or before/after implementation diffs"}
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I want to add dark mode to our React app. It needs system preference detection, a manual toggle that persists in localStorage, and all existing components need to support both themes. We use Tailwind CSS. Break this into tasks.",
+      "expected_output": "A task document decomposing dark mode into independent work units. Each task self-contained with full context.",
+      "files": [],
+      "assertions": [
+        {"id": "has-overview-table", "text": "Output contains a task overview or summary table listing all tasks"},
+        {"id": "every-task-has-description", "text": "Every task section includes a Description subsection with narrative context (not code)"},
+        {"id": "given-when-then-criteria", "text": "Every task section includes acceptance criteria using Given/When/Then scenarios"},
+        {"id": "every-task-has-out-of-scope", "text": "Every task section includes an Out of Scope subsection"},
+        {"id": "no-spec-backreferences", "text": "No task punts context to 'see the spec' or 'refer to the spec' — all context is inline"},
+        {"id": "tasks-cover-full-scope", "text": "Tasks collectively cover system preference detection, manual toggle with persistence, and component theming"},
+        {"id": "follows-template-structure", "text": "Document uses Goal / Task Overview table / numbered Task sections pattern"},
+        {"id": "no-implementation-details", "text": "Output does not contain fenced code blocks, exact line number references (e.g., 'line 42'), or before/after implementation diffs"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We need to migrate our auth from session-based to JWT. This touches the API (Express.js), the React frontend, and the React Native mobile app. The API currently stores sessions in Redis. We need to keep backward compatibility during the migration so we can roll out gradually. Create tasks from this.",
+      "expected_output": "A task document covering API, frontend, and mobile changes as separate but coordinated tasks. Should handle the backward compatibility constraint. Dependencies between tasks should be clear.",
+      "files": [],
+      "assertions": [
+        {"id": "has-overview-table", "text": "Output contains a task overview or summary table listing all tasks"},
+        {"id": "every-task-has-description", "text": "Every task section includes a Description subsection with narrative context (not code)"},
+        {"id": "given-when-then-criteria", "text": "Every task section includes acceptance criteria using Given/When/Then scenarios"},
+        {"id": "every-task-has-out-of-scope", "text": "Every task section includes an Out of Scope subsection"},
+        {"id": "no-spec-backreferences", "text": "No task punts context to 'see the spec' or 'refer to the spec' — all context is inline"},
+        {"id": "tasks-cover-full-scope", "text": "Tasks collectively cover API changes, frontend changes, mobile changes, and backward compatibility"},
+        {"id": "follows-template-structure", "text": "Document uses Goal / Task Overview table / numbered Task sections pattern"},
+        {"id": "no-implementation-details", "text": "Output does not contain fenced code blocks, exact line number references (e.g., 'line 42'), or before/after implementation diffs"}
+      ]
+    }
+  ]
+}

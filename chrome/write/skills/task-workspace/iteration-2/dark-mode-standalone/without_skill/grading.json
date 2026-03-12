@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "run_id": "eval-1-without_skill",
+  "expectations": [
+    {"text": "has-overview-table", "passed": false, "evidence": "Has Suggested Execution Order table at the end, not an overview table at the top"},
+    {"text": "every-task-has-description", "passed": false, "evidence": "Tasks use Goal/Steps format — no narrative Description or Technical decisions block"},
+    {"text": "given-when-then-criteria", "passed": false, "evidence": "Uses plain bullet-point acceptance criteria, not Given/When/Then scenarios"},
+    {"text": "every-task-has-out-of-scope", "passed": false, "evidence": "No Out of Scope sections on any task"},
+    {"text": "no-spec-backreferences", "passed": true, "evidence": "No spec exists. No backreferences"},
+    {"text": "tasks-cover-full-scope", "passed": true, "evidence": "Covers config, palette, context, FOUC, toggle, components, third-party, transitions, tests, QA"},
+    {"text": "follows-template-structure", "passed": false, "evidence": "Uses Goal/Steps format without Description, Given/When/Then, or Out of Scope"}
+  ]
+}

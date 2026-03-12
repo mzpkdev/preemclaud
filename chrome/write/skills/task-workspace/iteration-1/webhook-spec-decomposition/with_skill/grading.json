@@ -1,0 +1,13 @@
+{
+  "eval_id": 0,
+  "run_id": "eval-0-with_skill",
+  "expectations": [
+    {"text": "has-overview-table", "passed": true, "evidence": "Has '## Task Overview' with a proper markdown table listing all 5 tasks with columns for #, Task, Depends on, Parallel"},
+    {"text": "every-task-has-context", "passed": true, "evidence": "All 5 tasks have '### Context' sections with multiple paragraphs of background — e.g., Task 1 explains both core entities, encryption decisions, retry strategy"},
+    {"text": "every-task-has-acceptance-criteria", "passed": true, "evidence": "All 5 tasks have '### Acceptance Criteria' with checkbox items — e.g., Task 1 has 5 criteria, Task 2 has 9"},
+    {"text": "every-task-has-dependencies", "passed": true, "evidence": "All 5 tasks have '### Dependencies' with both 'Blocked by:' and 'Blocks:' lines"},
+    {"text": "no-spec-backreferences", "passed": true, "evidence": "Tasks reference the spec file in '### References' as supplementary pointers but all context is fully inline — no 'see the spec for details' anywhere"},
+    {"text": "tasks-cover-full-scope", "passed": true, "evidence": "Covers data model (T1), registry API (T2), delivery pipeline (T3), HMAC signing (T4), management UI (T5)"},
+    {"text": "follows-template-structure", "passed": true, "evidence": "Has Goal line, Task Overview table, then numbered '## Task N: Name' sections with Context/Requirements/Acceptance Criteria/Dependencies/References subsections"}
+  ]
+}

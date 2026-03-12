@@ -1,0 +1,14 @@
+{
+  "eval_id": 0,
+  "eval_name": "webhook-spec-decomposition",
+  "prompt": "Here's a spec for a webhook notification system. Break it into tasks I can delegate to different developers.",
+  "assertions": [
+    {"id": "has-overview-table", "text": "Output contains a task overview or summary table listing all tasks"},
+    {"id": "every-task-has-context", "text": "Every task section includes a Context subsection with at least 3 sentences of background"},
+    {"id": "every-task-has-acceptance-criteria", "text": "Every task section includes specific, verifiable acceptance criteria"},
+    {"id": "every-task-has-dependencies", "text": "Every task specifies its dependencies (blocked-by/blocks), even if 'None'"},
+    {"id": "no-spec-backreferences", "text": "No task punts context to 'see the spec' or 'refer to the spec' — all context is inline"},
+    {"id": "tasks-cover-full-scope", "text": "Tasks collectively cover webhook registry, delivery pipeline, and management UI"},
+    {"id": "follows-template-structure", "text": "Document uses Goal / Task Overview table / numbered Task sections pattern"}
+  ]
+}

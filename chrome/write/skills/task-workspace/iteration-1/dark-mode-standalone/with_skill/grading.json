@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "run_id": "eval-1-with_skill",
+  "expectations": [
+    {"text": "has-overview-table", "passed": true, "evidence": "Has '## Task Overview' table with columns #, Task, Depends on, Parallel — lists all 7 tasks"},
+    {"text": "every-task-has-context", "passed": true, "evidence": "All 7 tasks have '### Context' sections with substantial content — e.g., Task 1 explains class-based strategy, preference vs resolved theme design, how it connects to <html>"},
+    {"text": "every-task-has-acceptance-criteria", "passed": true, "evidence": "All 7 tasks have '### Acceptance Criteria' with checkbox items"},
+    {"text": "every-task-has-dependencies", "passed": true, "evidence": "All 7 tasks have '### Dependencies' with 'Blocked by:' and 'Blocks:' lines"},
+    {"text": "no-spec-backreferences", "passed": true, "evidence": "No spec exists for this eval. All context is inline and self-contained"},
+    {"text": "tasks-cover-full-scope", "passed": true, "evidence": "System detection (T2), manual toggle with persistence (T3+T6), component theming (T4+T5), plus infrastructure (T1) and integration testing (T7)"},
+    {"text": "follows-template-structure", "passed": true, "evidence": "Has Goal, Task Overview table, then numbered '## Task N: Name' sections with consistent subsection structure"}
+  ]
+}

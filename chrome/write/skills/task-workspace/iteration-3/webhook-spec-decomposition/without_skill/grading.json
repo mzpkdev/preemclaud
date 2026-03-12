@@ -1,0 +1,89 @@
+{
+  "expectations": [
+    {
+      "text": "Output contains a task overview or summary table listing all tasks",
+      "passed": false,
+      "evidence": "The document has no dedicated task overview or summary table at the top. There is a 'Suggested Parallelization' table near the end (grouping tasks by phase) and a dependency graph, but neither serves as a task overview table listing all tasks with descriptions. Tasks are only discoverable by scrolling through individual sections."
+    },
+    {
+      "text": "Every task section includes a Description subsection with narrative context (not code)",
+      "passed": true,
+      "evidence": "All 8 task sections include a 'Description' field with natural-language text. Examples: Task 1 says 'Design and implement the PostgreSQL schema for the webhook system.' Task 3 says 'Build the event publishing and delivery pipeline using Redis and Bull.' These are prose descriptions, not code. However, they are minimal (single sentences) rather than rich narrative paragraphs."
+    },
+    {
+      "text": "Every task section includes acceptance criteria using Given/When/Then scenarios",
+      "passed": false,
+      "evidence": "All 8 tasks include 'Acceptance criteria' sections, but none use Given/When/Then format. They all use plain bullet-point assertions, e.g., Task 1: 'Migrations run cleanly on a fresh database'; Task 3: 'Events published to the queue are picked up and delivered to all matching webhooks.' Zero instances of 'Given', 'When', or 'Then' appear anywhere in the document."
+    },
+    {
+      "text": "Every task section includes an Out of Scope subsection",
+      "passed": false,
+      "evidence": "None of the 8 task sections contain an 'Out of Scope' subsection or equivalent. The sections present are: Description, Deliverables, Acceptance criteria, Dependencies. No scoping boundaries are defined for any task."
+    },
+    {
+      "text": "No task punts context to 'see the spec' or 'refer to the spec' — all context is inline",
+      "passed": true,
+      "evidence": "Searched the entire document for phrases like 'see the spec', 'refer to the spec', 'see spec', 'refer to spec'. None found. The header mentions 'Source spec: silver-beacon (webhook-spec.md)' as a reference, and the Open Questions note '(from spec, carry forward)', but no task section defers its own context to the spec. All tasks are self-contained."
+    },
+    {
+      "text": "Tasks collectively cover webhook registry, delivery pipeline, and management UI",
+      "passed": true,
+      "evidence": "Webhook registry: Task 1 (database schema for webhooks table) and Task 2 (CRUD API for managing webhook configurations). Delivery pipeline: Task 3 (event queue and delivery worker with Bull/Redis) and Task 4 (retry logic with exponential backoff). Management UI: Task 5 (React UI for webhook CRUD) and Task 6 (delivery logs viewer and action buttons). All three areas are substantively covered."
+    },
+    {
+      "text": "Document uses Goal / Task Overview table / numbered Task sections pattern",
+      "passed": false,
+      "evidence": "The document uses numbered Task sections (Task 1 through Task 8), which satisfies one part of the pattern. However, there is no 'Goal' section — the document opens with a title and metadata (source spec, tech stack) but never states the goal. There is also no 'Task Overview table' — the closest is the 'Suggested Parallelization' table, which groups by phase rather than providing an overview of all tasks. The expected three-part structural pattern (Goal / Task Overview table / numbered Task sections) is not followed."
+    },
+    {
+      "text": "Output does not contain fenced code blocks, exact line number references (e.g., 'line 42'), or before/after implementation diffs",
+      "passed": false,
+      "evidence": "The document contains a fenced code block (triple backticks) for the Dependency Graph section (lines 197-209). While it contains ASCII art rather than source code, it is still a fenced code block. No exact line number references or before/after diffs were found."
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 5,
+    "total": 8,
+    "pass_rate": 0.38
+  },
+  "timing": {
+    "total_duration_seconds": 57.2
+  },
+  "claims": [
+    {
+      "claim": "Tech stack is Node.js, PostgreSQL, Redis (Bull), React",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The document consistently references these technologies throughout: PostgreSQL for schema (Task 1), Bull queue with Redis (Task 3), React UI (Task 5). The stated tech stack aligns with task content."
+    },
+    {
+      "claim": "Tasks have a clear dependency graph allowing parallelization",
+      "type": "quality",
+      "verified": true,
+      "evidence": "The dependency graph and parallelization table are internally consistent. Task 1 has no dependencies, Tasks 2 and 3 depend on Task 1, and downstream tasks correctly reference their prerequisites."
+    },
+    {
+      "claim": "Retry schedule is 1m, 5m, 25m, 2h, 12h with max 5 attempts",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Task 4 explicitly states this schedule and acceptance criteria verify 'After 5 failures, no further retries are attempted.'"
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Every task section includes a Description subsection with narrative context (not code)",
+        "reason": "This assertion is easily satisfied by a single sentence. A one-line description like 'Build the React UI for managing webhook configurations' technically passes but provides almost no narrative context. Consider requiring a minimum length (e.g., 2-3 sentences) or checking for explanation of why the task matters, not just what it does."
+      },
+      {
+        "assertion": "Output does not contain fenced code blocks, exact line number references (e.g., 'line 42'), or before/after implementation diffs",
+        "reason": "The fenced code block in this output is an ASCII dependency graph, not source code. The intent of this assertion is presumably to prevent implementation-level detail, but it catches a harmless formatting choice. Consider refining to 'does not contain fenced source code blocks' or 'does not contain implementation code.'"
+      },
+      {
+        "reason": "No assertion checks whether tasks include estimated effort/story points or sizing information, which is a common expectation for task decomposition documents. If this is intentional, fine — but it's a notable absence."
+      }
+    ],
+    "overall": "The assertions do a reasonable job of checking structural compliance with a specific task document format (Goal/Overview/Tasks pattern, Given/When/Then, Out of Scope). The without_skill output predictably fails on format-specific expectations since it wasn't guided by the skill's template. The Description assertion is the weakest — it passes for minimal effort."
+  }
+}

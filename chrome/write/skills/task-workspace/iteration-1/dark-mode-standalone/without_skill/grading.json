@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "run_id": "eval-1-without_skill",
+  "expectations": [
+    {"text": "has-overview-table", "passed": false, "evidence": "Has a 'Suggested Execution Order' table at the bottom but no task overview table at the top"},
+    {"text": "every-task-has-context", "passed": false, "evidence": "Tasks have 'Goal' and 'Steps' but no 'Context' section. No background on why each task exists or design decisions affecting it"},
+    {"text": "every-task-has-acceptance-criteria", "passed": true, "evidence": "All 11 tasks have 'Acceptance Criteria' sections"},
+    {"text": "every-task-has-dependencies", "passed": false, "evidence": "No per-task dependency section. Dependencies only appear in the execution order table at the end"},
+    {"text": "no-spec-backreferences", "passed": true, "evidence": "No spec exists for this eval. No external references to punt context to"},
+    {"text": "tasks-cover-full-scope", "passed": true, "evidence": "Covers system detection (T3), toggle with persistence (T3+T5), component theming (T2+T7), plus extras like transitions and third-party content"},
+    {"text": "follows-template-structure", "passed": false, "evidence": "Uses Goal/Steps format without overview table, without structured dependency sections, and without the template's section pattern"}
+  ]
+}

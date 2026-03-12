@@ -1,0 +1,147 @@
+{
+  "metadata": {
+    "skill_name": "write-task",
+    "skill_path": "/Users/mzpk/.claude/chrome/write/skills/task/",
+    "executor_model": "claude-opus-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-12T19:15:00Z",
+    "evals_run": ["webhook-spec-decomposition", "dark-mode-standalone", "auth-migration-complex"],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_name": "webhook-spec-decomposition",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 7,
+      "total": 7,
+      "time_seconds": 164.0,
+      "tokens": 21019,
+      "assertions": [
+        {"text": "has-overview-table", "passed": true},
+        {"text": "every-task-has-description", "passed": true},
+        {"text": "given-when-then-criteria", "passed": true},
+        {"text": "every-task-has-out-of-scope", "passed": true},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "webhook-spec-decomposition",
+      "configuration": "without_skill",
+      "pass_rate": 0.29,
+      "passed": 2,
+      "total": 7,
+      "time_seconds": 54.7,
+      "tokens": 12497,
+      "assertions": [
+        {"text": "has-overview-table", "passed": false},
+        {"text": "every-task-has-description", "passed": false},
+        {"text": "given-when-then-criteria", "passed": false},
+        {"text": "every-task-has-out-of-scope", "passed": false},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": false}
+      ]
+    },
+    {
+      "eval_name": "dark-mode-standalone",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 7,
+      "total": 7,
+      "time_seconds": 140.5,
+      "tokens": 25323,
+      "assertions": [
+        {"text": "has-overview-table", "passed": true},
+        {"text": "every-task-has-description", "passed": true},
+        {"text": "given-when-then-criteria", "passed": true},
+        {"text": "every-task-has-out-of-scope", "passed": true},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "dark-mode-standalone",
+      "configuration": "without_skill",
+      "pass_rate": 0.29,
+      "passed": 2,
+      "total": 7,
+      "time_seconds": 72.6,
+      "tokens": 12238,
+      "assertions": [
+        {"text": "has-overview-table", "passed": false},
+        {"text": "every-task-has-description", "passed": false},
+        {"text": "given-when-then-criteria", "passed": false},
+        {"text": "every-task-has-out-of-scope", "passed": false},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": false}
+      ]
+    },
+    {
+      "eval_name": "auth-migration-complex",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 7,
+      "total": 7,
+      "time_seconds": 166.8,
+      "tokens": 19908,
+      "assertions": [
+        {"text": "has-overview-table", "passed": true},
+        {"text": "every-task-has-description", "passed": true},
+        {"text": "given-when-then-criteria", "passed": true},
+        {"text": "every-task-has-out-of-scope", "passed": true},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "auth-migration-complex",
+      "configuration": "without_skill",
+      "pass_rate": 0.29,
+      "passed": 2,
+      "total": 7,
+      "time_seconds": 93.9,
+      "tokens": 13670,
+      "assertions": [
+        {"text": "has-overview-table", "passed": false},
+        {"text": "every-task-has-description", "passed": false},
+        {"text": "given-when-then-criteria", "passed": false},
+        {"text": "every-task-has-out-of-scope", "passed": false},
+        {"text": "no-spec-backreferences", "passed": true},
+        {"text": "tasks-cover-full-scope", "passed": true},
+        {"text": "follows-template-structure", "passed": false}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": "1.00 ± 0.00",
+      "mean_time_seconds": 157.1,
+      "mean_tokens": 22083
+    },
+    "without_skill": {
+      "pass_rate": "0.29 ± 0.00",
+      "mean_time_seconds": 73.7,
+      "mean_tokens": 12802
+    },
+    "delta": {
+      "pass_rate": "+0.71",
+      "time_seconds": "+83.4",
+      "tokens": "+9281"
+    }
+  },
+  "notes": [
+    "With-skill: 100% pass rate across all 3 evals (21/21 assertions)",
+    "Without-skill: 29% average (6/21) — consistently fails on 5 of 7 assertions",
+    "Non-discriminating: no-spec-backreferences (6/6 pass), tasks-cover-full-scope (6/6 pass) — both always pass regardless of skill",
+    "Fully discriminating (5 assertions): overview-table, description, given-when-then, out-of-scope, template-structure — all 0/3 without skill, 3/3 with skill",
+    "vs iteration-1: baseline pass rate dropped from 38% to 29% because the new assertions (Given/When/Then, Out of Scope) are stricter than the old ones (checkbox AC, per-task dependencies)",
+    "Template adoption is 100% — all three with-skill runs produce Description + Technical decisions, Given/When/Then scenarios, and Out of Scope sections as specified in the updated TEMPLATE.md",
+    "Token cost remains ~2x baseline, consistent with iteration-1"
+  ]
+}

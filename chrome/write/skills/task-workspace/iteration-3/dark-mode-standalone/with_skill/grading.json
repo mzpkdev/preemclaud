@@ -1,0 +1,94 @@
+{
+  "expectations": [
+    {
+      "text": "Output contains a task overview or summary table listing all tasks",
+      "passed": true,
+      "evidence": "Lines 6-14 contain a '## Task Overview' section with a markdown table listing all 5 tasks with columns for #, Task, Depends on, and Parallel."
+    },
+    {
+      "text": "Every task section includes a Description subsection with narrative context (not code)",
+      "passed": true,
+      "evidence": "All 5 tasks (Tasks 1-5) include a '### Description' subsection with narrative prose explaining purpose, context, and technical decisions. None contain code blocks or implementation code."
+    },
+    {
+      "text": "Every task section includes acceptance criteria using Given/When/Then scenarios",
+      "passed": true,
+      "evidence": "All 5 tasks include '### Acceptance Criteria' with Given/When/Then scenarios: Task 1 has 3 scenarios, Task 2 has 4, Task 3 has 5, Task 4 has 4, Task 5 has 5."
+    },
+    {
+      "text": "Every task section includes an Out of Scope subsection",
+      "passed": true,
+      "evidence": "All 5 tasks include a '### Out of Scope' subsection with bullet points clarifying excluded work."
+    },
+    {
+      "text": "No task punts context to 'see the spec' or 'refer to the spec' — all context is inline",
+      "passed": true,
+      "evidence": "Grep for 'see the spec', 'refer to the spec', and similar phrases returned no matches. Each task contains self-sufficient context within its Description section. The References subsections point to concrete artifacts (e.g., 'Theme context provider (Task 1)', 'Tailwind CSS configuration file') rather than deferring to an external spec document."
+    },
+    {
+      "text": "Tasks collectively cover system preference detection, manual toggle with persistence, and component theming",
+      "passed": true,
+      "evidence": "Task 2 ('System Preference Detection') covers prefers-color-scheme media query with live updates. Task 3 ('Manual Toggle with localStorage Persistence') covers a three-way toggle (Light/Dark/System) with localStorage persistence. Task 5 ('Component Theme Audit and Migration') covers auditing and migrating all components to support dark mode via Tailwind's dark: variant."
+    },
+    {
+      "text": "Document uses Goal / Task Overview table / numbered Task sections pattern",
+      "passed": true,
+      "evidence": "Line 4 states the Goal. Lines 6-14 contain the Task Overview table. Lines 18-276 contain numbered Task sections (Task 1 through Task 5), each with Description, Acceptance Criteria, Out of Scope, and References subsections."
+    },
+    {
+      "text": "Output does not contain fenced code blocks, exact line number references (e.g., 'line 42'), or before/after implementation diffs",
+      "passed": true,
+      "evidence": "Grep for '```' (fenced code blocks) returned no matches. Grep for 'line \\d+' returned no matches. The document uses inline code formatting (backticks) for identifiers like `dark:bg-gray-900` and `prefers-color-scheme` but contains no fenced code blocks, line references, or diffs."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "total_duration_seconds": 99.8
+  },
+  "claims": [
+    {
+      "claim": "The feature uses a three-value preference model (light, dark, system) that resolves to a two-value effective theme (light, dark)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Described consistently across Tasks 1, 2, and 3. Task 1 Description states 'Store a three-value preference (light, dark, system) but resolve it to a two-value effective theme (light, dark).' Task 3 confirms the toggle offers three options."
+    },
+    {
+      "claim": "Tailwind class strategy is required because media strategy cannot be overridden by JavaScript",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Task 4 Description correctly states: 'the class strategy is required — the media strategy can't be overridden by JavaScript.' This is accurate per Tailwind CSS documentation."
+    },
+    {
+      "claim": "Tasks have correct dependency ordering",
+      "type": "factual",
+      "verified": true,
+      "evidence": "The dependency graph is coherent: Tasks 2 and 3 depend on Task 1 (theme provider), Task 5 depends on Tasks 1 and 4 (provider + Tailwind config), and Tasks 1 and 4 can run in parallel as they are independent."
+    },
+    {
+      "claim": "The dark class should be placed on the <html> element for Tailwind compatibility",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Task 4 correctly notes: 'placing it on <html> ensures it works for every element on the page including things rendered in portals.' This is consistent with Tailwind's documentation."
+    }
+  ],
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Every task section includes a Description subsection with narrative context (not code)",
+        "reason": "This assertion checks for the presence of a Description subsection but not its quality. A single-sentence placeholder description would pass. Consider adding a minimum length or checking that technical decisions are explained."
+      },
+      {
+        "reason": "No assertion checks for task dependency information. The output includes a dependency column in the overview table and cross-references between tasks — this is a meaningful structural feature that could be explicitly tested."
+      },
+      {
+        "reason": "No assertion checks that the References subsection exists in each task. All 5 tasks include one, and it provides useful context. If this is an expected part of the task format, it should be asserted."
+      }
+    ],
+    "overall": "The assertions are solid and cover the key structural and content requirements. The main gap is that they verify structure (subsections exist) more than substance (content is meaningful and technically coherent). The inline-code formatting (backticks for identifiers like `dark:bg-gray-900`) is borderline relative to expectation 8 — it's clearly not a fenced code block or implementation diff, but a stricter eval might want to distinguish between acceptable inline code references and unacceptable implementation details."
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "expectations": [
+    {
+      "text": "Output contains a task overview or summary table listing all tasks",
+      "passed": true,
+      "evidence": "Lines 7-14 contain a markdown table titled 'Task Overview' with columns #, Task, Depends on, Parallel — listing all 5 tasks: Webhook Data Model & CRUD API, Event Queue & Delivery Worker, Retry Logic & Delivery Logging, Management UI, Test Ping & Manual Retry."
+    },
+    {
+      "text": "Every task section includes a Description subsection with narrative context (not code)",
+      "passed": true,
+      "evidence": "All 5 tasks (Task 1 through Task 5) contain a '### Description' subsection with narrative prose explaining purpose, rationale, and technical decisions. No code appears in any description. For example, Task 1's description explains why secrets are encrypted, why event types are per-webhook, and why an active/inactive flag exists — all in prose."
+    },
+    {
+      "text": "Every task section includes acceptance criteria using Given/When/Then scenarios",
+      "passed": true,
+      "evidence": "All 5 tasks contain '### Acceptance Criteria' with Given/When/Then scenarios. Task 1 has 5 scenarios, Task 2 has 4, Task 3 has 5, Task 4 has 6, Task 5 has 4. Each scenario uses the explicit Given/When/Then format."
+    },
+    {
+      "text": "Every task section includes an Out of Scope subsection",
+      "passed": true,
+      "evidence": "All 5 tasks contain '### Out of Scope' with bullet-pointed items. For example, Task 1 lists 'Delivery pipeline and queue setup (Task 2)', 'Management UI (Task 4)', 'Rate limiting per endpoint', etc."
+    },
+    {
+      "text": "No task punts context to 'see the spec' or 'refer to the spec' — all context is inline",
+      "passed": true,
+      "evidence": "Searched the full document for phrases like 'see the spec', 'refer to the spec', 'see spec', 'refer to spec' — none found. Each task has a '### References' section that cites the spec bibliographically (e.g., 'Spec: silver-beacon webhook-spec.md — \"Webhook Registry\" section'), but all substantive context — technical decisions, rationale, acceptance criteria — is fully inline in the Description and Acceptance Criteria subsections. No description or acceptance criterion directs the reader elsewhere for missing context."
+    },
+    {
+      "text": "Tasks collectively cover webhook registry, delivery pipeline, and management UI",
+      "passed": true,
+      "evidence": "Task 1 (Webhook Data Model & CRUD API) covers the webhook registry with schema, CRUD operations, and secret encryption. Tasks 2-3 (Event Queue & Delivery Worker, Retry Logic & Delivery Logging) cover the delivery pipeline including Redis+Bull queue, HMAC signing, fan-out, exponential backoff retries, and delivery logging. Task 4 (Management UI) covers the React-based management interface with CRUD views and delivery log. Task 5 (Test Ping & Manual Retry) adds integration features across these areas."
+    },
+    {
+      "text": "Document uses Goal / Task Overview table / numbered Task sections pattern",
+      "passed": true,
+      "evidence": "Line 4 states the Goal: 'Allow users to configure webhook endpoints that receive real-time notifications when events occur in the system, with reliable delivery and a management UI.' Lines 7-14 contain the Task Overview table. Lines 18-289 contain numbered Task sections (Task 1 through Task 5), each with Description, Acceptance Criteria, Out of Scope, and References subsections."
+    },
+    {
+      "text": "Output does not contain fenced code blocks, exact line number references (e.g., 'line 42'), or before/after implementation diffs",
+      "passed": true,
+      "evidence": "Searched the full 290-line document for '```' (fenced code blocks) — none found. Searched for 'line ' followed by numbers — none found. No before/after diffs, no code snippets of any kind. The document is entirely prose, tables, and structured markdown headings/lists."
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 0,
+    "total": 8,
+    "pass_rate": 1.0
+  },
+  "timing": {
+    "total_duration_seconds": 102.3
+  },
+  "claims": [
+    {
+      "claim": "There are 5 tasks in the decomposition",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Counted 5 task sections (Task 1 through Task 5) and 5 rows in the overview table."
+    },
+    {
+      "claim": "Task dependency chain is correct (Task 2 depends on 1, Task 3 on 2, Task 4 on 1, Task 5 on 2 and 4)",
+      "type": "factual",
+      "verified": true,
+      "evidence": "Table rows show: Task 1 has no dependencies, Task 2 depends on 1, Task 3 depends on 2, Task 4 depends on 1, Task 5 depends on 2 and 4. This is logically consistent — CRUD before delivery, delivery before retry/logging, CRUD before UI, and UI+delivery before test ping/manual retry."
+    },
+    {
+      "claim": "Tasks 1 and 4 can run in parallel",
+      "type": "factual",
+      "verified": false,
+      "evidence": "The table marks Task 4 as depending on Task 1 (Depends on: 1) but also marks Task 4 as 'Parallel: Yes'. This is contradictory — if Task 4 depends on Task 1, it cannot start in parallel with Task 1. The 'Parallel' column likely means 'can run in parallel with other tasks at the same dependency level' rather than 'has no dependencies', but the meaning is ambiguous."
+    },
+    {
+      "claim": "Technical decisions include rationale for rejected alternatives",
+      "type": "quality",
+      "verified": true,
+      "evidence": "Task 2 explains 'RabbitMQ was rejected as overkill, SQS for vendor lock-in concerns' and 'JWT was considered but is heavier than needed.' Task 3 explains 'Fixed intervals were rejected as too aggressive; manual-retry-only was rejected for poor UX.'"
+    }
+  ],
+  "user_notes_summary": null,
+  "eval_feedback": {
+    "suggestions": [
+      {
+        "assertion": "Every task section includes acceptance criteria using Given/When/Then scenarios",
+        "reason": "This assertion checks format but not quality. A task could have a single trivial Given/When/Then scenario and pass. Consider adding a minimum scenario count (e.g., at least 2 per task) or checking that scenarios cover both happy and error paths."
+      },
+      {
+        "reason": "No assertion checks whether tasks cross-reference each other correctly (e.g., Task 3's Out of Scope mentions Task 4 for UI, Task 4's description correctly references Tasks 1 and 3 for APIs). A broken cross-reference could confuse implementers."
+      },
+      {
+        "reason": "No assertion checks that the References section exists or is meaningful. While the current output handles this well, an output that omitted References entirely would still pass all expectations."
+      },
+      {
+        "assertion": "No task punts context to 'see the spec' or 'refer to the spec' — all context is inline",
+        "reason": "The References sections do cite the spec by name (e.g., 'Spec: silver-beacon webhook-spec.md — \"Webhook Registry\" section'). This could be considered borderline — while it's bibliographic rather than a context punt, a stricter interpretation might flag it. The assertion works well as-is since the descriptions are self-contained, but worth noting the edge case."
+      }
+    ],
+    "overall": "Assertions cover structure, content, and format well. The main gap is that they test presence of sections but not depth or correctness of content within those sections — an output with shallow or incorrect acceptance criteria would still pass."
+  }
+}
