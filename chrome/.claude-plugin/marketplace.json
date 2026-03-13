@@ -41,6 +41,12 @@
       "description": "",
       "version": "0.0.0",
       "source": "./agents"
+    },
+    {
+      "name": "ghost",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./ghost"
     }
   ]
 }

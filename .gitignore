@@ -14,9 +14,10 @@ shell-snapshots/
 telemetry/
 policy-limits.json
 
+.ghost
+
 # Local plugins & scripts
 plugins/
-update.py
 
 # IDE integration
 ide/
