@@ -14,11 +14,11 @@ When this skill is invoked, immediately tell the user which skill is running and
 
 > Daemon `create:hook` online. Wiring up the hook.
 
-## How to use this skill
+## Steps
 
 Read `references/hooks-reference.md` for the complete technical reference (all events, matchers, input schemas, output formats, decision control patterns). Use it to look up specifics as you build the hook. Don't load it into the conversation unless you need to check a detail.
 
-## Interview flow
+### Interview flow
 
 Walk the user through these decisions, one at a time. Keep it conversational — don't dump a wall of options. If the user already knows what they want ("add a PostToolUse hook that runs prettier"), skip ahead.
 
@@ -114,7 +114,7 @@ After generating the hook, tell the user how to test it:
 - Mention `Ctrl+O` verbose mode to see hook output in transcript
 - Remind them that manual edits to settings files need a session restart or `/hooks` review
 
-## Important patterns to remember
+## Rules
 
 ### Stop hook infinite loop prevention
 Every Stop hook script MUST check `stop_hook_active`:
