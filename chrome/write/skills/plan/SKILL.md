@@ -43,17 +43,19 @@ Read the spec or requirements carefully. Identify every functional requirement, 
 - Read the actual files where new code will integrate with existing code. Understand the interfaces, data flow, and patterns already in use.
 - Look for existing abstractions that the new code should reuse rather than duplicate.
 
-#### Understand the testing setup
+#### Understand the quality toolchain
 - Find the test directory and read a few representative test files to learn the framework, style, assertion patterns, and level of coverage.
 - Check for test configuration (jest.config, pytest.ini, etc.) and any test utilities or fixtures the project provides.
 - If the project has no tests, note that — it affects the testing strategy in the plan.
+- **Discover all quality checks the project uses beyond tests.** Look for linter configs (`.eslintrc`, `ruff.toml`, `.flake8`, `.golangci.yml`), formatters (`prettier`, `black`, `rustfmt`), type checkers (`tsconfig.json` strict mode, `mypy.ini`, `pyright`), and any other static analysis tools. Check the project manifest for lint/format scripts (e.g., `"lint": "eslint ."` in package.json, or a `[tool.ruff]` section in pyproject.toml). Also check for pre-commit hooks (`.pre-commit-config.yaml`, `.husky/`) or CI config (`.github/workflows/`) that reveal which checks run on every push.
+- Record what you find — the exact commands to run each check — because verification steps in the plan need to use them.
 
-#### Write Research Notes
+#### Write research notes
 Capture your findings in the **Research Notes** section of the plan document. This gives the implementer the same context you had when you wrote the plan — relevant files, patterns observed, key interfaces, testing conventions. Keep it concise but specific (file paths, function names, patterns by example).
 
 Also track any **gaps and assumptions** found during research — ambiguous requirements, missing context, or places where you had to make a judgment call. These feed directly into the summary's "Risks / open questions" section so the user can address them before implementation starts.
 
-### 2. Scope Check
+### 2. Scope check
 
 If the spec covers multiple independent subsystems, suggest breaking it into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
@@ -98,6 +100,19 @@ Adapt the testing approach to what makes sense for the task and the project:
 
 Whatever the approach, always include a verification step — even if it's "run the app and confirm X works manually." Every task should have a way to know it's done correctly.
 
+#### Verification beyond tests
+
+Tests are only one part of verification. Each work unit's verification step should run **every relevant quality check the project has**, not just the test suite. During research you discovered the project's quality toolchain — now use it. A good verification step for a TypeScript project might look like:
+
+- [ ] Verify: `npm run lint` passes with no new warnings
+- [ ] Verify: `npm run typecheck` (or `npx tsc --noEmit`) passes with no errors
+- [ ] Verify: `npm run format:check` (or `npx prettier --check .`) reports no unformatted files
+- [ ] Verify: `npm test` passes
+
+For a Python project it might be `ruff check .`, `mypy .`, `black --check .`, `pytest`. For Go: `golangci-lint run`, `go vet`, `go test ./...`. Adapt to whatever the project actually uses.
+
+The point is: if the project has a linter, the plan should run it. If it has a formatter, the plan should check formatting. If it has type checking, the plan should verify types. Don't just default to "run tests" when there are other checks that could catch issues earlier. Think of it this way — if the implementer follows your plan and opens a PR, what checks will CI run? The plan's verification steps should catch the same things locally so there are no surprises.
+
 #### Key rules
 - **Exact file paths** — always. No "in the appropriate directory."
 - **Complete code** — if a step involves writing code, include the code. Not "add error handling" but the actual error handling code.
@@ -110,7 +125,7 @@ Whatever the approach, always include a verification step — even if it's "run 
 
 After completing each chunk of the plan, dispatch a reviewer subagent if subagents are available:
 
-1. Spawn a general-purpose subagent with the reviewer prompt (see `REVIEWER_SUBAGENT.md`)
+1. Spawn a general-purpose subagent with the reviewer prompt (see `agents/reviewer.md`)
    - Provide: the chunk content and the path to the spec/requirements
 2. If issues found: fix them, re-dispatch the reviewer, repeat until approved
 3. If approved: proceed to next chunk

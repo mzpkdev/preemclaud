@@ -15,6 +15,7 @@
 - **Relevant files:** <files that will be touched or integrated with, with brief descriptions>
 - **Patterns observed:** <conventions, abstractions, naming styles found during research>
 - **Testing setup:** <framework, style, fixtures, coverage level>
+- **Quality toolchain:** <linter, formatter, type checker, and any other static analysis — include the exact commands to run each>
 - **Gotchas:** <anything surprising or non-obvious discovered during research>
 
 ---
