@@ -10,28 +10,11 @@ Decompose a spec or feature idea into standalone tasks — each with enough cont
 
 The spec skill closes scope. The plan skill fills in implementation detail. This skill sits between them: it takes a scoped idea and breaks it into independent work units, each carrying the full context needed to act on it.
 
-## Task vs. Implementation Plan
-
-A task describes *what* to build and *why* — it's a work assignment, not a recipe. The implementer (human or AI) decides *how*. Think of it like a well-written Jira ticket: enough context to start working, clear boundaries and acceptance criteria, but no step-by-step implementation instructions.
-
-**Include:** Business context, motivation, scope boundaries, acceptance criteria, architectural decisions, relevant module/component names, Figma links with short descriptions of each frame, data models, API contracts.
-
-**Do not include:** Code snippets, before/after diffs, exact line numbers, i18n key paths, implementation recipes, specific function signatures to write, file contents to change. These belong in an implementation plan (the plan skill), not a task.
-
-The test: if removing a sentence wouldn't change *what* gets built, only *how*, it probably doesn't belong in the task.
-
 ## Announce
 
 When this skill is invoked, immediately tell the user which skill is running and what it will do — before any other work begins.
 
 > Daemon `write:task` online. Breaking this into pieces.
-
-## Composability
-
-This skill supports two execution modes:
-
-- **Interactive** (default) — the user invoked the skill directly. Present the proposed decomposition (task names, boundaries, dependencies) for approval before writing full task details.
-- **Non-interactive** — the calling prompt includes framing like "decompose this autonomously", "return tasks", or comes from an orchestrator/subagent dispatch. Skip approval and output directly.
 
 ## Output
 
@@ -39,7 +22,7 @@ Write the task document to the project's `.claude/tasks/` directory using a whim
 
 ## Steps
 
-### 1. Understand Input
+### 1. Understand input
 
 Read the spec if one is provided. If the input is a conversation or a vague idea instead of a spec, capture the goal, scope, and constraints from what's available. Note what's missing — the clarifying questions in Step 3 will fill those gaps.
 
@@ -56,7 +39,7 @@ Explore the codebase to understand what exists and where new work will land.
 
 This research informs how you decompose — where the natural boundaries are, what already exists, what patterns the implementer should follow. Reference relevant modules and components by name in the tasks, but don't dump implementation details like line numbers, code snippets, or before/after diffs into them.
 
-### 3. Ask Clarifying Questions
+### 3. Ask clarifying questions
 
 Ask questions that maximize the context in each task. One at a time.
 
@@ -83,7 +66,7 @@ Good boundaries:
 
 Each task should produce a working, testable increment. If two tasks can't be verified independently, they should probably be one task.
 
-### 5. Write Tasks
+### 5. Write tasks
 
 Produce the task document using the template in `TEMPLATE.md`.
 
@@ -103,7 +86,7 @@ A developer reading only one task section should have enough to produce an imple
 
 After writing the tasks, dispatch a reviewer subagent:
 
-1. Spawn a general-purpose subagent with the reviewer prompt (see `REVIEWER_SUBAGENT.md`)
+1. Spawn a general-purpose subagent with the reviewer prompt (see `agents/reviewer.md`)
    - Provide: the task file path and the spec path (if any)
 2. If issues found: fix them, re-dispatch the reviewer, repeat until approved
 3. If approved: proceed to next step
@@ -131,3 +114,15 @@ Then output a summary:
 **Flags:**
 - <risks, uncertainties, or assumptions that might affect task boundaries — or "None">
 ```
+
+## Rules
+
+### Task vs. implementation plan
+
+A task describes *what* to build and *why* — it's a work assignment, not a recipe. The implementer (human or AI) decides *how*. Think of it like a well-written Jira ticket: enough context to start working, clear boundaries and acceptance criteria, but no step-by-step implementation instructions.
+
+**Include:** Business context, motivation, scope boundaries, acceptance criteria, architectural decisions, relevant module/component names, Figma links with short descriptions of each frame, data models, API contracts.
+
+**Do not include:** Code snippets, before/after diffs, exact line numbers, i18n key paths, implementation recipes, specific function signatures to write, file contents to change. These belong in an implementation plan (the plan skill), not a task.
+
+The test: if removing a sentence wouldn't change *what* gets built, only *how*, it probably doesn't belong in the task.
