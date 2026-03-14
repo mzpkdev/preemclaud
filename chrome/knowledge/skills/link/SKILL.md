@@ -12,11 +12,11 @@ When this skill is invoked, immediately tell the user which skill is running and
 
 > Daemon `knowledge:link` online. Tracing the link.
 
-## Routing
+## Steps
 
 When the user gives you a link, don't blindly fetch it. Match the URL against the routing table below, use the right tool, and then respond to whatever the user asked about.
 
-## Routing Table
+### Routing table
 
 | Pattern | Service | Tool |
 |---|---|---|
