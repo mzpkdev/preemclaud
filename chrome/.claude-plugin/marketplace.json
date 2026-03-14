@@ -47,6 +47,12 @@
       "description": "",
       "version": "0.0.0",
       "source": "./ghost"
+    },
+    {
+      "name": "meta",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./meta"
     }
   ]
 }
