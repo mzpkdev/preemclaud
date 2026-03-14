@@ -14,20 +14,13 @@ When this skill is invoked, immediately tell the user which skill is running and
 
 > Daemon `write:spec` online. Thinking this through.
 
-## Composability
-
-This skill supports two execution modes:
-
-- **Interactive** (default) — the user invoked the skill directly. Present design sections incrementally for approval before moving on.
-- **Non-interactive** — the calling prompt includes framing like "write a spec autonomously", "return a spec", or comes from an orchestrator/subagent dispatch. Skip incremental approval and output directly.
-
 ## Output
 
 Write the spec to the project's `.claude/specs/` directory using a whimsical two-word `<adjective>-<noun>.md` pattern (e.g., `velvet-compass.md`, `neon-anchor.md`).
 
 ## Steps
 
-### 1. Scope Check
+### 1. Scope check
 
 Before anything else, assess the size of what the user is describing.
 
@@ -50,7 +43,7 @@ Before asking questions, build context so your questions are informed rather tha
 
 This lets you ask questions like "I see you're using SQLAlchemy with Alembic — should the new feature follow that migration pattern?" instead of generic "what database do you use?"
 
-### 3. Ask Clarifying Questions
+### 3. Ask clarifying questions
 
 Understand the idea through conversation. One question at a time — don't overwhelm.
 
@@ -61,7 +54,7 @@ Understand the idea through conversation. One question at a time — don't overw
 
 Good questions uncover assumptions the user hasn't thought about yet. "What happens when the webhook endpoint is down?" is more valuable than "What HTTP method should the webhook use?"
 
-### 4. Explore Approaches
+### 4. Explore approaches
 
 Once you understand what's being built, propose 2-3 different approaches with tradeoffs. Lead with your recommendation and explain why.
 
@@ -106,7 +99,7 @@ The **Decision Log** captures every meaningful design decision made during the c
 
 After writing the spec, dispatch a reviewer subagent:
 
-1. Spawn a general-purpose subagent with the reviewer prompt (see `REVIEWER_SUBAGENT.md`)
+1. Spawn a general-purpose subagent with the reviewer prompt (see `agents/reviewer.md`)
    - Provide: the spec file path
 2. If issues found: fix them, re-dispatch the reviewer, repeat until approved
 3. If approved: proceed to next step
