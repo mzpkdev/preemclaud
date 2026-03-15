@@ -11,6 +11,12 @@
       "description": "",
       "version": "0.0.0",
       "source": "./jetbrains"
+    },
+    {
+      "name": "git",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./git"
     }
   ]
 }
