@@ -1,11 +1,11 @@
 # Personal
 **/memory/
-commands/
-skills/
-agents/
-specs/
-briefs/
-plans/
+/commands/
+/skills/
+/agents/
+/specs/
+/briefs/
+/plans/
 .ghost
 
 # Claude Code
