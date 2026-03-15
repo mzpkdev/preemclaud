@@ -17,6 +17,12 @@
       "description": "",
       "version": "0.0.0",
       "source": "./git"
+    },
+    {
+      "name": "mcp",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./mcp"
     }
   ]
 }
