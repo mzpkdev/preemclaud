@@ -17,6 +17,18 @@
       "description": "",
       "version": "0.0.0",
       "source": "./python"
+    },
+    {
+      "name": "scala",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./scala"
+    },
+    {
+      "name": "java",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./java"
     }
   ]
 }
