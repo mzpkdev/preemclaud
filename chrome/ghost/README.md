@@ -28,10 +28,10 @@ python3 update.py --force
 To re-trigger the first boot message, remove the sentinel:
 
 ```bash
-rm ~/.claude/.ghost
+rm ~/.claude/.cache/.ghost
 ```
 
-The `.ghost` file lives at `~/.claude/.ghost` — outside the repo and plugin cache. Absent = first boot fires, creates file after.
+The `.ghost` file lives at `~/.claude/.cache/.ghost` — outside the repo and plugin cache. Absent = first boot fires, creates file after.
 
 ## How boot.py resolves files
 

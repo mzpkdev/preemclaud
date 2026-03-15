@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 PLUGIN = Path(__file__).resolve().parent.parent
-GHOST = Path.home() / ".claude" / ".ghost"
+GHOST_SENTINEL = Path.home() / ".claude" / ".cache" / ".ghost"
 
 
 def read_source(plugin_dir, dat_name, md_name):
@@ -18,11 +18,11 @@ def read_source(plugin_dir, dat_name, md_name):
     return None
 
 
-if not GHOST.exists():
+if not GHOST_SENTINEL.exists():
     content = read_source(PLUGIN, "boot.dat", "BOOT.md")
     if content:
         print(content)
-    GHOST.touch()
+    GHOST_SENTINEL.touch()
 
 content = read_source(PLUGIN, "engram.dat", "ENGRAM.md")
 if content:

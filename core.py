@@ -8,8 +8,8 @@ from pathlib import Path
 
 
 CLAUDE_DIR = Path(__file__).resolve().parent
-PLUGIN_SYNC = CLAUDE_DIR / ".git" / ".plugin_sync"
-CC_VERSION = CLAUDE_DIR / ".git" / ".cc_version"
+SYNC_SENTINEL = CLAUDE_DIR / ".cache" / ".sync"
+VERSION_SENTINEL = CLAUDE_DIR / ".cache" / ".version"
 SETTINGS = CLAUDE_DIR / "settings.json"
 TWEAKCC = "tweakcc@4.0.11"  # pinned — bump deliberately after audit
 TWEAKCC_PATCHES = [
@@ -128,9 +128,9 @@ def pull():
 
 
 def in_sync():
-    if not PLUGIN_SYNC.exists():
+    if not SYNC_SENTINEL.exists():
         return False
-    return PLUGIN_SYNC.read_text().strip() == head()
+    return SYNC_SENTINEL.read_text().strip() == head()
 
 
 def install(name, marketplace="chrome"):
@@ -159,7 +159,7 @@ def install_all(verbose=False):
             if verbose:
                 log_sub(PLUGIN_FLAVOR.get(name, name))
             install(name, mkt_name)
-    PLUGIN_SYNC.write_text(head())
+    SYNC_SENTINEL.write_text(head())
 
 
 def ghost_disabled():
@@ -190,9 +190,9 @@ def cc_needs_patch():
     current = cc_version()
     if not current:
         return False
-    if not CC_VERSION.exists():
+    if not VERSION_SENTINEL.exists():
         return True
-    return CC_VERSION.read_text().strip() != current
+    return VERSION_SENTINEL.read_text().strip() != current
 
 
 def patch_cc(verbose=False):
@@ -218,4 +218,4 @@ def patch_cc(verbose=False):
             return
     version = cc_version()
     if version:
-        CC_VERSION.write_text(version)
+        VERSION_SENTINEL.write_text(version)
