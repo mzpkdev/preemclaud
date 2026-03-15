@@ -66,6 +66,24 @@
       }
     ]
   },
+  "enabledPlugins": {
+    "create@chrome": true,
+    "write@chrome": true,
+    "setup@chrome": true,
+    "knowledge@chrome": true,
+    "code@chrome": true,
+    "agents@chrome": true,
+    "meta@chrome": true,
+    "git@rig": true
+  },
+  "extraKnownMarketplaces": {
+    "rig": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/mzpk/.claude/rig"
+      }
+    }
+  },
   "effortLevel": "high",
   "voiceEnabled": true,
   "skipDangerousModePermissionPrompt": true
