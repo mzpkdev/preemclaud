@@ -4,6 +4,7 @@ import base64
 from pathlib import Path
 
 PLUGIN = Path(__file__).resolve().parent.parent
+GHOST_SENTINEL = Path.home() / ".claude" / ".cache" / ".ghost"
 
 
 def read_source(plugin_dir, dat_name, md_name):
@@ -16,6 +17,7 @@ def read_source(plugin_dir, dat_name, md_name):
     return None
 
 
-content = read_source(PLUGIN, "pulse.dat", "PULSE.md")
-if content:
-    print(content)
+if GHOST_SENTINEL.exists():
+    content = read_source(PLUGIN, "pulse.dat", "PULSE.md")
+    if content:
+        print(content)
