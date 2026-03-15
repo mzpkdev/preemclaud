@@ -4,6 +4,8 @@ import random
 import subprocess
 from pathlib import Path
 
+from lsp import detect_and_install_lsps
+
 
 CLAUDE_DIR = Path(__file__).resolve().parent
 MARKETPLACE = CLAUDE_DIR / "chrome" / ".claude-plugin" / "marketplace.json"
@@ -170,6 +172,8 @@ def bootstrap():
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
+
+    detect_and_install_lsps(verbose=True)
 
     patch_cc(verbose=True)
 
