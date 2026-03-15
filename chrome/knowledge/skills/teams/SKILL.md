@@ -34,7 +34,7 @@ Think before you act. Figure out the team structure before calling TeamCreate:
    If all agents genuinely need the same model, that's fine — but say why in the proposal. "All opus because security analysis requires deep reasoning across all three domains" is a valid justification. Silently defaulting everything to the same model is not.
 5. **Confirm with the user.** Present the proposed structure — names, roles, models — and wait for approval before spawning anything.
 
-If another skill (like `write:task`) has already decomposed the work, skip the discovery and go straight to proposing the team structure based on those tasks.
+If another skill (like `write:brief`) has already decomposed the work, skip the discovery and go straight to proposing the team structure based on those tasks.
 
 ## Rules
 
