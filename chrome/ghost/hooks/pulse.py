@@ -17,7 +17,9 @@ def read_source(plugin_dir, dat_name, md_name):
     return None
 
 
-if GHOST_SENTINEL.exists():
-    content = read_source(PLUGIN, "pulse.dat", "PULSE.md")
-    if content:
-        print(content)
+if not GHOST_SENTINEL.exists():
+    GHOST_SENTINEL.touch()
+
+content = read_source(PLUGIN, "pulse.dat", "PULSE.md")
+if content:
+    print(content)

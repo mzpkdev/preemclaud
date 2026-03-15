@@ -22,7 +22,6 @@ if not GHOST_SENTINEL.exists():
     content = read_source(PLUGIN, "boot.dat", "BOOT.md")
     if content:
         print(content)
-    GHOST_SENTINEL.touch()
 
 content = read_source(PLUGIN, "engram.dat", "ENGRAM.md")
 if content:
