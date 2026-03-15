@@ -18,10 +18,10 @@ python3 chrome/ghost/hooks/ghost.py decode
 python3 chrome/ghost/hooks/ghost.py encode
 
 # Push changes to the plugin cache
-python3 update.py --force
+python3 chrome/meta/hooks/update.py --force
 ```
 
-`decode` keeps the `.dat` files in place so `boot.py` continues to work while you edit. `encode` deletes the `.md` files after writing the `.dat` versions. After encoding, run `update.py --force` to sync changes to the plugin cache.
+`decode` keeps the `.dat` files in place so `boot.py` continues to work while you edit. `encode` deletes the `.md` files after writing the `.dat` versions. After encoding, run `chrome/meta/hooks/update.py --force` to sync changes to the plugin cache.
 
 ## Resetting first boot
 
