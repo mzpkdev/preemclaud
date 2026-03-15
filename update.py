@@ -2,7 +2,7 @@
 
 import sys
 
-from install import (
+from core import (
     install_all, install, haunt, pull, in_sync,
     cc_needs_patch, patch_cc,
 )
