@@ -1,0 +1,22 @@
+{
+  "name": "lsp",
+  "description": "Language server plugins",
+  "owner": {
+    "name": "mzpk",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "typescript",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./typescript"
+    },
+    {
+      "name": "python",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./python"
+    }
+  ]
+}

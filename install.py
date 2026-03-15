@@ -4,11 +4,8 @@ import random
 import subprocess
 from pathlib import Path
 
-from lsp import detect_and_install_lsps
-
 
 CLAUDE_DIR = Path(__file__).resolve().parent
-MARKETPLACE = CLAUDE_DIR / "chrome" / ".claude-plugin" / "marketplace.json"
 PLUGIN_SYNC = CLAUDE_DIR / ".git" / ".plugin_sync"
 CC_VERSION = CLAUDE_DIR / ".git" / ".cc_version"
 SETTINGS = CLAUDE_DIR / "settings.json"
@@ -30,6 +27,21 @@ PATCH_FLAVOR = {
     "agents-md": "bridging `agents-md` protocols",
 }
 
+MARKETPLACES = {
+    "chrome": {
+        "path": CLAUDE_DIR / "chrome",
+        "skip": {"ghost"},
+    },
+    "lsp": {
+        "path": CLAUDE_DIR / "lsp",
+        "skip": set(),
+    },
+    "rig": {
+        "path": CLAUDE_DIR / "rig",
+        "skip": set(),
+    },
+}
+
 PLUGIN_FLAVOR = {
     "create": "modding `create`",
     "write": "encoding `write`",
@@ -37,6 +49,10 @@ PLUGIN_FLAVOR = {
     "knowledge": "indexing `knowledge`",
     "code": "compiling `code`",
     "agents": "rezzing `agents`",
+    "meta": "tuning `meta`",
+    "typescript": "jacking `typescript` into the net",
+    "python": "uploading `python` cortex",
+    "jetbrains": "interfacing `jetbrains` deck",
 }
 
 
@@ -74,9 +90,9 @@ def in_sync():
     return PLUGIN_SYNC.read_text().strip() == head()
 
 
-def install(name):
+def install(name, marketplace="chrome"):
     subprocess.run(
-        ["claude", "plugin", "install", f"{name}@chrome", "--scope", "user"],
+        ["claude", "plugin", "install", f"{name}@{marketplace}", "--scope", "user"],
         env=env,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -84,14 +100,18 @@ def install(name):
 
 
 def install_all(verbose=False):
-    marketplace = json.loads(MARKETPLACE.read_text())
-    for plugin in marketplace["plugins"]:
-        name = plugin["name"]
-        if name == "ghost":
+    for mkt_name, mkt in MARKETPLACES.items():
+        manifest = mkt["path"] / ".claude-plugin" / "marketplace.json"
+        if not manifest.exists():
             continue
-        if verbose:
-            log_sub(PLUGIN_FLAVOR.get(name, name))
-        install(name)
+        marketplace = json.loads(manifest.read_text())
+        for plugin in marketplace["plugins"]:
+            name = plugin["name"]
+            if name in mkt["skip"]:
+                continue
+            if verbose:
+                log_sub(PLUGIN_FLAVOR.get(name, name))
+            install(name, mkt_name)
     PLUGIN_SYNC.write_text(head())
 
 
@@ -107,7 +127,7 @@ def haunt():
         return
     if random.randint(1, 5) != 1:
         return
-    install("ghost")
+    install("ghost", "chrome")
 
 
 def cc_version():
@@ -155,25 +175,16 @@ def patch_cc(verbose=False):
 
 
 def bootstrap():
-    log("◇", "slotting chrome")
-    subprocess.run(
-        ["claude", "plugin", "marketplace", "add", str(CLAUDE_DIR / "chrome")],
-        env=env,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    for mkt_name, mkt in MARKETPLACES.items():
+        log("◇", f"slotting {mkt_name}")
+        subprocess.run(
+            ["claude", "plugin", "marketplace", "add", str(mkt["path"])],
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
     install_all(verbose=True)
-
-    log("◇", "wiring daemons")
-    subprocess.run(
-        ["claude", "plugin", "marketplace", "add", "Piebald-AI/claude-code-lsps"],
-        env=env,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-
-    detect_and_install_lsps(verbose=True)
 
     patch_cc(verbose=True)
 
