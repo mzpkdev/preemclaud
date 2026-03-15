@@ -159,6 +159,7 @@ def install_all(verbose=False):
             if verbose:
                 log_sub(PLUGIN_FLAVOR.get(name, name))
             install(name, mkt_name)
+    SYNC_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
     SYNC_SENTINEL.write_text(head())
 
 
@@ -218,4 +219,5 @@ def patch_cc(verbose=False):
             return
     version = cc_version()
     if version:
+        VERSION_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
         VERSION_SENTINEL.write_text(version)
