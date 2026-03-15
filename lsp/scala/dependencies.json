@@ -1,0 +1,5 @@
+{
+  "requires": ["java", "cs"],
+  "install": "cs install metals",
+  "verify": "metals"
+}
