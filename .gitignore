@@ -1,26 +1,31 @@
-# IDE
-.idea/
+# Personal
+**/memory/
+specs/
+briefs/
+plans/
+.ghost
 
 # Claude Code
 backups/
-cache/
-file-history/
-history.jsonl
-paste-cache/
-plans/
 projects/
+sessions/
+tasks/
 session-env/
+cache/
+paste-cache/
+file-history/
 shell-snapshots/
 telemetry/
-policy-limits.json
-
-.ghost
-
-# Local plugins & scripts
-plugins/
-
-# IDE integration
 ide/
+plugins/
+policy-limits.json
+history.jsonl
 
-# Memory (personal, not shared)
-**/memory/
+# Generated
+__pycache__/
+**/evals/
+**/*-workspace/
+
+# IDE
+.claude/
+.idea/
