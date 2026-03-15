@@ -23,6 +23,7 @@
 /plugins/
 /policy-limits.json
 /history.jsonl
+/mcp-needs-auth-cache.json
 
 # Generated
 __pycache__/
