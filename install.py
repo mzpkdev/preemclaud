@@ -1,6 +1,7 @@
 import json
 import os
 import random
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -50,8 +51,10 @@ PLUGIN_FLAVOR = {
     "code": "compiling `code`",
     "agents": "rezzing `agents`",
     "meta": "tuning `meta`",
-    "typescript": "jacking `typescript` into the net",
-    "python": "uploading `python` cortex",
+    "typescript": "installing `typescript` lsp",
+    "python": "installing `python` lsp",
+    "scala": "installing `scala` lsp",
+    "java": "installing `java` lsp",
     "jetbrains": "interfacing `jetbrains` deck",
 }
 
@@ -62,6 +65,40 @@ def log(icon, msg):
 
 def log_sub(msg):
     print(f"        › {msg}")
+
+
+def check_bin(name):
+    return shutil.which(name) is not None
+
+
+def install_lsp_deps(plugin_dir, name):
+    deps_file = plugin_dir / "dependencies.json"
+    if not deps_file.exists():
+        return True
+
+    deps = json.loads(deps_file.read_text())
+    verify = deps.get("verify")
+
+    if verify and check_bin(verify):
+        return True
+
+    for req in deps.get("requires", []):
+        if not check_bin(req):
+            return False
+
+    install_cmd = deps.get("install")
+    if install_cmd:
+        result = subprocess.run(install_cmd, shell=True,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.PIPE,
+                                text=True)
+        if result.returncode != 0:
+            return False
+
+    if verify and not check_bin(verify):
+        return False
+
+    return True
 
 
 # --- git helpers ---
@@ -109,6 +146,10 @@ def install_all(verbose=False):
             name = plugin["name"]
             if name in mkt["skip"]:
                 continue
+            if mkt_name == "lsp":
+                plugin_dir = mkt["path"] / name
+                if not install_lsp_deps(plugin_dir, name):
+                    continue
             if verbose:
                 log_sub(PLUGIN_FLAVOR.get(name, name))
             install(name, mkt_name)
