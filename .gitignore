@@ -1,5 +1,5 @@
 # Personal
-**/memory/
+/**/memory/
 /commands/
 /skills/
 /agents/
@@ -9,20 +9,20 @@
 .ghost
 
 # Claude Code
-backups/
-projects/
-sessions/
-tasks/
-session-env/
-cache/
-paste-cache/
-file-history/
-shell-snapshots/
-telemetry/
-ide/
-plugins/
-policy-limits.json
-history.jsonl
+/backups/
+/projects/
+/sessions/
+/tasks/
+/session-env/
+/cache/
+/paste-cache/
+/file-history/
+/shell-snapshots/
+/telemetry/
+/ide/
+/plugins/
+/policy-limits.json
+/history.jsonl
 
 # Generated
 __pycache__/
@@ -30,5 +30,5 @@ __pycache__/
 **/*-workspace/
 
 # IDE
-.claude/
-.idea/
+/.claude/
+/.idea/
