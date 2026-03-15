@@ -1,8 +1,8 @@
 {
   "name": "lsp",
-  "description": "Language server plugins",
+  "description": "",
   "owner": {
-    "name": "mzpk",
+    "name": "",
     "email": ""
   },
   "plugins": [

@@ -1,8 +1,8 @@
 {
   "name": "chrome",
-  "description": "My local plugins",
+  "description": "",
   "owner": {
-    "name": "mzpk",
+    "name": "",
     "email": ""
   },
   "plugins": [
