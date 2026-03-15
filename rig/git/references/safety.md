@@ -13,8 +13,8 @@ Run these checks at the start. If any fails, stop and tell the user what's wrong
    If it fails → "You're in detached HEAD state. Create a branch first: `git checkout -b <name>`"
 
 3. **In-progress operation?** — check for these files:
-   - `.git/MERGE_HEAD` → "A merge is in progress. Finish or abort it first."
-   - `.git/rebase-merge` or `.git/rebase-apply` → "A rebase is in progress. Finish or abort it first."
+   - `.git/MERGE_HEAD` → "A merge is in progress. Use `git:resolve` to finish it, or abort with `git merge --abort`."
+   - `.git/rebase-merge` or `.git/rebase-apply` → "A rebase is in progress. Use `git:resolve` to finish it, or abort with `git rebase --abort`."
    - `.git/BISECT_LOG` → "A bisect is in progress. Finish or abort it first."
 
 ## File scanning
