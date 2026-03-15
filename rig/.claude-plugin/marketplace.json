@@ -1,0 +1,16 @@
+{
+  "name": "rig",
+  "description": "IDE and tooling plugins",
+  "owner": {
+    "name": "mzpk",
+    "email": ""
+  },
+  "plugins": [
+    {
+      "name": "jetbrains",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./jetbrains"
+    }
+  ]
+}
