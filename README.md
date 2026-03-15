@@ -1,6 +1,6 @@
 # PREEMCLAUD
 
-Chrome for Claude Code.
+Chrome for Claude Code. Jack in, upgrade your rig, run the net.
 
 
 ## Install
