@@ -1,5 +1,5 @@
 ---
-name: coverage
+name: tests
 description: Reviews whether critical code paths have adequate test coverage and flags potentially flaky tests. Not about percentages — about whether the things that matter are tested. Delegate when you want a test-focused review of a diff.
 tools: Read, Grep, Glob, Bash
 model: sonnet

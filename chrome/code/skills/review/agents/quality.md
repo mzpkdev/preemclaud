@@ -1,5 +1,5 @@
 ---
-name: lint
+name: quality
 description: Reviews code changes for readability, naming, complexity, duplication, and single responsibility. Delegate when you need a quality-focused lens on a diff.
 tools: Read, Grep, Glob, Bash
 model: sonnet

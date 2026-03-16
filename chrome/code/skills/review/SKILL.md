@@ -99,12 +99,12 @@ Spawn all 6 in parallel using the Agent tool:
 
 | Agent | File | Focus |
 |-------|------|-------|
-| Linting | `agents/linting.md` | Readability, naming, complexity, SRP |
-| Security | `agents/security.md` | Injection, auth, secrets, OWASP |
 | Bugs | `agents/bugs.md` | Logic errors, edge cases, race conditions |
+| Security | `agents/security.md` | Injection, auth, secrets, OWASP |
 | Architecture | `agents/architecture.md` | Coupling, abstractions, dependency direction |
-| Coverage | `agents/coverage.md` | Critical path gaps, flaky tests |
 | Consistency | `agents/consistency.md` | Convention adherence, duplication |
+| Quality | `agents/quality.md` | Readability, naming, complexity, SRP |
+| Tests | `agents/tests.md` | Critical path gaps, flaky tests |
 
 For each agent, read its `.md` file and use it as the agent's system instructions. Pass the diff as part of the prompt:
 
@@ -120,9 +120,9 @@ You have full read access to the codebase for context.
 ```
 
 **Not every agent applies every time.** Use judgment:
-- Skip **coverage** if the project has no test files at all
+- Skip **tests** if the project has no test files at all
 - Skip **consistency** if the diff is only 1-2 lines (not enough to judge pattern adherence)
-- Always run **lint**, **security**, and **bugs** — they apply universally
+- Always run **quality**, **security**, and **bugs** — they apply universally
 
 ### 4. Merge findings
 
@@ -137,39 +137,30 @@ Once all agents report back, merge their findings into a single report. Each age
 
 Merge them by severity across all agents, not by agent. The user cares about "what's most important" not "what the security agent said vs what the bug hunter said." But tag each finding with its source so the user knows the lens.
 
-### 5. Present the unified report
+### 5. Verify claims
 
-Use this template:
+Reviewers sometimes hallucinate issues — misread a variable name, flag a bug that's actually handled elsewhere, or reference a line that doesn't exist. Before presenting the report, spawn a verification subagent that checks every finding against the actual code.
 
-```markdown
-### Output template
+Read `agents/verifier.md` and spawn it with:
+- The compiled report (all merged findings)
+- The full diff
+- Access to read the codebase
 
-**Scope**: [files changed, line count, staged/unstaged]
-**Verdict**: [PASS | CONCERNS | NEEDS WORK]
+The verifier checks each finding: does the referenced file and line exist? Does the code snippet match what's actually there? Is the claimed issue real? Was the code actually changed in this diff? It returns a verdict for each finding — **confirmed**, **invalid**, or **uncertain** — plus a **pre-existing** flag for issues in code the changeset didn't touch.
 
-### Critical
-- **[file:line]** [security] — Description. Why it matters. -> Fix suggestion
-- **[file:line]** [bugs] — Description. Why it matters. -> Fix suggestion
+- **confirmed** — keep as-is
+- **invalid** — drop from the report entirely
+- **uncertain** — keep but add a note that this should be manually verified
+- **pre-existing** — move to the dedicated Pre-existing section as a one-liner, not a full finding
 
-### Warnings
-- **[file:line]** [quality] — Description. -> Suggestion
-- **[file:line]** [patterns] — Description. -> Suggestion
+### 6. Present the unified report
 
-### Suggestions
-- **[file:line]** [architecture] — Description
-- **[file:line]** [tests] — Description
-
-### Notes
-- [Positive callouts, context, observations]
-
----
-**Summary**: [1-2 sentence bottom line]
-```
+Present the report using the template in `TEMPLATE.md`.
 
 Rules:
 - Omit empty sections
 - Verdict: any Critical -> NEEDS WORK, only Warnings -> CONCERNS, else PASS
-- Tag each finding with its source: `[security]`, `[bugs]`, `[quality]`, `[architecture]`, `[tests]`, `[patterns]`
+- Tag each finding with its source agent: `[Bugs]`, `[Security]`, `[Architecture]`, `[Consistency]`, `[Quality]`, `[Tests]`
 - Deduplicate — if two agents flag the same thing, keep the more detailed one and note both perspectives
 - Keep summary to a genuine bottom line
 
