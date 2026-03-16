@@ -84,9 +84,7 @@ Guidelines:
 
 ## Step 7 — Present the commit plan
 
-This is the key moment. Read `TEMPLATE.md` (in this skill's directory) and follow its format exactly. It defines the full layout: summary line, commit headers, file tables, safety warnings, action prompt, and execution report.
-
-The template is the source of truth for how the plan looks. Don't improvise the format.
+Present the commit plan following the **## Template** section below.
 
 ## Step 8 — Handle adjustments
 
@@ -121,6 +119,18 @@ Once approved:
 
 If any dirty files weren't part of the plan, mention them:
 "You still have uncommitted changes in: `.eslintrc.json`"
+
+## Template
+
+Read `TEMPLATE.md` for the commit plan format.
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have entries. The only acceptable omission is a
+> section with zero entries. ALWAYS end with the action menu AND
+> follow-up question.
 
 ## Edge cases
 
