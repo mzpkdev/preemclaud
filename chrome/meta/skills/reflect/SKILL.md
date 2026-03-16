@@ -81,7 +81,7 @@ For each root cause, propose a concrete action. Good improvements are:
 
 ### 5. Produce the reflection
 
-Use the template in `TEMPLATE.md` to format the output. Keep the whole reflection
+Format the output following the **## Template** section below. Keep the whole reflection
 concise enough to fit comfortably on one screen.
 
 ### 6. Review
@@ -151,3 +151,14 @@ The user's time is valuable — every sentence should carry information.
   listing every misstep.
 - **Vague conversation history**: If there isn't enough context to do a meaningful
   reflection, say so and ask the user what specifically they'd like to reflect on.
+
+## Template
+
+Read `TEMPLATE.md` for the reflection format.
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have entries. The only acceptable omission is a
+> section with zero entries. ALWAYS end with the follow-up question.
