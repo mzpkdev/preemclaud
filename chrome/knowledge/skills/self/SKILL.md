@@ -1,100 +1,72 @@
 ---
-name: knowledge:self
-description: "Use when the user asks ABOUT Claude Code rather than asking Claude Code to DO something. Two modes: (1) General knowledge — how features work: hooks, MCP servers, slash commands, tools, keybindings, settings, IDE integrations, Agent SDK, Jupyter support, experimental flags, agent teams, any Claude Code concept. (2) Instance introspection — what's configured HERE: settings.json contents, installed skills, connected MCPs, active hooks, enabled plugins, memory, current model, effort level. Also covers identity questions ('tell me about yourself', 'what are you', 'what can you do'). Key distinction: 'how do hooks work?' → this skill. 'Create a hook for X' → create:hook. Always use this skill instead of answering from memory — Claude Code docs go stale fast."
-user-invocable: true
-disable-model-invocation: false
+description: "Stop and consult this skill whenever your response would include specific facts about Anthropic's products. Covers: Claude Code (how to install, Node.js requirements, platform/OS support, MCP server integration, configuration), Claude API (function calling/tool use, batch processing, SDK usage, rate limits, pricing, models, streaming), and Claude.ai (Pro vs Team vs Enterprise plans, feature limits). Trigger this even for coding tasks that use the Anthropic SDK, content creation mentioning Claude capabilities or pricing, or LLM provider comparisons. Any time you would otherwise rely on memory for Anthropic product details, verify here instead — your training data may be outdated or wrong."
 ---
-
-# Self-Knowledge
 
 ## Announce
 
-> Daemon `knowledge:self` online. Checking the mirror.
+When the **user explicitly invokes** this skill (e.g., types `/self` or asks "how does X work in Claude Code"), print:
 
-## Why this skill exists
+> Daemon `knowledge:self` online. Checking the docs.
 
-Claude's training data about Claude Code gets stale. When users ask "how do hooks work?" or "can you do X?", the model often answers from memory and gets it wrong. This skill exists to prevent that — route the question to a source of truth instead of guessing.
+When you **self-trigger** because your response would include Anthropic product facts, skip the announcement entirely. Just look it up, get it right, and move on.
 
-## Steps
+# Anthropic Product Knowledge
 
-Every question about Claude Code falls into one of two buckets. Figure out which one, then follow the corresponding playbook.
+## Core Principles
 
-### Bucket 1: General Claude Code knowledge
+1. **Accuracy over guessing** - Check official docs when uncertain
+2. **Distinguish products** - Claude.ai, Claude Code, and Claude API are separate products
+3. **Source everything** - Always include official documentation URLs
+4. **Right resource first** - Use the correct docs for each product (see routing below)
 
-Questions about how Claude Code works in general — features, settings, tools, hooks, slash commands, keybindings, IDE integrations, the Agent SDK, or the Claude API.
+---
 
-**Examples:** "How do hooks work?", "Can Claude Code edit Jupyter notebooks?", "How do I set up an MCP server?", "What's the Agent SDK?", "How do I use tool_use with the API?"
+## Question Routing
 
-**Action:** Spawn the `claude-code-guide` subagent. It has WebSearch, WebFetch, Glob, Grep, and Read — it can look things up properly instead of guessing.
+### Claude API or Claude Code questions?
 
-```
-Use the Agent tool with subagent_type="claude-code-guide" and a clear prompt
-that captures the user's question. Be specific about what they're asking.
-```
+→ **Check the docs maps first**, then navigate to specific pages:
 
-Do NOT answer general Claude Code questions from your own knowledge. The whole point is to avoid hallucination. Let the subagent research it.
+- **Claude API & General:** https://docs.claude.com/en/docs_site_map.md
+- **Claude Code:** https://docs.anthropic.com/en/docs/claude-code/claude_code_docs_map.md
 
-**Search tip:** Claude Code evolves fast. When researching, include the current year in search queries and prefer `site:code.claude.com` for official docs. A query like "claude code hooks" without a year can pull up outdated blog posts with wrong information.
+### Claude.ai questions?
 
-### Bucket 2: Instance introspection
+→ **Browse the support page:**
 
-Questions about what's installed, configured, or active in THIS specific Claude Code instance.
+- **Claude.ai Help Center:** https://support.claude.com
 
-**Examples:** "What skills do I have?", "What MCP servers are connected?", "Show me my hooks", "What's in my memory?", "What plugins are enabled?"
+---
 
-**Action:** Read the relevant config files directly. Here's where to look:
+## Response Workflow
 
-#### Installed skills
-Read the chrome plugin structure to enumerate installed skills:
-```
-# Plugin registry
-~/.claude/chrome/.claude-plugin/marketplace.json
+1. **Identify the product** - API, Claude Code, or Claude.ai?
+2. **Use the right resource** - Docs maps for API/Code, support page for Claude.ai
+3. **Verify details** - Navigate to specific documentation pages
+4. **Provide answer** - Include source link and specify which product
+5. **If uncertain** - Direct user to relevant docs: "For the most current information, see [URL]"
 
-# Each plugin has a skills/ directory with SKILL.md files
-~/.claude/chrome/*/skills/*/SKILL.md
-```
-Read the SKILL.md frontmatter (name + description) for each skill. Present them grouped by plugin (create, write, setup, knowledge, code, etc.).
+---
 
-#### MCP Servers
-MCP server configuration lives in:
-```
-~/.claude/settings.json          # global MCP config
-.claude/settings.json            # project-level MCP config (in project root)
-```
-Look for the `mcpServers` key. List each server's name, command, and status.
+## Quick Reference
 
-#### Hooks
-Hooks can be in multiple places:
-```
-~/.claude/settings.json                    # global hooks
-.claude/settings.json                      # project-level hooks
-~/.claude/chrome/*/hooks/hooks.json        # plugin hooks
-```
-Look for the `hooks` key. List each hook's event trigger, type, and command.
+**Claude API:**
 
-#### Memory
-```
-~/.claude/projects/*/memory/MEMORY.md      # memory index
-~/.claude/projects/*/memory/*.md           # individual memories
-```
-Read MEMORY.md for the index, then summarize what's stored.
+- Documentation: https://docs.claude.com/en/api/overview
+- Docs Map: https://docs.claude.com/en/docs_site_map.md
 
-#### Settings & Configuration
-```
-~/.claude/settings.json                    # global settings
-.claude/settings.json                      # project settings
-CLAUDE.md                                  # project instructions (in project root)
-~/.claude/CLAUDE.md                        # global instructions
-```
-Summarize the active configuration — model, effort level, enabled plugins, etc.
+**Claude Code:**
 
-#### Enabled plugins
-Check `enabledPlugins` in `~/.claude/settings.json`. Cross-reference with the marketplace registry to show which plugins are active.
+- Documentation: https://docs.claude.com/en/docs/claude-code/overview
+- Docs Map: https://docs.anthropic.com/en/docs/claude-code/claude_code_docs_map.md
+- npm Package: https://www.npmjs.com/package/@anthropic-ai/claude-code
 
-## Rules
+**Claude.ai:**
 
-- **Never guess about Claude Code features.** If it's a general knowledge question, spawn the subagent. That's non-negotiable.
-- **For introspection, read the actual files.** Don't assume what's installed — check.
-- **Be specific in answers.** If the user asks "what can you do?", don't give a vague hand-wave. List actual capabilities based on what's configured.
-- **If both buckets apply**, handle them both. "What MCP servers do I have and how do I add a new one?" is introspection (list current servers) + general knowledge (how to configure MCP). Do both.
-- **Broad capability questions are always both buckets.** "What can you do?", "give me a rundown of your capabilities", "tell me about yourself" — these need introspection (list what's installed and configured) AND research (what can Claude Code do in general). Don't just list installed skills and call it a day. The user wants the full picture.
+- Support Center: https://support.claude.com
+- Getting Help: https://support.claude.com/en/articles/9015913-how-to-get-support
+
+**Other:**
+
+- Product News: https://www.anthropic.com/news
+- Enterprise Sales: https://www.anthropic.com/contact-sales
