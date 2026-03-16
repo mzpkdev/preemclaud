@@ -68,7 +68,7 @@ Use the branch name, commit messages, and the actual code changes to piece toget
 
 Group changed files by purpose — figure out what belongs together based on what the changes actually do, not where the files live. A test file and its source file belong in the same group. A README update and a config change are separate.
 
-Present using the format from `TEMPLATE.md`.
+Present using the **## Template** section below.
 
 Each file gets a short description of what actually changed — not "modified" (the user can see that), but what the modification does: "added retry logic", "removed deprecated endpoint", "new test for edge case".
 
@@ -82,3 +82,14 @@ Each file gets a short description of what actually changed — not "modified" (
 - **Ahead/behind remote** → Include in the context line so the user knows if they need to push/pull.
 - **Stashes** → List them briefly at the bottom — stale stashes are easy to forget about.
 - **In-progress operation** → Flag at the top (e.g., "You're mid-rebase on main — 2 of 5 commits applied").
+
+## Template
+
+Read `TEMPLATE.md` for the status output format.
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have entries. The only acceptable omission is a
+> section with zero entries.
