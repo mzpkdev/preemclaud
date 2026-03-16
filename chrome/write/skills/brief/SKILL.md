@@ -68,7 +68,7 @@ Each task should produce a working, testable increment. If two tasks can't be ve
 
 ### 5. Write tasks
 
-Produce the brief using the template in `TEMPLATE.md`.
+Produce the brief following the **## Template** section below.
 
 **Description is the most important section of each task.** It should read like a well-written Jira ticket — narrative context explaining why this task exists, what's being built, and how it fits into the bigger picture. End the description with a **Technical decisions** block listing key design choices and their reasoning (from the spec or conversation — include them, don't just point at the spec).
 
@@ -126,3 +126,14 @@ A task describes *what* to build and *why* — it's a work assignment, not a rec
 **Do not include:** Code snippets, before/after diffs, exact line numbers, i18n key paths, implementation recipes, specific function signatures to write, file contents to change. These belong in an implementation plan (the plan skill), not a task.
 
 The test: if removing a sentence wouldn't change *what* gets built, only *how*, it probably doesn't belong in the task.
+
+## Template
+
+Read `TEMPLATE.md` for the brief document format.
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have entries. The only acceptable omission is a
+> section with zero entries.
