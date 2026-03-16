@@ -117,7 +117,7 @@ If all conflicts in a file are resolved, `git add` the whole file.
 
 If everything was auto-resolved, skip this step entirely — go to Step 8.
 
-Read `TEMPLATE.md` for the exact output format. For each ambiguous conflict:
+Present conflicts following the **## Template** section below. For each ambiguous conflict:
 - Show the file, line range, and both sides with syntax highlighting
 - Explain in plain English what each side was trying to do
 - Show the action menu
@@ -134,7 +134,7 @@ Once all conflicts are resolved:
 
 ## Step 8 — Report
 
-Read `TEMPLATE.md` for the report format. Show:
+Present the report following the **## Template** section below. Show:
 - What operation completed
 - How many commits were integrated
 - How many conflicts were auto-resolved (with one-line explanations)
@@ -151,3 +151,15 @@ If a stash was saved in Step 2, pop it now: `git stash pop`. Mention it in the r
 - **Binary files** — can't read conflict markers. Ask: "Binary file X conflicts — keep ours or theirs?"
 - **Auto-resolve was wrong** — if the user says a resolution looks wrong, `git checkout --conflict=merge -- {file}` restores the conflict state for that file.
 - **Submodule conflicts** — flag and ask, don't auto-resolve.
+
+## Template
+
+Read `TEMPLATE.md` for the conflict view and report formats.
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have entries. The only acceptable omission is a
+> section with zero entries. ALWAYS end with the action menu AND
+> follow-up question.
