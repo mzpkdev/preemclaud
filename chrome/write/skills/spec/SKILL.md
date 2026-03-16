@@ -91,7 +91,7 @@ Cover as appropriate:
 
 ### 6. Write the Spec
 
-Once the user has approved the design, write it up as a spec document using the template in `TEMPLATE.md`.
+Once the user has approved the design, write it up as a spec document following the **## Template** section below.
 
 The **Decision Log** captures every meaningful design decision made during the conversation — what was chosen, why, and what alternatives were considered. This is valuable context for anyone reading the spec later (including the agent that implements the plan).
 
@@ -115,3 +115,14 @@ If the review loop exceeds 3 iterations, surface it to the user for guidance rat
 Write the spec to a file per the [output](#output) convention. After saving, tell the user where it landed:
 
 **"Spec saved to `.claude/specs/<codename>.md`."**
+
+## Template
+
+Read `TEMPLATE.md` for the spec document format.
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have entries. The only acceptable omission is a
+> section with zero entries.
