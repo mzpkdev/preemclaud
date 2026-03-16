@@ -17,61 +17,28 @@ Multi-agent code review. Spawns specialized reviewers in parallel, each focused 
 
 ### 1. Determine the diff scope
 
-Figure out what to review. The right diff depends on where you are.
-
-**Step 1: Detect the main branch and current branch.**
+Run the scope script to compute the diff and metadata deterministically:
 
 ```bash
-# Find the main branch — try local ref first (works offline), fall back to remote
-MAIN_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-if [ -z "$MAIN_BRANCH" ]; then
-  MAIN_BRANCH=$(git remote show origin 2>/dev/null | grep 'HEAD branch' | sed 's/.*: //')
-fi
-if [ -z "$MAIN_BRANCH" ]; then
-  # Last resort: guess from local branches
-  MAIN_BRANCH=$(git branch --list main master develop 2>/dev/null | head -1 | tr -d '* ')
-fi
-
-# What branch are we on?
-git branch --show-current
+python3 <path-to-this-skill>/scripts/scope.py
 ```
 
-**Step 2: Pick the diff strategy.**
+For a PR: `python3 <path>/scripts/scope.py --pr <url-or-number>`
+For a specific ref: `python3 <path>/scripts/scope.py --ref develop`
 
-If the user specified a branch, commit range, or PR — use that directly. Otherwise:
+The script outputs JSON with:
+- `mode`: `"branch"`, `"main"`, `"pr"`, or `"ref"`
+- `main_branch`, `current_branch`, `merge_base`: git context
+- `files_changed`, `lines_changed`, `large_diff`: scope metrics for the report
+- `sources`: which diff sections have content (`"branch"`, `"staged"`, `"unstaged"`)
+- `diff.branch`, `diff.staged`, `diff.unstaged`: the actual diff content
+- `pr.*`: PR metadata (only in PR mode — `number`, `title`, `url`, `base`, `head`)
 
-**On a feature branch** (HEAD is not the main branch):
-```bash
-# Committed branch changes — only what this branch introduced
-# Use the MAIN_BRANCH detected in Step 1
-git diff $(git merge-base "$MAIN_BRANCH" HEAD)..HEAD
-
-# Plus any uncommitted work on top
-git diff          # unstaged
-git diff --cached # staged
-```
-
-The `merge-base` approach is important — it isolates just the branch's changes without pulling in unrelated commits from main. This means the review works correctly even when the branch isn't rebased, which is the common case (rebasing is not part of a review task).
-
-**On the main branch**:
-```bash
-git diff          # unstaged
-git diff --cached # staged
-```
-
-**Step 3: Combine and report scope.**
-
-Merge all diff sources into one. If there are both committed branch changes and uncommitted work, note the distinction — the user may want to know which findings are in committed code vs work-in-progress.
-
-If the total diff is large (>500 lines), mention it and ask if the user wants to narrow scope — but don't refuse to review.
+Combine `diff.branch` + `diff.staged` + `diff.unstaged` as the full diff for agents. Report `sources` in the Scope line of the template. If `large_diff` is true, mention it and ask if the user wants to narrow scope — but don't refuse to review.
 
 ### 2. Discover project guidelines
 
-Before spawning reviewers, check if the project has guidelines the reviewers should know about:
-
-```bash
-ls .claude/guides/ 2>/dev/null
-```
+Before spawning reviewers, check if the project has guidelines the reviewers should know about. Use Glob to check for guide files matching `.claude/guides/*`.
 
 If guide files exist, read them. For each guide, decide which agents would benefit from it based on the guide's content — a guide about error handling conventions might be relevant to both the bugs and consistency agents, while API design guidelines might matter to architecture. Don't overthink the matching — skim the content, use your judgment, and pass each guide to whichever agents it makes sense for. Some guides might be relevant to all agents.
 
@@ -163,35 +130,6 @@ Rules:
 - Tag each finding with its source agent: `[Bugs]`, `[Security]`, `[Architecture]`, `[Consistency]`, `[Quality]`, `[Tests]`
 - Deduplicate — if two agents flag the same thing, keep the more detailed one and note both perspectives
 - Keep summary to a genuine bottom line
-
-### Reviewing a PR
-
-When the user passes a PR URL (e.g. `github.com/org/repo/pull/123`) or says "review PR #123":
-
-1. **Get PR metadata** using `gh pr view`:
-   ```bash
-   gh pr view <url-or-number> --json headRefName,baseRefName,number,title,url
-   ```
-
-2. **Check out the branch into a git worktree** so the review happens in isolation without touching the user's working tree:
-   ```bash
-   # Fetch the PR branch
-   gh pr checkout <number> --detach  # just to fetch — we'll use worktree instead
-   git worktree add /tmp/review-pr-<number> <headRefName>
-   ```
-
-3. **Run the review from the worktree.** The diff scope for a PR is the merge-base between the PR's base branch and head branch:
-   ```bash
-   cd /tmp/review-pr-<number>
-   git diff $(git merge-base "origin/<baseRefName>" HEAD)..HEAD
-   ```
-
-4. **Clean up the worktree** after the review is done:
-   ```bash
-   git worktree remove /tmp/review-pr-<number>
-   ```
-
-The rest of the workflow (spawn agents, merge findings, present report) is identical. The only difference is where the diff comes from.
 
 ## Edge cases
 
