@@ -19,4 +19,4 @@ fi
 echo "      ◇ syncing preemclaud"
 git clone --depth 1 "$REPO" "$TARGET" --quiet
 
-cd "$TARGET" && python3 -c "import sys; sys.path.insert(0, 'chrome/meta/hooks'); from install import bootstrap; bootstrap()"
+cd "$TARGET" && python3 bin/install.py

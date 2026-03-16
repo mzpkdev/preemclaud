@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 
 
-CLAUDE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+CLAUDE_DIR = Path.home() / ".claude"
 SYNC_SENTINEL = CLAUDE_DIR / ".cache" / ".sync"
 VERSION_SENTINEL = CLAUDE_DIR / ".cache" / ".version"
 SETTINGS = CLAUDE_DIR / "settings.json"

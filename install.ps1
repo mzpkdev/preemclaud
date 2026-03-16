@@ -27,4 +27,4 @@ Write-Host "      > syncing preemclaud"
 git clone --depth 1 $Repo $Target --quiet
 
 Set-Location $Target
-& $PythonCmd -c "import sys; sys.path.insert(0, 'chrome/meta/hooks'); from install import bootstrap; bootstrap()"
+& $PythonCmd bin/install.py
