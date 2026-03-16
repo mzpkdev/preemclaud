@@ -122,7 +122,7 @@ The verifier checks each finding: does the referenced file and line exist? Does 
 
 ### 6. Present the unified report
 
-Present the report using the template in `TEMPLATE.md`.
+Present the report following the **## Template** section below.
 
 Rules:
 - Omit empty sections
@@ -130,6 +130,18 @@ Rules:
 - Tag each finding with its source agent: `[Bugs]`, `[Security]`, `[Architecture]`, `[Consistency]`, `[Quality]`, `[Tests]`
 - Deduplicate — if two agents flag the same thing, keep the more detailed one and note both perspectives
 - Keep summary to a genuine bottom line
+
+## Template
+
+Read `TEMPLATE.md` for the report format.
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have findings. The only acceptable omission is a
+> section with zero findings. ALWAYS end with the action menu AND
+> follow-up question.
 
 ## Edge cases
 
