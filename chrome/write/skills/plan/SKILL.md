@@ -61,7 +61,7 @@ If the spec covers multiple independent subsystems, suggest breaking it into sep
 
 ### 3. Write the Plan
 
-Produce the plan using the template in `TEMPLATE.md`.
+Produce the plan following the **## Template** section below.
 
 #### Task granularity
 
@@ -159,3 +159,14 @@ Then output a summary using this exact template:
 This lets the user quickly assess the direction without opening the file. Keep each section punchy — details live in the plan.
 
 Keep plans concise and actionable. Don't over-plan — just enough to say "yes, do that" or to dispatch work units to subagents.
+
+## Template
+
+Read `TEMPLATE.md` for the plan document format.
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have entries. The only acceptable omission is a
+> section with zero entries.
