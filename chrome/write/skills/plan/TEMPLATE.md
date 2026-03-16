@@ -1,22 +1,15 @@
 # <Plan Title>
-> Codename: **<adjective-noun>**
+> Codename: **<adjective-noun>** | From: **<spec/brief-codename or "prompt">**
 
-**Goal:** <one sentence — what does this build?>
+## Objective
+<one sentence — what does this build?>
 
-**Architecture:** <2-3 sentences about the approach>
+## Architecture
+<2-3 sentences — omit for plans with 1-2 work units>
 
-**Tech Stack:** <key technologies/libraries involved>
-
-**Testing:** <approach — TDD, test-after, manual verification, or mix>
-
-## Research Notes
-
-- **Project structure:** <how the codebase is organized, key directories>
-- **Relevant files:** <files that will be touched or integrated with, with brief descriptions>
-- **Patterns observed:** <conventions, abstractions, naming styles found during research>
-- **Testing setup:** <framework, style, fixtures, coverage level>
-- **Quality toolchain:** <linter, formatter, type checker, and any other static analysis — include the exact commands to run each>
-- **Gotchas:** <anything surprising or non-obvious discovered during research>
+## Notes
+- **Toolchain:** <exact commands to run each check>
+- **Caveats:** <anything non-obvious the executor should watch for>
 
 ---
 
@@ -27,14 +20,13 @@
 **Files:**
 - Create: `exact/path/to/file.ext`
 - Modify: `exact/path/to/existing.ext`
-- Test: `tests/exact/path/to/test.ext`
 
 - [ ] <step>
 - [ ] <step>
 - [ ] Verify: <how>
 
 ### 2. <Name>
-**Depends on:** 1
+**Dependencies:** #1, #2 | **Parallel with:** #3
 
 **Files:**
 - Modify: `exact/path/to/file.ext`

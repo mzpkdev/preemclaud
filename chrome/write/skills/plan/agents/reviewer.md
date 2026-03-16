@@ -2,7 +2,7 @@
 
 Use this template when dispatching a plan document reviewer subagent.
 
-**Purpose:** Verify the plan chunk is complete, matches the spec, and has proper task decomposition.
+**Purpose:** Verify the plan chunk is complete, matches the spec, and is ready for implementation.
 
 **Dispatch after:** Each plan chunk is written
 
@@ -26,8 +26,13 @@ Agent tool (general-purpose):
     | File Size | Would any new or modified file likely grow large enough to be hard to reason about as a whole? |
     | Task Syntax | Checkbox syntax (`- [ ]`) on steps for tracking |
     | Code Completeness | Steps include actual code, not vague descriptions like "add validation" |
-    | Verification | Every task has a way to confirm it's done correctly |
+    | Verification | Every task has a way to confirm it's done correctly, using the full toolchain |
     | Chunk Size | Each chunk under 1000 lines |
+    | Dependency Ordering | Work units sequenced correctly? Circular dependencies? Implicit dependencies not declared? |
+    | Parallelization | Units marked sequential that share no dependencies — could they run concurrently? |
+    | Justification | Non-obvious implementation choices explained inline? |
+    | Scope Boundary | Steps that venture beyond the stated objective? |
+    | Risk Coverage | Steps touching critical paths (auth, payments, data migrations) without proportional verification? |
 
     ## CRITICAL
 
@@ -38,12 +43,17 @@ Agent tool (general-purpose):
     - Missing verification steps or expected outputs
     - Files planned to hold multiple responsibilities or likely to grow unwieldy
     - Vague steps ("add error handling") instead of concrete code
+    - Dependency cycles or units that reference outputs from later units
+    - Work units with no dependencies that aren't considered for parallel execution
+    - Steps modifying critical paths without proportionally rigorous verification
 
     ## Output Format
 
     ## Plan Review - Chunk N
 
     **Status:** Approved | Issues Found
+
+    **Dependencies:** Valid | Issues (circular deps, undeclared dependencies)
 
     **Issues (if any):**
     - [Task X, Step Y]: [specific issue] - [why it matters]
@@ -52,4 +62,4 @@ Agent tool (general-purpose):
     - [suggestions that don't block approval]
 ```
 
-**Reviewer returns:** Status, Issues (if any), Recommendations
+**Reviewer returns:** Status, Dependencies, Issues (if any), Recommendations

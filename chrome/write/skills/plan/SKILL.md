@@ -14,13 +14,6 @@ When this skill is invoked, immediately tell the user which skill is running and
 
 > Daemon `write:plan` online. Breaking down the work.
 
-## Composability
-
-This skill supports two execution modes:
-
-- **Interactive** (default) — the user invoked the skill directly. Wrap execution with `EnterPlanMode` / `ExitPlanMode` to present output for approval.
-- **Non-interactive** — the calling prompt includes framing like "plan and execute autonomously", "return a plan", or comes from an orchestrator/subagent dispatch. Skip plan mode tools and output directly.
-
 ## Output
 
 Write the plan to the project's `.claude/plans/` directory using a whimsical two-word `<adjective>-<noun>.md` pattern (e.g., `sleepy-axolotl.md`, `cosmic-teapot.md`).
@@ -32,7 +25,7 @@ Write the plan to the project's `.claude/plans/` directory using a whimsical two
 Don't plan blind. Before writing any tasks, build a working understanding of the relevant parts of the codebase. This isn't optional — a plan written without research will miss conventions, duplicate existing abstractions, and create integration pain.
 
 #### Understand the requirements
-Read the spec or requirements carefully. Identify every functional requirement, constraint, and acceptance criterion. If anything is ambiguous, ask the user before proceeding.
+Read the spec or requirements carefully. Identify every functional requirement, constraint, and acceptance criterion. If an upstream spec or brief exists, read it — you'll reference its codename in the plan's `From:` field.
 
 #### Understand the project
 - Read CLAUDE.md, README, and the project manifest (package.json, pyproject.toml, Cargo.toml, etc.) to understand the stack, conventions, and any project-specific rules.
@@ -43,25 +36,32 @@ Read the spec or requirements carefully. Identify every functional requirement, 
 - Read the actual files where new code will integrate with existing code. Understand the interfaces, data flow, and patterns already in use.
 - Look for existing abstractions that the new code should reuse rather than duplicate.
 
-#### Understand the quality toolchain
-- Find the test directory and read a few representative test files to learn the framework, style, assertion patterns, and level of coverage.
-- Check for test configuration (jest.config, pytest.ini, etc.) and any test utilities or fixtures the project provides.
-- If the project has no tests, note that — it affects the testing strategy in the plan.
-- **Discover all quality checks the project uses beyond tests.** Look for linter configs (`.eslintrc`, `ruff.toml`, `.flake8`, `.golangci.yml`), formatters (`prettier`, `black`, `rustfmt`), type checkers (`tsconfig.json` strict mode, `mypy.ini`, `pyright`), and any other static analysis tools. Check the project manifest for lint/format scripts (e.g., `"lint": "eslint ."` in package.json, or a `[tool.ruff]` section in pyproject.toml). Also check for pre-commit hooks (`.pre-commit-config.yaml`, `.husky/`) or CI config (`.github/workflows/`) that reveal which checks run on every push.
-- Record what you find — the exact commands to run each check — because verification steps in the plan need to use them.
+#### Discover the quality toolchain
+- Find the test directory and read a few representative test files to learn the framework, style, and assertion patterns.
+- Discover all quality checks beyond tests — linters, formatters, type checkers, static analysis. Check project manifests for scripts, config files, pre-commit hooks, and CI workflows.
+- Record the exact commands to run each check — these go into the plan's **Toolchain** field and are referenced by every verification step.
 
-#### Write research notes
-Capture your findings in the **Research Notes** section of the plan document. This gives the implementer the same context you had when you wrote the plan — relevant files, patterns observed, key interfaces, testing conventions. Keep it concise but specific (file paths, function names, patterns by example).
+#### Track gaps
+Note any ambiguities, missing context, or assumptions you had to make. These feed into the next step (Clarify) and into the plan's **Caveats** field.
 
-Also track any **gaps and assumptions** found during research — ambiguous requirements, missing context, or places where you had to make a judgment call. These feed directly into the summary's "Risks / open questions" section so the user can address them before implementation starts.
+### 2. Clarify
 
-### 2. Scope check
+Dispatch a clarifier subagent to find implementation-strategy forks — places where two or more reasonable approaches exist and the choice would change the plan's structure.
+
+1. Spawn a general-purpose subagent with the clarifier prompt (see `agents/clarifier.md`)
+   - Provide: the spec/requirements and the project directory
+2. Review the returned questions. Drop any that are purely stylistic or already resolved by codebase evidence.
+3. Use `AskUserQuestion` to ask the user the remaining questions. Prefer multiple choice — present the options the clarifier identified.
+   - Cap at ~3 questions. This is planning, not an interview.
+4. If the clarifier returns "No ambiguities found," proceed to the next step.
+
+### 3. Scope check
 
 If the spec covers multiple independent subsystems, suggest breaking it into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
-### 3. Write the Plan
+### 4. Write the Plan
 
-Produce the plan following the **## Template** section below.
+Use `EnterPlanMode` to present the plan for user approval before finalizing. Produce the plan following the **## Template** section below.
 
 #### Task granularity
 
@@ -102,16 +102,7 @@ Whatever the approach, always include a verification step — even if it's "run 
 
 #### Verification beyond tests
 
-Tests are only one part of verification. Each work unit's verification step should run **every relevant quality check the project has**, not just the test suite. During research you discovered the project's quality toolchain — now use it. A good verification step for a TypeScript project might look like:
-
-- [ ] Verify: `npm run lint` passes with no new warnings
-- [ ] Verify: `npm run typecheck` (or `npx tsc --noEmit`) passes with no errors
-- [ ] Verify: `npm run format:check` (or `npx prettier --check .`) reports no unformatted files
-- [ ] Verify: `npm test` passes
-
-For a Python project it might be `ruff check .`, `mypy .`, `black --check .`, `pytest`. For Go: `golangci-lint run`, `go vet`, `go test ./...`. Adapt to whatever the project actually uses.
-
-The point is: if the project has a linter, the plan should run it. If it has a formatter, the plan should check formatting. If it has type checking, the plan should verify types. Don't just default to "run tests" when there are other checks that could catch issues earlier. Think of it this way — if the implementer follows your plan and opens a PR, what checks will CI run? The plan's verification steps should catch the same things locally so there are no surprises.
+Each work unit's verification step should run **every check from the Toolchain field**, not just the test suite. The principle: if the implementer follows your plan and opens a PR, what checks will CI run? The plan's verification steps should catch the same things locally so there are no surprises.
 
 #### Key rules
 - **Exact file paths** — always. No "in the appropriate directory."
@@ -121,7 +112,7 @@ The point is: if the project has a linter, the plan should run it. If it has a f
 - **DRY, YAGNI** — don't plan features that aren't in the spec. Don't duplicate logic across tasks.
 - **Frequent commits** — each task ends with a commit. Working software at every checkpoint.
 
-### 4. Review
+### 5. Review
 
 After completing each chunk of the plan, dispatch a reviewer subagent if subagents are available:
 
@@ -130,15 +121,15 @@ After completing each chunk of the plan, dispatch a reviewer subagent if subagen
 2. If issues found: fix them, re-dispatch the reviewer, repeat until approved
 3. If approved: proceed to next chunk
 
-**Chunk boundaries:** Use `## Chunk N: <name>` headings. Each chunk should be under 1000 lines and logically self-contained.
+**Chunking for review:** For large plans, review in chunks of work units (e.g., units 1-3, then 4-6). Each chunk should be logically self-contained and under 1000 lines. The plan document itself uses the template structure — chunks are only a review-process concept.
 
-If subagents aren't available, do a self-review pass checking for: TODOs/placeholders, incomplete steps, missing verification, spec gaps, and files with unclear responsibilities.
+If subagents aren't available, do a self-review pass checking for: TODOs/placeholders, incomplete steps, missing verification, spec gaps, dependency ordering issues, and parallelization opportunities.
 
 If the review loop exceeds 3 iterations on the same chunk, surface it to the user for guidance rather than spinning.
 
-### 5. Save
+### 6. Save
 
-Write the plan to a file per the [output](#output) convention. After saving, tell the user where it landed and give a brief overview:
+Once the user approves, use `ExitPlanMode` and write the plan to a file per the [output](#output) convention. After saving, tell the user where it landed and give a brief overview:
 
 **"Plan saved to `.claude/plans/<codename>.md`."**
 
