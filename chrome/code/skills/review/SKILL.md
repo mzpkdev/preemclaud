@@ -104,6 +104,8 @@ Once all agents report back, merge their findings into a single report. Each age
 
 Merge them by severity across all agents, not by agent. The user cares about "what's most important" not "what the security agent said vs what the bug hunter said." But tag each finding with its source so the user knows the lens.
 
+After merging, re-calibrate severity across the full list. Specialist agents inflate — an architecture agent may call something Critical because it violates a pattern, but if it doesn't introduce a real bug or block shipping, it belongs in Warnings. Apply the shared rubric: Critical = must fix before merging, Warning = meaningful risk but doesn't block, Suggestion = everything else. Demote liberally; a report with 2 real Criticals is more useful than one with 8 inflated ones.
+
 ### Step 5 — Verify claims
 
 Reviewers sometimes hallucinate issues — misread a variable name, flag a bug that's actually handled elsewhere, or reference a line that doesn't exist. Before presenting the report, spawn a verification subagent that checks every finding against the actual code.
