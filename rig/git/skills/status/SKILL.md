@@ -1,6 +1,8 @@
 ---
 name: git:status
 description: "Intelligent diff summary — reads your changes, understands what you were working on, and gives you a plain-English recap grouped by purpose. Use whenever the user says 'what did I change', 'what's on my diff', 'show my changes', 'what was I working on', 'where did I leave off', 'status', 'what's going on in my repo', 'summarize my changes', or wants to understand their uncommitted work before committing or resuming. Also trigger when someone comes back to a branch after a break and needs to get re-oriented."
+user-invocable: true
+disable-model-invocation: true
 ---
 
 # Status
