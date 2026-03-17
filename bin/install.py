@@ -21,3 +21,7 @@ def bootstrap():
 
     print("    ◉ preem, choom.")
     print()
+
+
+if __name__ == "__main__":
+    bootstrap()
