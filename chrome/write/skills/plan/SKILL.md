@@ -20,7 +20,7 @@ Write the plan to the project's `.claude/plans/` directory using a whimsical two
 
 ## Steps
 
-### 1. Research
+### Step 1 — Research
 
 Don't plan blind. Before writing any tasks, build a working understanding of the relevant parts of the codebase. This isn't optional — a plan written without research will miss conventions, duplicate existing abstractions, and create integration pain.
 
@@ -44,7 +44,7 @@ Read the spec or requirements carefully. Identify every functional requirement, 
 #### Track gaps
 Note any ambiguities, missing context, or assumptions you had to make. These feed into the next step (Clarify) and into the plan's **Caveats** field.
 
-### 2. Clarify
+### Step 2 — Clarify
 
 Dispatch a clarifier subagent to find implementation-strategy forks — places where two or more reasonable approaches exist and the choice would change the plan's structure.
 
@@ -55,11 +55,11 @@ Dispatch a clarifier subagent to find implementation-strategy forks — places w
    - Cap at ~3 questions. This is planning, not an interview.
 4. If the clarifier returns "No ambiguities found," proceed to the next step.
 
-### 3. Scope check
+### Step 3 — Scope check
 
 If the spec covers multiple independent subsystems, suggest breaking it into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
-### 4. Write the Plan
+### Step 4 — Write the plan
 
 Use `EnterPlanMode` to present the plan for user approval before finalizing. Produce the plan following the **## Template** section below.
 
@@ -112,7 +112,7 @@ Each work unit's verification step should run **every check from the Toolchain f
 - **DRY, YAGNI** — don't plan features that aren't in the spec. Don't duplicate logic across tasks.
 - **Frequent commits** — each task ends with a commit. Working software at every checkpoint.
 
-### 5. Review
+### Step 5 — Review
 
 After completing each chunk of the plan, dispatch a reviewer subagent if subagents are available:
 
@@ -127,7 +127,7 @@ If subagents aren't available, do a self-review pass checking for: TODOs/placeho
 
 If the review loop exceeds 3 iterations on the same chunk, surface it to the user for guidance rather than spinning.
 
-### 6. Save
+### Step 6 — Save
 
 Once the user approves, use `ExitPlanMode` and write the plan to a file per the [output](#output) convention. After saving, tell the user where it landed and give a brief overview:
 
@@ -153,7 +153,7 @@ Keep plans concise and actionable. Don't over-plan — just enough to say "yes, 
 
 ## Template
 
-Read `TEMPLATE.md` for the plan document format.
+!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
@@ -161,3 +161,10 @@ Read `TEMPLATE.md` for the plan document format.
 > formats, collapse sections into prose, reorder fields, or omit
 > sections that have entries. The only acceptable omission is a
 > section with zero entries.
+
+## Safety
+
+> [!IMPORTANT]
+> This skill creates plan files only. Do not modify source code,
+> tests, or configuration unless the user explicitly asks to start
+> implementing.
