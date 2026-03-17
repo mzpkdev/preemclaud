@@ -122,14 +122,50 @@ The verifier checks each finding: does the referenced file and line exist? Does 
 
 ### Step 6 — Present the unified report
 
+The report uses a **compact-first** design. The initial output is a scannable index — the user sees every finding as a one-row table entry and drills into details on demand via the Explain action.
+
 Present the report following the **Template** section below.
 
 Rules:
-- Omit empty sections
-- Verdict: any Critical -> NEEDS WORK, only Warnings -> CONCERNS, else PASS
-- Tag each finding with its source agent: `[Bugs]`, `[Security]`, `[Architecture]`, `[Consistency]`, `[Quality]`, `[Tests]`
+- Omit empty sections entirely — if there are no Warnings, skip the heading
+- Verdict: any Critical → NEEDS WORK, only Warnings → CONCERNS, else PASS
+- The header is a code block dashboard showing verdict, scope, and counts on one line each
+- The summary goes in a blockquote beneath the dashboard — 2-3 sentences on what the changes do and whether they're ready to ship
+- Critical, Warning, and Suggestion findings go in tables: `| # | Location | Source | Issue/Suggestion |` — one row per finding, short title only, no descriptions or code in the initial report
+- Number findings sequentially across all sections (#1, #2, #3…) so the action menu works unambiguously
+- Tag each finding with its source agent: Bugs, Security, Architecture, Consistency, Quality, Tests
+- Pre-existing items are one-liner bullet lists
+- Questions use blockquote format with bold `?` prefix, italic tag at end: `> **?** Question text. *[Tag]*`
+  - Tags categorize the question: *[Intent]*, *[Scope]*, *[Coverage]*, *[Design]*, *[Risk]* — pick whichever fits
 - Deduplicate — if two agents flag the same thing, keep the more detailed one and note both perspectives
-- Keep summary to a genuine bottom line
+
+### Step 7 — Handle user actions
+
+The report ends with an action menu. When the user responds:
+
+**Explain** — When the user asks to explain findings (e.g., "explain 1 4 7" or "e 1"), expand each requested finding with:
+
+1. **A bold title line**: `**#N · Title** [Source]`
+2. **A description**: What's wrong, why it matters, 2-3 sentences
+3. **A Rust-style code block** showing the offending code with line numbers, caret pointers (`^^^^^`) highlighting the exact problem, and a fix:
+
+```
+  --> file:line-range
+   |
+42 |    some_code(vulnerable_input)
+   |              ^^^^^^^^^^^^^^^^ explanation of what's wrong
+   |
+   = fix:
+   |
+42 |    some_code(sanitized_input)
+   |
+```
+
+The carets should underline the specific characters or expression that cause the issue — not the whole line. Omit the fix section if there's no clear single fix (e.g., architectural concerns). Not every finding needs a code block — conceptual issues (e.g., "no authentication") just need a description.
+
+**Dismiss** — When the user dismisses a finding (e.g., "dismiss 3" or "d 3"), acknowledge it and note it's dropped.
+
+**Verify** — When the user asks to verify (e.g., "verify" or "v"), re-run the review on the current diff state.
 
 ## Template
 
@@ -140,8 +176,7 @@ Rules:
 > heading hierarchy, field names, and structure. Do NOT improvise
 > formats, collapse sections into prose, reorder fields, or omit
 > sections that have findings. The only acceptable omission is a
-> section with zero findings. ALWAYS end with the action menu AND
-> follow-up question.
+> section with zero findings. ALWAYS end with the action menu.
 
 ## Safety
 
