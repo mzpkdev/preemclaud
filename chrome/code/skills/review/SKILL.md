@@ -15,16 +15,16 @@ Multi-agent code review. Spawns specialized reviewers in parallel, each focused 
 
 ## Steps
 
-### 1. Determine the diff scope
+### Step 1 — Determine the diff scope
 
 Run the scope script to compute the diff and metadata deterministically:
 
 ```bash
-python3 <path-to-this-skill>/scripts/scope.py
+python3 ${CLAUDE_SKILL_DIR}/scripts/scope.py
 ```
 
-For a PR: `python3 <path>/scripts/scope.py --pr <url-or-number>`
-For a specific ref: `python3 <path>/scripts/scope.py --ref develop`
+For a PR: `python3 ${CLAUDE_SKILL_DIR}/scripts/scope.py --pr <url-or-number>`
+For a specific ref: `python3 ${CLAUDE_SKILL_DIR}/scripts/scope.py --ref develop`
 
 The script outputs JSON with:
 - `mode`: `"branch"`, `"main"`, `"pr"`, or `"ref"`
@@ -36,7 +36,7 @@ The script outputs JSON with:
 
 Combine `diff.branch` + `diff.staged` + `diff.unstaged` as the full diff for agents. Report `sources` in the Scope line of the template. If `large_diff` is true, mention it and ask if the user wants to narrow scope — but don't refuse to review.
 
-### 2. Discover project guidelines
+### Step 2 — Discover project guidelines
 
 Before spawning reviewers, check if the project has guidelines the reviewers should know about. Use Glob to check for guide files matching `.claude/guides/*`.
 
@@ -54,7 +54,7 @@ The project has the following guidelines that are relevant to your review:
 
 If no guides directory exists or it's empty, skip this step — the agents will review against general best practices.
 
-### 3. Spawn specialized reviewers
+### Step 3 — Spawn specialized reviewers
 
 Read each agent file from `agents/` relative to this skill directory and spawn them as subagents in parallel. Each agent gets:
 - The full diff content
@@ -91,7 +91,7 @@ You have full read access to the codebase for context.
 - Skip **consistency** if the diff is only 1-2 lines (not enough to judge pattern adherence)
 - Always run **quality**, **security**, and **bugs** — they apply universally
 
-### 4. Merge findings
+### Step 4 — Merge findings
 
 Once all agents report back, merge their findings into a single report. Each agent produces findings in this structure:
 
@@ -104,7 +104,7 @@ Once all agents report back, merge their findings into a single report. Each age
 
 Merge them by severity across all agents, not by agent. The user cares about "what's most important" not "what the security agent said vs what the bug hunter said." But tag each finding with its source so the user knows the lens.
 
-### 5. Verify claims
+### Step 5 — Verify claims
 
 Reviewers sometimes hallucinate issues — misread a variable name, flag a bug that's actually handled elsewhere, or reference a line that doesn't exist. Before presenting the report, spawn a verification subagent that checks every finding against the actual code.
 
@@ -120,9 +120,9 @@ The verifier checks each finding: does the referenced file and line exist? Does 
 - **uncertain** — keep but add a note that this should be manually verified
 - **pre-existing** — move to the dedicated Pre-existing section as a one-liner, not a full finding
 
-### 6. Present the unified report
+### Step 6 — Present the unified report
 
-Present the report following the **## Template** section below.
+Present the report following the **Template** section below.
 
 Rules:
 - Omit empty sections
@@ -133,7 +133,7 @@ Rules:
 
 ## Template
 
-Read `TEMPLATE.md` for the report format.
+!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
@@ -142,6 +142,12 @@ Read `TEMPLATE.md` for the report format.
 > sections that have findings. The only acceptable omission is a
 > section with zero findings. ALWAYS end with the action menu AND
 > follow-up question.
+
+## Safety
+
+> [!IMPORTANT]
+> This skill is read-only by default. Do not modify, stage, or commit
+> code unless the user explicitly asks for fixes to be applied.
 
 ## Edge cases
 
