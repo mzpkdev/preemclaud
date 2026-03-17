@@ -22,13 +22,13 @@ Write the brief to the project's `.claude/briefs/` directory using a whimsical t
 
 ## Steps
 
-### 1. Understand input
+### Step 1 — Understand input
 
 Read the spec if one is provided. If the input is a conversation or a vague idea instead of a spec, capture the goal, scope, and constraints from what's available. Note what's missing — the clarifying questions in Step 3 will fill those gaps.
 
 If a spec exists, don't just reference it — internalize it. The tasks you produce must carry the spec's context forward so the spec itself becomes optional reading.
 
-### 2. Research
+### Step 2 — Research
 
 Explore the codebase to understand what exists and where new work will land.
 
@@ -39,9 +39,9 @@ Explore the codebase to understand what exists and where new work will land.
 
 This research informs how you decompose — where the natural boundaries are, what already exists, what patterns the implementer should follow. Reference relevant modules and components by name in the tasks, but don't dump implementation details like line numbers, code snippets, or before/after diffs into them.
 
-### 3. Ask clarifying questions
+### Step 3 — Ask clarifying questions
 
-Ask questions that maximize the context in each task. One at a time.
+Use `AskUserQuestion` to ask questions that maximize the context in each task. One at a time.
 
 These aren't questions about *what* to build (that's the spec's job) — they're about *how to break the work down* and *what context to include* so each task stands alone.
 
@@ -54,9 +54,9 @@ Focus on:
 
 Prefer multiple choice when possible. Let the user's answers guide the next question.
 
-### 4. Decompose
+### Step 4 — Decompose
 
-Identify natural boundaries for independent work units. Present the proposed breakdown — task names, one-line descriptions, dependencies, and which can be parallelized — for the user to approve before writing full details.
+Use `EnterPlanMode` to present the proposed breakdown for user approval. Identify natural boundaries for independent work units — task names, one-line descriptions, dependencies, and which can be parallelized.
 
 Good boundaries:
 - Different subsystems or layers
@@ -66,9 +66,9 @@ Good boundaries:
 
 Each task should produce a working, testable increment. If two tasks can't be verified independently, they should probably be one task.
 
-### 5. Write tasks
+### Step 5 — Write tasks
 
-Produce the brief following the **## Template** section below.
+Once the user approves the breakdown, use `ExitPlanMode` and produce the brief following the **## Template** section below.
 
 **Description is the most important section of each task.** It should read like a well-written Jira ticket — narrative context explaining why this task exists, what's being built, and how it fits into the bigger picture. End the description with a **Technical decisions** block listing key design choices and their reasoning (from the spec or conversation — include them, don't just point at the spec).
 
@@ -82,7 +82,7 @@ A developer reading only one task section should have enough to produce an imple
 
 **What does NOT belong in a task:** Fenced code blocks, exact line number references (e.g., "line 42"), before/after diffs, specific function signatures or API call examples, i18n key paths, CSS class names, or any content that prescribes *how* to implement rather than *what* to implement. If the implementer would need to verify your code snippet against the actual codebase anyway, it adds noise without value. Reference components and modules by name; let the implementer read the code.
 
-### 6. Review
+### Step 6 — Review
 
 After writing the brief, dispatch a reviewer subagent:
 
@@ -97,7 +97,7 @@ If subagents aren't available, do a self-review pass. For each task, ask: "If I 
 
 If the review loop exceeds 3 iterations, surface it to the user for guidance rather than spinning.
 
-### 7. Save
+### Step 7 — Save
 
 Write the brief to a file per the [output](#output) convention. After saving, tell the user where it landed and give a brief overview:
 
@@ -129,7 +129,7 @@ The test: if removing a sentence wouldn't change *what* gets built, only *how*, 
 
 ## Template
 
-Read `TEMPLATE.md` for the brief document format.
+!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
@@ -137,3 +137,10 @@ Read `TEMPLATE.md` for the brief document format.
 > formats, collapse sections into prose, reorder fields, or omit
 > sections that have entries. The only acceptable omission is a
 > section with zero entries.
+
+## Safety
+
+> [!IMPORTANT]
+> This skill creates brief files only. Do not modify source code,
+> tests, or configuration unless the user explicitly asks to start
+> implementing.
