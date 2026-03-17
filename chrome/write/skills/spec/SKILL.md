@@ -20,7 +20,7 @@ Write the spec to the project's `.claude/specs/` directory using a whimsical two
 
 ## Steps
 
-### 1. Scope check
+### Step 1 — Scope check
 
 Before anything else, assess the size of what the user is describing.
 
@@ -32,7 +32,7 @@ If the request covers multiple independent subsystems (e.g., "build a platform w
 
 For appropriately-scoped projects, continue to Step 2.
 
-### 2. Research
+### Step 2 — Research
 
 Before asking questions, build context so your questions are informed rather than generic.
 
@@ -43,9 +43,9 @@ Before asking questions, build context so your questions are informed rather tha
 
 This lets you ask questions like "I see you're using SQLAlchemy with Alembic — should the new feature follow that migration pattern?" instead of generic "what database do you use?"
 
-### 3. Ask clarifying questions
+### Step 3 — Ask clarifying questions
 
-Understand the idea through conversation. One question at a time — don't overwhelm.
+Use `AskUserQuestion` to understand the idea through focused dialogue. One question at a time — don't overwhelm.
 
 - Prefer multiple choice when possible (easier to answer, faster to converge)
 - Open-ended is fine for exploratory questions
@@ -54,7 +54,7 @@ Understand the idea through conversation. One question at a time — don't overw
 
 Good questions uncover assumptions the user hasn't thought about yet. "What happens when the webhook endpoint is down?" is more valuable than "What HTTP method should the webhook use?"
 
-### 4. Explore approaches
+### Step 4 — Explore approaches
 
 Once you understand what's being built, propose 2-3 different approaches with tradeoffs. Lead with your recommendation and explain why.
 
@@ -65,9 +65,9 @@ For complex tasks, genuine alternatives help the user make an informed choice. P
 - Where each one shines and where it struggles
 - Your recommendation and reasoning
 
-### 5. Present the Design
+### Step 5 — Present the design
 
-Present the design in sections, scaled to complexity. A few sentences for straightforward parts, more detail for nuanced ones. Ask after each section whether it looks right before moving on.
+Use `EnterPlanMode` to present the design for user approval. Present in sections, scaled to complexity. A few sentences for straightforward parts, more detail for nuanced ones.
 
 Cover as appropriate:
 - Architecture and component breakdown
@@ -89,13 +89,13 @@ Cover as appropriate:
 - Follow established patterns. Don't propose a new architecture when the codebase already has one.
 - Where existing code has problems that affect the work (e.g., a file that's grown unwieldy), include targeted improvements as part of the design — the way a good developer improves code they're working in. Don't propose unrelated refactoring.
 
-### 6. Write the Spec
+### Step 6 — Write the spec
 
-Once the user has approved the design, write it up as a spec document following the **## Template** section below.
+Once the user approves the design, use `ExitPlanMode` and write it up as a spec document following the **## Template** section below.
 
 The **Decision Log** captures every meaningful design decision made during the conversation — what was chosen, why, and what alternatives were considered. This is valuable context for anyone reading the spec later (including the agent that implements the plan).
 
-### 7. Review
+### Step 7 — Review
 
 After writing the spec, dispatch a reviewer subagent:
 
@@ -110,7 +110,7 @@ If subagents aren't available, do a self-review pass checking for: TODOs/placeho
 
 If the review loop exceeds 3 iterations, surface it to the user for guidance rather than spinning.
 
-### 8. Save
+### Step 8 — Save
 
 Write the spec to a file per the [output](#output) convention. After saving, tell the user where it landed:
 
@@ -118,7 +118,7 @@ Write the spec to a file per the [output](#output) convention. After saving, tel
 
 ## Template
 
-Read `TEMPLATE.md` for the spec document format.
+!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
@@ -126,3 +126,10 @@ Read `TEMPLATE.md` for the spec document format.
 > formats, collapse sections into prose, reorder fields, or omit
 > sections that have entries. The only acceptable omission is a
 > section with zero entries.
+
+## Safety
+
+> [!IMPORTANT]
+> This skill creates spec files only. Do not modify source code,
+> tests, or configuration unless the user explicitly asks to start
+> implementing.
