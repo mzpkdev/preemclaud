@@ -11,118 +11,50 @@ disable-model-invocation: true
 
 > `git:commit` — Reading your changes.
 
-## What this skill does
+## Preload
 
-Groups dirty files into logical commits, shows a clear preview with proposed messages, and only commits after the user approves. The goal is to save the user from writing commit messages manually while giving them full control over what goes into each commit.
+### Git state
+!`python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py`
 
-Read `references/safety.md` before doing anything — it has precondition checks and file scanning rules you need to follow.
+## Steps
 
-## Step 1 — Preconditions
+### Step 1 — Handle preconditions and flags
 
-Run the checks from `references/safety.md`:
-- Is this a git repo?
-- Is HEAD detached?
-- Is there an in-progress merge/rebase/bisect?
+Check the git state JSON above:
 
-If any check fails, stop and tell the user what's wrong and how to fix it.
+- `precondition_failures` → stop and tell the user (`not_git_repo`, `detached_head`, `merge_in_progress`, `rebase_in_progress`, `bisect_in_progress`)
+- `clean: true` → "Nothing to commit — working tree clean." Stop.
+- `flagged_count > 0` → show the Flagged Files table (see template)
 
-## Step 2 — Gather dirty files
+Flag types: **secrets** (skip + .gitignore), **large** (skip), **build** (skip + .gitignore), **junk** (skip + .gitignore), **lock** (flag only, don't skip — often intentional). Never skip without telling the user.
 
-Run these in parallel:
-- `git status --porcelain` — all dirty files
-- `git diff --stat` — unstaged change summary
-- `git diff --cached --stat` — staged change summary
+### Step 2 — Group and write messages
 
-If nothing is dirty: "Nothing to commit — working tree clean." Stop here.
+**Detect conventions** from `recent_commits`: if >60% follow a pattern, match it. Otherwise default to `type(scope): message`, imperative, lowercase. Infer type from diff content (feat/fix/refactor/test/docs/chore/ci/style/perf). Infer scope from branch ticket patterns or primary area changed.
 
-Categorize every dirty file from the porcelain output:
-- **Staged**: first column is `A`/`M`/`D`/`R` (user deliberately staged these)
-- **Modified**: second column shows changes (tracked but not yet staged)
-- **Untracked**: line starts with `??`
-- **Deleted**: `D` in status
+**Group files** into logical commits. Signals they belong together: same feature/fix, source + test, tightly coupled files. Signals they're separate: unrelated concerns, different modules, mixed change types.
 
-Important: if the user already staged specific files, those form a pre-set group. Don't re-sort them — the user already made that grouping decision. Group only the remaining dirty files.
+- Pre-staged files (`staged_count > 0` with other dirty files) = commit 1, don't re-sort
+- When in doubt, fewer commits beats many tiny ones
 
-## Step 3 — Safety scan
+### Step 3 — Present the commit plan
 
-Check every candidate file against the patterns in `references/safety.md`. If anything is flagged, present the warnings using the "Flagged Files" table format from `TEMPLATE.md` — file, issue, and suggestion in a clean table, followed by the three options (include / skip / .gitignore).
+Format using the template below, then wait for approval.
 
-Never skip a file without telling the user.
+The template defines aliases (E/M/J/S/D for plan edits, A/D/I for flagged files). Accept aliases and plain English. Globs expand against files in the plan. After any change, re-show the full plan and wait again.
 
-## Step 4 — Read the diffs
+### Step 4 — Execute
 
-For files that passed the safety scan, read the actual changes:
-- Staged files: `git diff --cached -- <file>`
-- Unstaged modified files: `git diff -- <file>`
-- Untracked files: read the file content
-- Deleted files: note the deletion
+Once the user approves ("go", "looks good", "ship it"):
 
-You need the diffs to group intelligently and write accurate messages. For large diffs (>500 lines in a single file), read the stat summary and the first/last 50 lines rather than loading the entire diff.
-
-## Step 5 — Detect repo conventions
-
-Read `references/conventions.md` and follow the detection steps. Run `git log --oneline -20` to learn how this repo writes commits, then match the style.
-
-## Step 6 — Group into commits
-
-Look at all the changes and decide: one logical unit, or several?
-
-**Signals changes belong together:**
-- Same feature or bug fix
-- A source file and its test
-- Tightly coupled files (component + styles, migration + model)
-
-**Signals changes should be separate:**
-- Unrelated concerns (feature work vs config vs docs)
-- Different modules or domains
-- Different types of change (a bug fix mixed with a refactor)
-
-Guidelines:
-- If the user pre-staged files, that's commit 1 — don't second-guess it
-- When in doubt, fewer commits is better than many tiny ones
-- The user can always ask to split further
-
-## Step 7 — Present the commit plan
-
-Present the commit plan following the **## Template** section below.
-
-## Step 8 — Handle adjustments
-
-The user might want to tweak the plan before approving. The template defines single-letter aliases (`E`, `M`, `J`, `S`, `D`) for quick edits, plus `A`, `D`, `I` for flagged files. Accept both the aliases and plain English — the aliases are a shortcut, not a requirement.
-
-When the user uses a glob pattern (like `D *.json`), expand it against the files in the plan and apply to all matches.
-
-After any change, re-show the full updated plan using the same template format and wait for approval again. Keep going until the user says something like "go", "looks good", "approve", "do it", "ship it", or "commit".
-
-## Step 9 — Execute
-
-Once approved:
-
-1. Clear any existing staging so we start clean:
-   ```
-   git restore --staged .
-   ```
-2. For each commit in the plan, in order:
-   ```
-   git add <file1> <file2> ...
-   git commit -m "$(cat <<'EOF'
-   the commit message here
-   EOF
-   )"
-   ```
-3. After all commits, show the result:
-   ```
-   Done — 2 commits created:
-     a1b2c3d feat(auth): add login token validation
-     e4f5g6h docs: update README with auth section
-   ```
-
-If any dirty files weren't part of the plan, mention them:
-"You still have uncommitted changes in: `.eslintrc.json`"
+1. `git restore --staged .`
+2. For each commit: `git add <files> && git commit -m "$(cat <<'EOF'\nthe message\nEOF\n)"`
+3. Show execution report (short hashes + messages)
+4. Mention any remaining dirty files not in the plan
 
 ## Template
 
-Read `TEMPLATE.md` for the commit plan format.
+!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
@@ -132,11 +64,31 @@ Read `TEMPLATE.md` for the commit plan format.
 > section with zero entries. ALWAYS end with the action menu AND
 > follow-up question.
 
+## Safety
+
+> [!IMPORTANT]
+> These rules are non-negotiable. Violating them can cause data loss
+> or expose secrets that are nearly impossible to remove from git history.
+
+**Forbidden operations:**
+- `git push --force` or `--force-with-lease`
+- `git reset --hard`
+- `git clean -fd`
+- `git branch -D`
+- `--no-verify` (skip hooks)
+
+**Flagged file defaults:**
+- **secrets** (.env, *.pem, *.key, content matching API_KEY=/SECRET=/TOKEN=) → skip + .gitignore
+- **large** (>1 MB) → skip
+- **build** (node_modules/, dist/, __pycache__/, etc.) → skip + .gitignore
+- **junk** (.DS_Store, Thumbs.db, *.swp) → skip + .gitignore
+- **lock** (package-lock.json, yarn.lock, etc.) → flag only, don't skip
+
+Never skip a file without telling the user.
+
 ## Edge cases
 
-- **Nothing dirty** → "Nothing to commit." Stop.
-- **Only deletions** → handle normally, `git add` tracks deletions
-- **Binary files** → include in plan, note "(binary)", can't show diff
-- **Renamed files** → show as `R  old → new`
-- **Merge in progress** → precondition check catches this
-- **Very large working tree (>50 files)** → summarize by directory, still require approval
+- **Only deletions** → `git add` tracks them, handle normally
+- **Binary files** → note "(binary)" in plan
+- **Renamed files** → `R  old → new`
+- **50+ files** → summarize by directory per template

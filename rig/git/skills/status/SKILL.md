@@ -9,83 +9,44 @@ description: "Intelligent diff summary — reads your changes, understands what 
 
 > `git:status` — Scanning your changes.
 
-## What this skill does
+## Preload
 
-Reads the working tree and tells the user what they were working on in plain English. The user might be coming back after a weekend, switching between branches, or just wanting a clear picture before committing. The output has two jobs:
+### Git state
+!`python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py`
 
-1. **Recap** — a short narrative at the top that answers "what was I doing here?" by reading the actual diffs and understanding the intent behind the changes, not just listing files.
-2. **Grouped file list** — changes organized by purpose (not alphabetically), with a one-line description of what each file change actually does.
+## Steps
 
-This skill is read-only — it never touches git state.
+### Step 1 — Handle preconditions
 
-Read `references/safety.md` for precondition checks.
+Check the git state JSON above:
 
-## Step 1 — Preconditions
+- `fatal` → stop (`not_git_repo`)
+- `warnings[]` → mention prominently (`detached_head`, `merge_in_progress`, `rebase_in_progress`, `bisect_in_progress`)
+- `clean: true` → "Working tree clean. Last commit: ..." Show stashes if any. Stop.
 
-Quick checks:
-- Is this a git repo? If not, stop.
-- Is HEAD detached? Mention it.
-- Is there an in-progress merge/rebase? Mention it at the top — the user may have forgotten.
-
-## Step 2 — Gather state
-
-Run these in parallel:
-
-- `git status --porcelain` — all dirty files
-- `git diff --stat` — unstaged summary
-- `git diff --cached --stat` — staged summary
-- `git log --oneline -1 --format="%h %s (%cr)"` — last commit + how long ago
-- `git branch --show-current` — current branch name
-- `git stash list` — any stashes (people forget about these)
-- `git rev-list --left-right --count @{upstream}...HEAD 2>/dev/null` — ahead/behind remote (if tracking branch exists)
-
-If nothing is dirty and there are no stashes: "Working tree clean. Last commit: `<hash> <message>` (<time ago>)." Stop here.
-
-## Step 3 — Read the diffs
-
-For each changed file, read the actual diff to understand what changed:
-
-- Staged: `git diff --cached -- <file>`
-- Unstaged: `git diff -- <file>`
-- Untracked: read the file content (first 80 lines if large)
-- Deleted: note what was removed
-
-For very large diffs (>500 lines in a single file), read `git diff --stat` for that file plus the first and last 50 lines of the diff. That's enough to understand intent without flooding context.
-
-## Step 4 — Synthesize the recap
+### Step 2 — Synthesize the recap
 
 This is the heart of the skill. Read all the diffs together and figure out the story:
 
 - What feature or fix was the user working on?
 - How far along does it look? (half-done, mostly complete, just started)
-- Is there anything that looks like it needs attention? (a half-written function, a TODO comment, a test that's been started but not finished)
+- Anything that needs attention? (half-written function, TODO comment, unfinished test)
 
-Write 2-3 sentences that answer "what was I doing and where did I leave off?" This isn't a list of files — it's a narrative that helps the user mentally reload their context. Think of it like a colleague saying "oh right, you were in the middle of..."
+Write 2-3 sentences answering "what was I doing and where did I leave off?" This is a narrative, not a file list — like a colleague saying "oh right, you were in the middle of..."
 
-Use the branch name, commit messages, and the actual code changes to piece together the intent. The branch name often hints at the feature (e.g., `feature/jwt-auth`, `fix/rate-limit-bug`).
+Use the branch name, last commit, and actual diffs to piece together intent.
 
-## Step 5 — Group and present
+### Step 3 — Group and present
 
-Group changed files by purpose — figure out what belongs together based on what the changes actually do, not where the files live. A test file and its source file belong in the same group. A README update and a config change are separate.
+Group changed files by purpose — what belongs together based on what the changes do, not where files live. A test file and its source belong together. A README update and a config change are separate.
 
-Present using the **## Template** section below.
+Each file gets a description of *what* changed — "added retry logic", not "modified".
 
-Each file gets a short description of what actually changed — not "modified" (the user can see that), but what the modification does: "added retry logic", "removed deprecated endpoint", "new test for edge case".
-
-## Edge cases
-
-- **Clean tree** → Show last commit info and stop. If there are stashes, mention them.
-- **Only untracked files** → Still give a recap if possible (read the files to understand what they are).
-- **Binary files** → Note them as "(binary)" — can't summarize content.
-- **Very large working tree (>50 files)** → Summarize by directory, mention total counts. Still write the narrative recap.
-- **Detached HEAD** → Mention it prominently — the user might not realize.
-- **Ahead/behind remote** → Include in the context line so the user knows if they need to push/pull.
-- **Stashes** → List them briefly at the bottom — stale stashes are easy to forget about.
-- **In-progress operation** → Flag at the top (e.g., "You're mid-rebase on main — 2 of 5 commits applied").
+Format using the template below.
 
 ## Template
 
-Read `TEMPLATE.md` for the status output format.
+!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
@@ -93,3 +54,20 @@ Read `TEMPLATE.md` for the status output format.
 > formats, collapse sections into prose, reorder fields, or omit
 > sections that have entries. The only acceptable omission is a
 > section with zero entries.
+
+## Safety
+
+> [!IMPORTANT]
+> This skill is read-only. Never modify git state — no commits,
+> no staging, no stash operations, no branch changes.
+
+## Edge cases
+
+- **Clean tree** → show last commit info. If stashes exist, mention them.
+- **Only untracked files** → still give a recap (read the files to understand them)
+- **Binary files** → note "(binary)"
+- **50+ files** → summarize by directory, still write the narrative recap
+- **Detached HEAD** → mention prominently
+- **Ahead/behind remote** → include in context line
+- **Stashes** → list at the bottom
+- **In-progress operation** → flag before the recap
