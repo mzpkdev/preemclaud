@@ -130,11 +130,10 @@ Rules:
 - Omit empty sections entirely — if there are no Warnings, skip the heading
 - Verdict: any Critical → NEEDS WORK, only Warnings → CONCERNS, else PASS
 - The header is a code block dashboard showing verdict, scope, and counts on one line each
-- The summary goes in a blockquote beneath the dashboard — 2-3 sentences on what the changes do and whether they're ready to ship
-- Critical, Warning, and Suggestion findings go in tables: `| # | Location | Source | Issue/Suggestion |` — one row per finding, short title only, no descriptions or code in the initial report
-- Number findings sequentially across all sections (#1, #2, #3…) so the action menu works unambiguously
+- The summary is plain text beneath the dashboard — 2 sentences with a hard line break between them (two trailing spaces): what the changes do, then whether they're ready to ship
+- Findings (Critical, Warnings, Suggestions, Pre-existing) use the lightweight numbered format: `N  \`file:line\`  Source  Short title` — one line per finding, no descriptions or code in the initial report
+- Number findings sequentially across all sections (#1, #2, #3…) including Pre-existing, so every item is referenceable
 - Tag each finding with its source agent: Bugs, Security, Architecture, Consistency, Quality, Tests
-- Pre-existing items are one-liner bullet lists
 - Questions use blockquote format with bold `?` prefix, italic tag at end: `> **?** Question text. *[Tag]*`
   - Tags categorize the question: *[Intent]*, *[Scope]*, *[Coverage]*, *[Design]*, *[Risk]* — pick whichever fits
 - Deduplicate — if two agents flag the same thing, keep the more detailed one and note both perspectives
@@ -145,8 +144,8 @@ The report ends with an action menu. When the user responds:
 
 **Explain** — When the user asks to explain findings (e.g., "explain 1 4 7" or "e 1"), expand each requested finding with:
 
-1. **A bold title line**: `**#N · Title** [Source]`
-2. **A description**: What's wrong, why it matters, 2-3 sentences
+1. **The compact finding line** as the heading: `N  \`file:line\`  Source  Title`
+2. **A description**: What's wrong, why it matters — 2 sentences with a hard line break between them (two trailing spaces)
 3. **A Rust-style code block** showing the offending code with line numbers, caret pointers (`^^^^^`) highlighting the exact problem, and a fix:
 
 ```

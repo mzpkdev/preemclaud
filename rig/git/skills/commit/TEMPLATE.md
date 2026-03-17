@@ -25,41 +25,29 @@ If the safety scan flagged files, show the warnings section first:
 | `.DS_Store` | macOS system file | skip + `.gitignore` |
 | `model.bin` | Large file (14 MB) — bloats git history permanently | skip |
 
-  **A**dd       include it anyway
-  **D**rop      skip this file
-  **I**gnore    skip + add to .gitignore
+  ──────────────────────────────────────────────────────────────────
+  ▸ [A]dd     ▸ [D]rop     ▸ [I]gnore
 ```
 
 Then the commit plan:
 
 ```
-## Commit Plan
+  3 commits · 5 files · +54 −8
+  ──────────────────────────────────────────────────────────────────
 
-> **3** commits · **5** files · **+54 −8**
-
----
-
-### Commit 1 — `feat(auth): add login token validation`
-
+1  feat(auth): add login token validation
      A   src/auth/validate.ts                +45
      M   src/auth/login.ts                   +12 −3
      M   tests/auth/login.test.ts            +28
 
-### Commit 2 — `docs: update README with auth section`
-
+2  docs: update README with auth section
      M   README.md                           +15
 
-### Commit 3 — `chore: bump version and add dev deps`
-
+3  chore: bump version and add dev deps
      M   pyproject.toml                      +5 −1
 
----
-
-  **E**dit      change a commit message
-  **M**ove      move files between commits
-  **J**oin      combine two commits into one
-  **S**plit     break a commit apart
-  **D**rop      remove files from the plan
+  ──────────────────────────────────────────────────────────────────
+  ▸ [E]dit     ▸ [M]ove     ▸ [J]oin     ▸ [S]plit     ▸ [D]rop
 
 Ready to commit, or anything you'd like to adjust?
 ```
@@ -68,13 +56,16 @@ Ready to commit, or anything you'd like to adjust?
 
 ## Format rules
 
-**Summary line**
-Open with a one-line stat: total commits, total files, net line delta.
-Use bold for the numbers: `> **3** commits · **5** files · **+54 −8**`
+**Dashboard header**
+Open with a code block containing the stats line + separator:
+```
+  3 commits · 5 files · +54 −8
+  ──────────────────────────────────────────────────────────────────
+```
 
-**Commit headers**
-Number them sequentially. Use an em-dash before the message:
-`### Commit 1 — \`type(scope): message\``
+**Commit entries**
+Number them sequentially. The number is the anchor — no heading markup needed:
+`1  type(scope): message`
 
 **File table**
 Each file gets one line inside an indented code-style block:
@@ -96,12 +87,11 @@ Each file gets one line inside an indented code-style block:
 **Safety warnings table**
 Use a three-column table: File, Issue, Suggestion.
 Keep the "Issue" column short — name the category, then show a snippet of why.
-End with the shorthand menu: **A**dd, **D**rop, **I**gnore — bold the first letter
-to show it's the alias.
+End with the separator + `▸ [A]dd     ▸ [D]rop     ▸ [I]gnore` inside a code block.
 
 **Action prompt**
-Show the menu above the closing question. Each line: bold first letter of the
-word (that's the alias), then a short description. The aliases are:
+Show the separator line + one-liner alias row inside a code block above the closing
+question. The aliases are:
 - `E` — edit a commit message
 - `M` — move files between commits
 - `J` — join two commits
@@ -118,8 +108,7 @@ way. After any change, re-show the full updated plan.
 When there are many files, summarize by directory instead of listing each one:
 
 ```
-### Commit 1 — `refactor: reorganize project structure`
-
+1  refactor: reorganize project structure
      src/auth/          4 files    +82 −31
      src/api/           3 files    +45 −12
      tests/             5 files    +120 −40
