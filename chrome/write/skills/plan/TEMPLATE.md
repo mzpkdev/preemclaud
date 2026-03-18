@@ -1,35 +1,36 @@
 # <Plan Title>
 > Codename: **<adjective-noun>** | From: **<spec/brief-codename or "prompt">**
 
-## Objective
-<one sentence — what does this build?>
+  <N> work units · ~<N> files
+  ──────────────────────────────────────────────────────────────────
 
-## Architecture
-<2-3 sentences — omit for plans with 1-2 work units>
+<Summary — what this builds, approach, and architecture. 2-5 sentences scaled to complexity. For simple plans, one sentence suffices. For complex plans with multiple layers or services, expand to cover the key architectural decisions.>
 
-## Notes
-- **Toolchain:** <exact commands to run each check>
-- **Caveats:** <anything non-obvious the executor should watch for>
+<Optional bullet list of caveats — anything non-obvious the executor should watch for. Omit if none.>
 
----
+  ──────────────────────────────────────────────────────────────────
 
-## Work Units
+<Work unit index — one line per unit with dependency arrows and file counts>
 
-### 1. <Name>
+1  <Name>                                      <N> files
+2  <Name>                                ← #1  <N> files
+3  <Name>                            ← #1, #2  <N> files
 
-**Files:**
-- Create: `exact/path/to/file.ext`
-- Modify: `exact/path/to/existing.ext`
+  ──────────────────────────────────────────────────────────────────
 
-- [ ] <step>
-- [ ] <step>
-- [ ] Verify: <how>
+1  <Name>
+     C   <exact/path/to/new-file.ext>
+     M   <exact/path/to/existing-file.ext>
 
-### 2. <Name>
-**Dependencies:** #1, #2 | **Parallel with:** #3
+     [ ] <step>
+     [ ] <step>
 
-**Files:**
-- Modify: `exact/path/to/file.ext`
+     Verify: <exact commands or manual check>
 
-- [ ] <step>
-- [ ] Verify: <how>
+2  <Name>  ← #1
+     M   <exact/path/to/file.ext>
+
+     [ ] <step>
+     [ ] <step>
+
+     Verify: <exact commands or manual check>

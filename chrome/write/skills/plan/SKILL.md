@@ -39,10 +39,10 @@ Read the spec or requirements carefully. Identify every functional requirement, 
 #### Discover the quality toolchain
 - Find the test directory and read a few representative test files to learn the framework, style, and assertion patterns.
 - Discover all quality checks beyond tests — linters, formatters, type checkers, static analysis. Check project manifests for scripts, config files, pre-commit hooks, and CI workflows.
-- Record the exact commands to run each check — these go into the plan's **Toolchain** field and are referenced by every verification step.
+- Record the exact commands to run each check — these are referenced by every work unit's verification step.
 
 #### Track gaps
-Note any ambiguities, missing context, or assumptions you had to make. These feed into the next step (Clarify) and into the plan's **Caveats** field.
+Note any ambiguities, missing context, or assumptions you had to make. These feed into the next step (Clarify) and into the plan's caveats bullet list.
 
 ### Step 2 — Clarify
 
@@ -102,13 +102,15 @@ Whatever the approach, always include a verification step — even if it's "run 
 
 #### Verification beyond tests
 
-Each work unit's verification step should run **every check from the Toolchain field**, not just the test suite. The principle: if the implementer follows your plan and opens a PR, what checks will CI run? The plan's verification steps should catch the same things locally so there are no surprises.
+Each work unit's `Verify:` line should run **every relevant quality check**, not just the test suite. The principle: if the implementer follows your plan and opens a PR, what checks will CI run? The plan's verification steps should catch the same things locally so there are no surprises.
 
 #### Key rules
 - **Exact file paths** — always. No "in the appropriate directory."
 - **Complete code** — if a step involves writing code, include the code. Not "add error handling" but the actual error handling code.
 - **Exact commands with expected output** — so the engineer can verify without guessing.
-- **Checkbox syntax** (`- [ ]`) on every step for progress tracking.
+- **File markers** — `C` for create, `M` for modify, `D` for delete, `R` for rename. Same convention as the git skills.
+- **Indented `[ ]` checkboxes** on every step, aligned with the file list.
+- **Verify line** on every work unit — the exact commands to confirm the unit is done.
 - **DRY, YAGNI** — don't plan features that aren't in the spec. Don't duplicate logic across tasks.
 - **Frequent commits** — each task ends with a commit. Working software at every checkpoint.
 
@@ -157,10 +159,10 @@ Keep plans concise and actionable. Don't over-plan — just enough to say "yes, 
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
-> heading hierarchy, field names, and structure. Do NOT improvise
-> formats, collapse sections into prose, reorder fields, or omit
-> sections that have entries. The only acceptable omission is a
-> section with zero entries.
+> structure: dashboard header, summary, index, and work units with
+> file markers + indented checkboxes + Verify line. Do NOT improvise
+> formats or collapse sections into prose. The only acceptable
+> omission is the caveats bullet list when there are none.
 
 ## Safety
 
