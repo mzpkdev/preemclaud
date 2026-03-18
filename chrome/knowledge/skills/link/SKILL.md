@@ -110,6 +110,7 @@ When the user gives you a link, don't blindly fetch it. Match the URL against th
 - **Patterns:** `*.atlassian.net/browse/*`
 - **Handler:** mcp
 - **Server:** `atlassian`
+- **Instructions:** After fetching the ticket, scan the description, comments, and all fields for URLs matching the routing index. Apply the matching route for each discovered link before responding.
 
 ### slack
 
@@ -165,11 +166,11 @@ When the user gives you a link, don't blindly fetch it. Match the URL against th
 
 - **Patterns:** `*.figma.com/*`
 - **Handler:** subagent
-- **Agent definition:** `agents/figma-reader.md` (relative to this skill directory)
+- **Agent definition:** `${CLAUDE_SKILL_DIR}/agents/figma-reader.md`
 - **URL parsing:** Extract `fileKey` (segment after `/design/`) and `nodeId` (convert `node-id` query param from `1-2` to `1:2` format).
 - **Instructions:**
   1. **Screenshot in main context.** Call `get_screenshot` with the parsed fileKey and nodeId so the main conversation has visual context. Keep the screenshot — don't discard it.
-  2. **Delegate analysis to subagent.** Read `agents/figma-reader.md` and use its content as the agent's system instructions. Spawn via the Agent tool, passing the URL, parsed fileKey/nodeId, and the user's question in the prompt. Note that a screenshot was already captured so the agent can skip taking its own.
+  2. **Delegate analysis to subagent.** Read `${CLAUDE_SKILL_DIR}/agents/figma-reader.md` and use its content as the agent's system instructions. Spawn via the Agent tool, passing the URL, parsed fileKey/nodeId, and the user's question in the prompt. Note that a screenshot was already captured so the agent can skip taking its own.
   3. **Return the agent's summary.** Present the structured XML brief the agent returns. If the user asks follow-up questions, you have the screenshot for visual reference — only re-spawn the agent if deeper analysis is needed.
 
 ### generic
@@ -181,6 +182,7 @@ When the user gives you a link, don't blindly fetch it. Match the URL against th
 ## Rules
 
 - **Match first, act second.** Check the URL against the routing index, then follow the matched route's instructions.
+- **Discovered links get routed too.** Links found inside fetched content (e.g. Figma URLs in a Jira ticket) are subject to the same routing table as user-provided links. Apply the matching route for each before responding.
 - **MCP means check for a matching MCP tool.** Search your available tools for the MCP server name shown in the route. If the server exists, use the appropriate tool from it. If it doesn't exist, tell the user you can't access that service and suggest they set up the MCP server for it (e.g. "I don't have a Datadog MCP connected — want me to help set one up?").
 - **Never raw-fetch authenticated services.** Jira, Confluence, Slack, Datadog, Grafana, Sentry, New Relic, Notion, Linear, Figma, and Bugsnag all sit behind auth walls. WebFetch will return a login page, not content.
 - **GitHub has CLI tools.** Use `gh` for all GitHub URLs. Parse the owner, repo, and resource ID from the URL and use the appropriate `gh` subcommand.
