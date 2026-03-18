@@ -1,38 +1,31 @@
-# [Feature Name] Brief
-> From: **[spec-codename or "prompt"]** | Codename: **[adjective-noun]**
+# <Feature Name> Brief
+> Codename: **<adjective-noun>** | From: **<spec-codename or "prompt">**
 
-**Goal:** [One sentence — what does this feature deliver?]
+  <N> tasks · <N> parallelizable
+  ──────────────────────────────────────────────────────────────────
 
-## Task Overview
+<Summary — what this feature delivers, how it's decomposed, and why. 2-3 sentences.>
 
-| # | Task | Depends on | Parallel |
-|---|------|-----------|----------|
-| 1 | [Name] | — | Yes |
-| 2 | [Name] | 1 | No |
+  ──────────────────────────────────────────────────────────────────
 
----
+1  <Name>                                      ──
+2  <Name>                                ← #1
+3  <Name>                            ← #1, #2  | parallel: #4
 
-## Task 1: [Name]
+  ──────────────────────────────────────────────────────────────────
 
-### Description
+1  <Name>
 
-[Why this task exists. What's being built and how it fits into the bigger picture. Enough background for someone unfamiliar to understand what they're working on and why.]
+<Description — why this task exists, what's being built, how it fits the bigger picture. Enough for someone unfamiliar to understand what they're doing and why.>
 
-**Technical decisions:**
-- [Key design decision and reasoning]
-- [Another decision]
+- <Key technical decision and reasoning>
+- <Another decision>
 
-### Acceptance Criteria
+**Scenario:** <Name>
+- **Given** <precondition>
+- **When** <action>
+- **Then** <expected outcome>
 
-**Scenario:** [Name]
-- **Given** [precondition]
-- **When** [action]
-- **Then** [expected outcome]
+  ✗  <What's explicitly not part of this task>
 
-### Out of Scope
-
-- [What's explicitly not part of this task]
-
-### References
-
-- [Relevant modules/components by name, Figma links with short frame descriptions, API contracts, related tickets — no line numbers or code snippets]
+References: <relevant modules/components by name, links, contracts>

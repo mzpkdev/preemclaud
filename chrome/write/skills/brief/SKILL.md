@@ -70,15 +70,17 @@ Each task should produce a working, testable increment. If two tasks can't be ve
 
 Once the user approves the breakdown, use `ExitPlanMode` and produce the brief following the **## Template** section below.
 
-**Description is the most important section of each task.** It should read like a well-written Jira ticket — narrative context explaining why this task exists, what's being built, and how it fits into the bigger picture. End the description with a **Technical decisions** block listing key design choices and their reasoning (from the spec or conversation — include them, don't just point at the spec).
+**Description is the most important part of each task.** It's the plain text immediately after the numbered entry line — narrative context explaining why this task exists, what's being built, and how it fits into the bigger picture. Follow with technical decision dashes listing key design choices and their reasoning (from the spec or conversation — include them, don't just point at the spec).
 
-**Technical decisions** capture architectural choices — what approach was selected and why, not how to implement it. "Use SocialButton because it matches Google branding guidelines" is a good technical decision. "Use `SocialButton social='google' theme='brand'` which renders a white/gray background" is implementation detail that belongs in a plan, not a task.
+**Technical decisions** are dashes within the description — they capture architectural choices, not implementation detail. "Use SocialButton because it matches Google branding guidelines" is a good decision. "Use `SocialButton social='google' theme='brand'` which renders a white/gray background" belongs in a plan, not a task.
 
-**Acceptance criteria use Given/When/Then scenarios** — not checkbox lists. Each scenario covers a specific user or system behavior. This makes the done-state unambiguous and testable.
+**Acceptance criteria use bold `Scenario:` labels with Given/When/Then** — not checkbox lists. Each scenario covers a specific user or system behavior. This makes the done-state unambiguous and testable.
 
-**Out of Scope** calls out what's explicitly not part of this task, preventing scope creep during implementation.
+**Out of scope** uses `✗` markers to call out what's explicitly not part of this task, preventing scope creep during implementation.
 
-A developer reading only one task section should have enough to produce an implementation plan and start working — without referring back to the spec or asking for background.
+**References** close each task — relevant modules/components by name, links, contracts. One line, no heading.
+
+A developer reading only one task should have enough to produce an implementation plan and start working — without referring back to the spec or asking for background.
 
 **What does NOT belong in a task:** Fenced code blocks, exact line number references (e.g., "line 42"), before/after diffs, specific function signatures or API call examples, i18n key paths, CSS class names, or any content that prescribes *how* to implement rather than *what* to implement. If the implementer would need to verify your code snippet against the actual codebase anyway, it adds noise without value. Reference components and modules by name; let the implementer read the code.
 
@@ -133,9 +135,10 @@ The test: if removing a sentence wouldn't change *what* gets built, only *how*, 
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
-> heading hierarchy, field names, and structure. Do NOT improvise
-> formats, collapse sections into prose, reorder fields, or omit
-> sections that have entries. The only acceptable omission is a
+> structure: dashboard header, summary, compact index, and numbered
+> tasks with description, technical decisions, Given/When/Then
+> scenarios, ✗ scope, and references. Do NOT improvise formats or
+> use heading-heavy layouts. The only acceptable omission is a
 > section with zero entries.
 
 ## Safety
