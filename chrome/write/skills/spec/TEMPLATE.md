@@ -1,30 +1,29 @@
-# [Feature Name] Spec
-> Codename: **[adjective-noun]**
+# <Feature Name> Spec
+> Codename: **<adjective-noun>**
 
-**Goal:** [One sentence — what does this build and why?]
+  <N> decisions · <N> open questions
+  ──────────────────────────────────────────────────────────────────
 
-**Approach:** [2-3 sentences summarizing the chosen approach]
+<Summary — what this builds, why, chosen approach, and key technologies. 2-4 sentences scaled to complexity.>
 
-**Tech Stack:** [Key technologies/libraries involved]
+  ──────────────────────────────────────────────────────────────────
 
-## Decision Log
+1  <Choice>  over <alternatives> — <reasoning>
+2  <Choice>  over <alternatives> — <reasoning>
 
-| Decision | Chosen | Why | Alternatives Considered |
-|----------|--------|-----|------------------------|
-| [What was decided] | [The choice] | [Reasoning] | [What else was considered] |
+  ──────────────────────────────────────────────────────────────────
 
 ## Design
 
-[The design sections, with Mermaid diagrams where they help]
+<The design sections, with Mermaid diagrams where they help>
 
 ## Scope
 
-**In scope:**
-- [What this spec covers]
+  ✓  <What this spec covers>
+  ✓  <What this spec covers>
+  ✗  <What's explicitly deferred>
+  ✗  <What's explicitly deferred>
 
-**Out of scope:**
-- [What's explicitly deferred]
+## Questions
 
-## Open Questions
-
-- [Anything unresolved that might affect implementation]
+> **?** <Anything unresolved that might affect implementation> *[<Tag>]*

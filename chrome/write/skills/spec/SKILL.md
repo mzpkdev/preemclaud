@@ -93,7 +93,7 @@ Cover as appropriate:
 
 Once the user approves the design, use `ExitPlanMode` and write it up as a spec document following the **## Template** section below.
 
-The **Decision Log** captures every meaningful design decision made during the conversation — what was chosen, why, and what alternatives were considered. This is valuable context for anyone reading the spec later (including the agent that implements the plan).
+The **numbered decisions** capture every meaningful design choice made during the conversation — what was chosen, over what alternatives, and why. Each decision is a single numbered line: `N  Choice  over alternatives — reasoning`. This is valuable context for anyone reading the spec later (including the agent that implements the plan).
 
 ### Step 7 — Review
 
@@ -122,9 +122,9 @@ Write the spec to a file per the [output](#output) convention. After saving, tel
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
-> heading hierarchy, field names, and structure. Do NOT improvise
-> formats, collapse sections into prose, reorder fields, or omit
-> sections that have entries. The only acceptable omission is a
+> structure: dashboard header, summary, numbered decisions, Design
+> section, ✓/✗ scope, and tagged questions. Do NOT improvise formats
+> or collapse sections into prose. The only acceptable omission is a
 > section with zero entries.
 
 ## Safety
