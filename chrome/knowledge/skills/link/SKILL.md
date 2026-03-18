@@ -14,36 +14,174 @@ When this skill is invoked, immediately tell the user which skill is running and
 
 ## Steps
 
-When the user gives you a link, don't blindly fetch it. Match the URL against the routing table below, use the right tool, and then respond to whatever the user asked about.
+When the user gives you a link, don't blindly fetch it. Match the URL against the routing index below, follow the instructions for the matched route, and then respond to whatever the user asked about.
 
-### Routing table
+### Routing index
 
-| Pattern | Service | Tool |
-|---|---|---|
-| `github.com/*/pull/*` | GitHub PR | `gh pr view <url>` |
-| `github.com/*/issues/*` | GitHub Issue | `gh issue view <url>` |
-| `github.com/*/blob/*` | GitHub File | `gh api` or raw content URL |
-| `github.com/*/commit/*` | GitHub Commit | `gh api` |
-| `github.com/*/actions/runs/*` | GitHub Actions | `gh run view <id> --repo <owner/repo>` |
-| `github.com/*/discussions/*` | GitHub Discussion | `gh api` |
-| `github.com/*/releases/*` | GitHub Release | `gh release view <tag> --repo <owner/repo>` |
-| `*.atlassian.net/wiki/*` | Confluence | MCP `atlassian` |
-| `*.atlassian.net/browse/*` | Jira | MCP `atlassian` |
-| `*.slack.com/archives/*` | Slack | MCP `slack` |
-| `app.bugsnag.com/*` | Bugsnag | MCP `bugsnag` |
-| `app.datadoghq.com/*` | Datadog | MCP `datadog` |
-| `*.grafana.net/*` | Grafana | MCP `grafana` |
-| `*.sentry.io/*` | Sentry | MCP `sentry` |
-| `one.newrelic.com/*` | New Relic | MCP `newrelic` |
-| `*.notion.so/*`, `*.notion.site/*` | Notion | MCP `notion` |
-| `linear.app/*` | Linear | MCP `linear` |
-| `*.figma.com/*` | Figma | MCP `figma` |
-| Everything else | Generic | WebFetch |
+| Pattern | Route |
+|---|---|
+| `github.com/*/pull/*` | [github-pr](#github-pr) |
+| `github.com/*/issues/*` | [github-issue](#github-issue) |
+| `github.com/*/blob/*` | [github-file](#github-file) |
+| `github.com/*/commit/*` | [github-commit](#github-commit) |
+| `github.com/*/actions/runs/*` | [github-actions](#github-actions) |
+| `github.com/*/discussions/*` | [github-discussion](#github-discussion) |
+| `github.com/*/releases/*` | [github-release](#github-release) |
+| `*.atlassian.net/wiki/*` | [confluence](#confluence) |
+| `*.atlassian.net/browse/*` | [jira](#jira) |
+| `*.slack.com/archives/*` | [slack](#slack) |
+| `app.bugsnag.com/*` | [bugsnag](#bugsnag) |
+| `app.datadoghq.com/*` | [datadog](#datadog) |
+| `*.grafana.net/*` | [grafana](#grafana) |
+| `*.sentry.io/*` | [sentry](#sentry) |
+| `one.newrelic.com/*` | [newrelic](#newrelic) |
+| `*.notion.so/*`, `*.notion.site/*` | [notion](#notion) |
+| `linear.app/*` | [linear](#linear) |
+| `*.figma.com/*` | [figma](#figma) |
+| Everything else | [generic](#generic) |
+
+---
+
+### github-pr
+
+- **Patterns:** `github.com/*/pull/*`
+- **Handler:** cli
+- **Commands:**
+  - `gh pr view <url>` for summary
+  - `gh pr diff <url>` for changes
+  - `gh api repos/{owner}/{repo}/pulls/{number}/comments` for review comments
+- **Instructions:** If the user asks for a review, spawn a `code:review` subagent with the diff as context rather than reviewing inline.
+
+### github-issue
+
+- **Patterns:** `github.com/*/issues/*`
+- **Handler:** cli
+- **Commands:**
+  - `gh issue view <url>` for summary
+  - `gh api repos/{owner}/{repo}/issues/{number}/comments` for comments
+
+### github-file
+
+- **Patterns:** `github.com/*/blob/*`
+- **Handler:** cli
+- **Commands:**
+  - `gh api` to fetch raw file content
+  - Parse the branch/ref and file path from the URL
+- **Instructions:** If the URL contains a line range fragment (`#L10-L25`), show only those lines.
+
+### github-commit
+
+- **Patterns:** `github.com/*/commit/*`
+- **Handler:** cli
+- **Commands:**
+  - `gh api repos/{owner}/{repo}/commits/{sha}` for commit details and diff
+
+### github-actions
+
+- **Patterns:** `github.com/*/actions/runs/*`
+- **Handler:** cli
+- **Commands:**
+  - `gh run view <id> --repo <owner/repo>` for run summary
+  - `gh run view <id> --repo <owner/repo> --log-failed` for failure logs
+- **Instructions:** On failure, show the failed step logs first, then the summary. Don't dump the full log.
+
+### github-discussion
+
+- **Patterns:** `github.com/*/discussions/*`
+- **Handler:** cli
+- **Commands:**
+  - `gh api` using the GraphQL API (`gh api graphql`)
+
+### github-release
+
+- **Patterns:** `github.com/*/releases/*`
+- **Handler:** cli
+- **Commands:**
+  - `gh release view <tag> --repo <owner/repo>`
+
+### confluence
+
+- **Patterns:** `*.atlassian.net/wiki/*`
+- **Handler:** mcp
+- **Server:** `atlassian`
+
+### jira
+
+- **Patterns:** `*.atlassian.net/browse/*`
+- **Handler:** mcp
+- **Server:** `atlassian`
+
+### slack
+
+- **Patterns:** `*.slack.com/archives/*`
+- **Handler:** mcp
+- **Server:** `slack`
+
+### bugsnag
+
+- **Patterns:** `app.bugsnag.com/*`
+- **Handler:** mcp
+- **Server:** `bugsnag`
+- **Tools:** Prefer `mcp__bugsnag__view_error` and `mcp__bugsnag__view_stacktrace`. Avoid `list_*` tools unless the user explicitly asks to browse.
+- **Instructions:** Always show the exception chain before summarizing.
+
+### datadog
+
+- **Patterns:** `app.datadoghq.com/*`
+- **Handler:** mcp
+- **Server:** `datadog`
+
+### grafana
+
+- **Patterns:** `*.grafana.net/*`
+- **Handler:** mcp
+- **Server:** `grafana`
+
+### sentry
+
+- **Patterns:** `*.sentry.io/*`
+- **Handler:** mcp
+- **Server:** `sentry`
+
+### newrelic
+
+- **Patterns:** `one.newrelic.com/*`
+- **Handler:** mcp
+- **Server:** `newrelic`
+
+### notion
+
+- **Patterns:** `*.notion.so/*`, `*.notion.site/*`
+- **Handler:** mcp
+- **Server:** `notion`
+
+### linear
+
+- **Patterns:** `linear.app/*`
+- **Handler:** mcp
+- **Server:** `linear`
+
+### figma
+
+- **Patterns:** `*.figma.com/*`
+- **Handler:** subagent
+- **Agent definition:** `agents/figma-reader.md` (relative to this skill directory)
+- **URL parsing:** Extract `fileKey` (segment after `/design/`) and `nodeId` (convert `node-id` query param from `1-2` to `1:2` format).
+- **Instructions:**
+  1. **Screenshot in main context.** Call `get_screenshot` with the parsed fileKey and nodeId so the main conversation has visual context. Keep the screenshot — don't discard it.
+  2. **Delegate analysis to subagent.** Read `agents/figma-reader.md` and use its content as the agent's system instructions. Spawn via the Agent tool, passing the URL, parsed fileKey/nodeId, and the user's question in the prompt. Note that a screenshot was already captured so the agent can skip taking its own.
+  3. **Return the agent's summary.** Present the structured XML brief the agent returns. If the user asks follow-up questions, you have the screenshot for visual reference — only re-spawn the agent if deeper analysis is needed.
+
+### generic
+
+- **Patterns:** Everything else
+- **Handler:** webfetch
+- **Instructions:** Last resort. Only for public URLs that don't match any pattern above.
 
 ## Rules
 
-- **Match first, act second.** Check the URL against the patterns above before doing anything.
-- **MCP means check for a matching MCP tool.** Search your available tools for the MCP server name shown in the table. If the server exists, use the appropriate tool from it. If it doesn't exist, tell the user you can't access that service and suggest they set up the MCP server for it (e.g. "I don't have a Datadog MCP connected — want me to help set one up?").
+- **Match first, act second.** Check the URL against the routing index, then follow the matched route's instructions.
+- **MCP means check for a matching MCP tool.** Search your available tools for the MCP server name shown in the route. If the server exists, use the appropriate tool from it. If it doesn't exist, tell the user you can't access that service and suggest they set up the MCP server for it (e.g. "I don't have a Datadog MCP connected — want me to help set one up?").
 - **Never raw-fetch authenticated services.** Jira, Confluence, Slack, Datadog, Grafana, Sentry, New Relic, Notion, Linear, Figma, and Bugsnag all sit behind auth walls. WebFetch will return a login page, not content.
 - **GitHub has CLI tools.** Use `gh` for all GitHub URLs. Parse the owner, repo, and resource ID from the URL and use the appropriate `gh` subcommand.
 - **Self-hosted services** (e.g. a company's own Grafana or Sentry instance) won't always match the patterns above. If the user pastes a URL you don't recognize but mentions it's from one of these services, treat it the same way — use MCP if available, otherwise explain you can't access it.
