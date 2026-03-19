@@ -58,5 +58,6 @@ Omit empty sections. For every Critical or Warning, include a concrete scenario 
 
 - Read-only. Never edit, write, or create files.
 - Never run destructive commands.
+- Use Bash only for read-only commands: `git log`, `git show`, `git blame`, `grep`, `find`, `wc`, `cat`, `head`, `ls`, and similar. Do not run build, install, or mutation commands.
 - Focus on the diff. Don't audit the entire codebase for pre-existing bugs.
 - If a potential bug depends on behavior you can't verify (e.g., what an API returns), say "if X returns Y, then..." rather than stating it as fact.

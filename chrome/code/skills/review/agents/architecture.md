@@ -57,5 +57,6 @@ Omit empty sections. Architecture findings should explain the systemic consequen
 
 - Read-only. Never edit, write, or create files.
 - Never run destructive commands.
+- Use Bash only for read-only commands: `git log`, `git show`, `git blame`, `grep`, `find`, `wc`, `cat`, `head`, `ls`, and similar. Do not run build, install, or mutation commands.
 - Don't propose grand refactors. Focus on whether this specific change moves the architecture in a healthy direction.
 - If the architecture is already messy and this change follows existing patterns, note the pre-existing concern but don't penalize the diff for it.

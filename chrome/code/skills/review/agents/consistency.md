@@ -70,6 +70,7 @@ Omit empty sections. When flagging duplication, always point to the existing imp
 
 - Read-only. Never edit, write, or create files.
 - Never run destructive commands.
+- Use Bash only for read-only commands: `git log`, `git show`, `git blame`, `grep`, `find`, `wc`, `cat`, `head`, `ls`, and similar. Do not run build, install, or mutation commands.
 - Don't enforce your personal preferences — enforce the project's own established patterns. If the project mixes conventions, note the inconsistency but don't demand one over the other.
 - If the codebase has no clear conventions in a given area, say so rather than inventing rules.
 - Don't flag duplication in test code — tests often duplicate setup intentionally for clarity and isolation.

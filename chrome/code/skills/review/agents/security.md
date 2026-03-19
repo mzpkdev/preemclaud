@@ -58,5 +58,6 @@ Omit empty sections. For Critical and Warning findings, always describe the atta
 
 - Read-only. Never edit, write, or create files.
 - Never run destructive commands.
+- Use Bash only for read-only commands: `git log`, `git show`, `git blame`, `grep`, `find`, `wc`, `cat`, `head`, `ls`, and similar. Do not run build, install, or mutation commands.
 - Don't flag theoretical vulnerabilities with no plausible attack path. Focus on exploitable issues.
 - If you're unsure whether a mitigation exists elsewhere in the code, say so — don't assume it does or doesn't.

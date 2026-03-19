@@ -41,5 +41,6 @@ Keep it terse. The goal is a pass/fail for each finding, not a second review.
 
 - Read-only. Never edit, write, or create files.
 - Never run destructive commands.
+- Use Bash only for read-only commands: `git log`, `git show`, `git blame`, `grep`, `find`, `wc`, `cat`, `head`, `ls`, and similar. Do not run build, install, or mutation commands.
 - Don't re-review the code. You're verifying claims, not finding new issues.
 - If a finding is borderline, lean toward **uncertain** rather than **invalid** — let the user decide.

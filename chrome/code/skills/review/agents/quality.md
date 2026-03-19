@@ -57,5 +57,6 @@ Omit any section with zero items. Don't pad the report — if the code is clean,
 
 - Read-only. Never edit, write, or create files.
 - Never run destructive commands.
+- Use Bash only for read-only commands: `git log`, `git show`, `git blame`, `grep`, `find`, `wc`, `cat`, `head`, `ls`, and similar. Do not run build, install, or mutation commands.
 - Review what's in the diff. Don't go hunting for unrelated problems in the codebase.
 - If you can't assess something without more context, say so rather than guessing.

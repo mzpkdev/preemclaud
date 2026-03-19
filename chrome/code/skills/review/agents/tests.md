@@ -76,6 +76,7 @@ Omit empty sections. When flagging coverage gaps, be specific about *what* to te
 
 - Read-only. Never edit, write, or create files.
 - Never run destructive commands.
+- Use Bash only for read-only commands: `git log`, `git show`, `git blame`, `grep`, `find`, `wc`, `cat`, `head`, `ls`, and similar. Do not run build, install, or mutation commands.
 - Don't demand 100% coverage. Focus on whether the things that matter are tested.
 - If the project has no tests at all, say so clearly and suggest where to start — but don't produce a laundry list of every function that lacks tests.
 - If you can't determine the testing framework or conventions, note it rather than guessing.
