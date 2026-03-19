@@ -1,5 +1,5 @@
 ---
-description: Think through ideas before building them. Use this skill when the user wants to brainstorm, write a spec, design a feature, plan an approach, or think through something before jumping into code. Trigger on phrases like 'let's think through', 'help me spec this out', 'brainstorm with me', 'what are the gaps', 'let's design', 'before we build', 'I need to think about', 'poke holes in this', '/spec', or any situation where the user wants to reason about what to build rather than start building it. Also trigger when the user describes a vague or ambitious idea and hasn't specified how it should work yet.
+description: "Think through an idea before building it"
 user-invocable: true
 disable-model-invocation: false
 ---

@@ -1,5 +1,5 @@
 ---
-description: "Turn a big feature into standalone work packages for a team. When a user describes a feature with multiple components \u2014 like 'auth + billing + data isolation' or 'websockets + notification UI + email digests' \u2014 and wants to divide, decompose, split, or brief it into tasks so different developers, contractors, or agents can each own a piece, ALWAYS use this skill. Trigger phrases: 'break into tasks', 'decompose into units of work', 'split across people', 'assignable tasks', 'hand off to the team', 'too big for one person', 'turn this spec into tasks', 'parallelize across devs', 'brief the team'. This is work division, not implementation planning \u2014 it answers 'who works on what' rather than 'how do I build this'. /brief."
+description: "Split a feature into assignable work packages"
 user-invocable: true
 disable-model-invocation: false
 ---

@@ -1,5 +1,5 @@
 ---
-description: Create a detailed implementation plan before writing code. Use this skill whenever the user has a spec, requirements, feature request, or multi-step task and wants to plan the approach before jumping into code. Trigger on phrases like 'plan this out', 'write a plan', 'implementation plan', 'break this down into tasks', 'how should we implement', 'let me think through the implementation', '/plan', or any time the user shares requirements/specs and the next step is clearly to figure out how to build it — not to start building it. Also trigger when the user says things like 'I have a spec' or 'here are the requirements' and hasn't asked to start coding yet.
+description: "Plan the implementation before writing code"
 user-invocable: true
 disable-model-invocation: false
 ---

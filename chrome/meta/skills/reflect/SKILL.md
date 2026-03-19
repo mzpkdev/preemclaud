@@ -1,18 +1,5 @@
 ---
-description: >-
-  Structured self-reflection that replaces apologies with root-cause analysis and
-  actionable improvements. ALWAYS use this skill when the user asks Claude to reflect
-  on its own performance, analyze what went wrong in the current session, do a
-  retrospective, debrief, or review how a task was handled. Trigger on: any form of
-  "what went wrong", "what happened", "how could we do better", "what did you learn",
-  "let's reflect", "let's debrief", "retrospective", "/reflect", or user frustration
-  about Claude's approach ("that was a mess", "that took too long", "you kept doing
-  the same thing", "you ignored the plan", "you never ran the linter"). This skill is
-  essential because without it, Claude defaults to apologizing instead of providing
-  structured analysis. Even if the query seems simple enough to answer directly, use
-  this skill — the structured template and enforcement mechanism recommendations are
-  the whole point. Do NOT use for: analyzing someone else's incident report, writing
-  retrospective documents for teams, code review, or general debugging advice.
+description: "Root-cause analysis of what went wrong  //  Trigger on 'what went wrong', 'what happened', 'let's reflect', 'let's debrief', 'retrospective', or user frustration like 'that was a mess', 'you kept doing the same thing'. Do NOT use for incident reports, team retrospectives, code review, or debugging."
 user-invocable: true
 disable-model-invocation: false
 ---

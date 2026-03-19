@@ -1,15 +1,5 @@
 ---
-description: >-
-  Iterative refinement loop that improves any artifact (code, docs, configs,
-  skills, prompts) by repeatedly making changes, running checks, and getting
-  independent subagent review — up to N times until quality criteria are met.
-  ALWAYS use this skill when the user asks to "improve X until Y", "keep
-  refining until", "iterate on this until it's good", "make this better and
-  test it", "polish this", or any variation of improve/refine/iterate paired
-  with quality criteria. Also trigger when the user describes a loop like "try
-  changing it, test, and fix again if needed" or "keep going until it passes".
-  Even a simple "improve this" without explicit criteria should trigger — the
-  skill will help define what "better" means. Trigger on /improve.
+description: "Refine an artifact in a loop until it passes  //  Trigger on 'improve X until Y', 'keep refining until', 'iterate on this until it's good', 'polish this', 'make this better and test it', or any improve/refine/iterate paired with quality criteria. Even a bare 'improve this' should trigger."
 user-invocable: true
 disable-model-invocation: false
 ---

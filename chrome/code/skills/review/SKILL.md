@@ -1,6 +1,6 @@
 ---
 name: code:review
-description: "Multi-focus code review that spawns specialized subagents to review your local diff in parallel. Covers code quality, security, bugs, architecture, test coverage, and pattern adherence. Use this skill whenever the user asks for a code review, wants feedback on their changes, says 'review my diff', 'check my code', 'review this PR', 'what did I miss', or any variation of wanting a second opinion on code changes — even if they don't say the word 'review'. Also trigger when the user says 'look over these changes', 'anything wrong with this', 'sanity check my diff', or 'before I commit'."
+description: "Multi-agent review of your local diff"
 argument-hint: "[--pr <url-or-number> | --ref <branch>]"
 user-invocable: true
 disable-model-invocation: false

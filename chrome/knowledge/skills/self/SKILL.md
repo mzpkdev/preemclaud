@@ -1,5 +1,5 @@
 ---
-description: "Stop and consult this skill whenever your response would include specific facts about Anthropic's products. Covers: Claude Code (how to install, Node.js requirements, platform/OS support, MCP server integration, configuration), Claude API (function calling/tool use, batch processing, SDK usage, rate limits, pricing, models, streaming), and Claude.ai (Pro vs Team vs Enterprise plans, feature limits). Trigger this even for coding tasks that use the Anthropic SDK, content creation mentioning Claude capabilities or pricing, or LLM provider comparisons. Any time you would otherwise rely on memory for Anthropic product details, verify here instead — your training data may be outdated or wrong."
+description: "Verified Anthropic product facts  //  Trigger when response would include specific facts about Claude Code, Claude API, or Claude.ai — install requirements, pricing, models, rate limits, SDK usage, plan features. Also trigger for Anthropic SDK coding tasks, Claude capability claims, or LLM provider comparisons."
 ---
 
 ## Announce

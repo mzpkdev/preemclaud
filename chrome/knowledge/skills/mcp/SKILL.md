@@ -1,5 +1,5 @@
 ---
-description: "Use this skill for connecting external services to Claude Code, managing MCP (Model Context Protocol) servers, or choosing between MCP and CLI tools. ALWAYS trigger when: the user says 'connect', 'hook up', or 'integrate' a service like Jira, Slack, Sentry, Grafana, Notion, Stripe, or any tool into Claude; any mention of 'MCP' including setup, troubleshooting, timeouts, or auth problems; questions like 'is there an MCP for X' or 'MCP vs CLI'; or /mcp references. NEVER trigger for writing application code, building bots, creating deployments, or setting up new coding projects — even if they mention services by name, those are programming tasks."
+description: "Connect services via MCP  //  Trigger when user says 'connect', 'hook up', or 'integrate' a service into Claude; any mention of 'MCP' including setup, troubleshooting, timeouts, auth; questions like 'is there an MCP for X' or 'MCP vs CLI'. NEVER trigger for writing application code, building bots, or creating deployments."
 user-invocable: true
 disable-model-invocation: false
 ---

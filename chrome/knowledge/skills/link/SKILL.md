@@ -1,5 +1,5 @@
 ---
-description: Teaches the AI how to handle URLs and links pasted by the user. Trigger when the user shares a link — GitHub, Jira, Confluence, Slack, Bugsnag, Datadog, Grafana, Sentry, New Relic, Notion, Linear, Figma, or any URL — and expects the AI to read, summarize, or act on its contents. Prevents blind curling of URLs that return login walls or garbage HTML. Always trigger when a message contains a URL, even if the user doesn't explicitly ask you to "open" or "read" it.
+description: "Read URLs without hitting login walls  //  Trigger when user shares any link — GitHub, Jira, Confluence, Slack, Bugsnag, Datadog, Grafana, Sentry, New Relic, Notion, Linear, Figma, or any URL. Always trigger when a message contains a URL, even without explicit ask to open or read it."
 user-invocable: true
 disable-model-invocation: false
 ---

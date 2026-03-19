@@ -1,6 +1,6 @@
 ---
 name: knowledge:teams
-description: "Essential guardrails and API knowledge for Claude Code agent teams. ALWAYS use this skill — before any other — when the user wants to DO anything with agent teams: create a team, build a swarm, spin up agents, use teammates, launch parallel agents, split work across agents, run things in parallel with multiple agents, recover a crashed team, clean up stale teams, or manage a running team (idle teammates, stuck agents, collecting results). Also trigger on: 'TeamCreate', 'TeamDelete', 'SendMessage to teammate', orphaned teams, team cleanup, teammate prompts, delegation blocks. This skill MUST fire before spawning any team — it contains critical safety rules (delegation block, spawn discipline) that prevent runaway agent explosion. Even if you think you know how teams work, consult this skill — it has recovery procedures and cleanup patterns that are not in your training data. Prefer this over knowledge:self for any team ACTION (creating, managing, recovering teams). knowledge:self is for questions ABOUT teams as a concept."
+description: "Guardrails and recipes for agent teams  //  ALWAYS trigger before any team action — create, manage, recover, or clean up agent teams. Trigger on: TeamCreate, TeamDelete, SendMessage to teammate, orphaned teams, delegation blocks, 'spin up agents', 'build a swarm', 'split work across agents'. Must fire before spawning any team — contains safety rules that prevent runaway agent explosion."
 user-invocable: true
 disable-model-invocation: false
 ---
