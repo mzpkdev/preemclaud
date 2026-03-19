@@ -1,7 +1,7 @@
 ---
-description: Create and configure Claude Code hooks — shell commands, HTTP endpoints, LLM prompts, or agent verifiers that run automatically at specific points in Claude Code's lifecycle. Use this skill whenever the user wants to automate something in Claude Code (format code after edits, block dangerous commands, get notifications, inject context, validate tools, audit changes, enforce rules), mentions hooks, the /hooks menu, or asks about hooking into Claude's lifecycle events. Also trigger when users say things like "run X every time Claude edits a file", "block Claude from doing Y", "notify me when Z happens", or "add a check before Claude runs commands".
+description: "Create a lifecycle hook"
 user-invocable: true
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # Create Hooks

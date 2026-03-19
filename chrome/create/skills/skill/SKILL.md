@@ -1,7 +1,7 @@
 ---
-description: Create new skills and iteratively improve them through conversational feedback. Use when users want to create a skill from scratch, turn a workflow into a reusable skill, or improve an existing skill's instructions. Triggers on phrases like "make a skill", "create a skill", "turn this into a skill", "skill for X", or "improve this skill".
+description: "Create or improve a skill"
 user-invocable: true
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # Create Skill

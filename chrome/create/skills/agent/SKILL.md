@@ -1,7 +1,7 @@
 ---
-description: Create and configure Claude Code custom subagents — specialized AI assistants with their own system prompts, tool access, model selection, and permissions that run in isolated context windows. Use this skill whenever the user wants to create a new agent, build a specialized subagent, set up a code reviewer/debugger/researcher agent, or mentions /agents. Also trigger when users say things like "make an agent for X", "I need a subagent that does Y", "create a specialist for Z", "set up an agent to handle...", or "build me an agent". Even if the user doesn't say "agent" explicitly, trigger when they describe wanting a specialized Claude that handles a specific kind of task independently.
+description: "Create a custom subagent"
 user-invocable: true
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # Create Agent

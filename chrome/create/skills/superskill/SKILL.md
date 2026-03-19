@@ -1,7 +1,7 @@
 ---
 description: Advanced skill development with rigorous evaluation infrastructure. Runs parallel subagent test cases with baselines, automated grading, quantitative benchmarking with variance analysis, blind A/B comparison, and description optimization. Only use when the user explicitly asks for superskill, or specifically requests benchmarking, blind comparison, automated grading, or description optimization for a skill.
 user-invocable: true
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # Create Skill
