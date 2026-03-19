@@ -39,7 +39,7 @@ Make two MCP calls simultaneously:
 
 The code blob is ~85% noise. Extract only:
 
-**Code Connect snippets (if present)** — Search for `<CodeConnectSnippet>` blocks. These map Figma components to real code components with props. Deduplicate identical snippets and assign each unique one an ID for referencing in the layout. Many Figma files won't have Code Connect — if none are found, skip this and omit the `<code-connect>` section from the output.
+**Code Connect snippets (if present)** — Search for `<CodeConnectSnippet>` blocks. These map Figma components to real code components with props. Deduplicate identical snippets and assign each unique one an ID for referencing in the layout. Many Figma files won't have Code Connect — if none are found, skip this and omit the `<code-connect>` section from the output. NEVER fabricate Code Connect snippets. The code blob contains component function definitions (e.g. `function Checkbox(...)`) — these are Figma-generated reference code, NOT Code Connect. Only actual `<CodeConnectSnippet>` blocks count.
 
 **Component definitions and conditional logic** — Look for component definitions (function declarations, etc.) and conditional rendering blocks. Conditional blocks reveal which UI sections are toggleable and what prop controls them.
 
@@ -50,6 +50,14 @@ The code blob is ~85% noise. Extract only:
 **Text content** — All visible strings: labels, headings, button text, menu items, placeholder text, data content. These go inline in the layout where they appear.
 
 **Icon names** — Extract icon identifiers from wherever the design encodes them: `data-name` attributes, component instance names, or layer names (e.g. "search-lg", "check-circle", "IconArrowRight"). These go inline in the layout next to the element that uses them.
+
+**Component documentation links** — The MCP response includes a "Component descriptions" section with documentation URLs (e.g. `https://f36.contentful.com/components/button/`) and search tags. Collect every unique component name + docs URL pair. These map Figma components to their design system documentation — distinct from Code Connect which maps to code snippets. Only include entries with valid `https://` documentation URLs. Some components have descriptions (not URLs) in the docs field — capture those as a `description` attribute instead of `docs`.
+
+**Hidden elements** — The `get_metadata` response marks some nodes with `hidden="true"`. These represent alternate states, conditional content, or elements visible in other variants. Scan the metadata XML for every `hidden="true"` attribute. Do NOT silently drop them — include each one in the layout at its correct position with `hidden="true"` and a brief `note` explaining its likely purpose. Missing a hidden element is a bug — they reveal conditional UI that the implementer needs to handle.
+
+**Image assets** — The code blob includes downloadable asset URLs (`https://www.figma.com/api/mcp/asset/...`) for brand logos, product marks, illustrations, and custom images that aren't standard icon library items. For each non-icon image asset, note the element name and that it requires a custom asset. These are distinct from icon library references.
+
+**Named style presets** — The MCP response includes a styles section with named design tokens (e.g. `Paragraph/Normal: Font(...)`, `Shadow/Button: Effect(...)`, `Grey/900: #111B2B`). Use ONLY the preset names that appear in the MCP styles output. NEVER invent preset names — if the MCP says `Paragraph/Normal` and `Caption/Medium`, those are the only typography preset names you may use. If you observe a font style in the code blob that doesn't match any named preset, add it as a flat `<font>` element with its raw values, not as a fabricated `<preset>`.
 
 ### 3. Recurse into complex child nodes
 
@@ -111,6 +119,13 @@ Return a markdown document with a Context section and an XML code block:
   <mapping id="[ref-id]" component="[Name]" snippet="[code]" />
 </code-connect>
 
+[Always include if documentation links were found in the MCP response:]
+<component-library>
+  <component name="[Name]" docs="[URL]" tags="[search tags if present]" />
+  [If a component has a description instead of a docs URL:]
+  <component name="[Name]" description="[text]" tags="[search tags]" />
+</component-library>
+
 <layout w="[width]" h="[height]" id="[node-id]">
   [Hierarchical tree of the design. Each element carries:]
   [- name, w, h, x, y, id attributes from metadata]
@@ -119,6 +134,8 @@ Return a markdown document with a Context section and an XML code block:
   [- Code Connect references via connect="ref-id"]
   [- conditional sections via conditional="propName"]
   [- counts and examples for repeated items via count="N" examples="..."]
+  [- hidden="true" with note="[purpose]" for elements marked hidden in metadata]
+  [- asset="custom" for non-icon image elements (brand logos, illustrations)]
 </layout>
 
 <data-model>
@@ -158,9 +175,19 @@ Return a markdown document with a Context section and an XML code block:
   [Otherwise, flat grouping by category:]
   <spacing [name]="[value]" ... />
   <radius [name]="[value]" ... />
-  <typography family="[font]" [size-name]="[size/line-height]" weights="[list]" />
+  <typography>
+    [Use ONLY preset names from the MCP styles section — never invent names:]
+    <preset name="[Paragraph/Normal]" family="[font]" weight="[weight]" size="[size]" line-height="[lh]" tracking="[tracking]" />
+    [For font styles observed in code but NOT in MCP presets:]
+    <font family="[font]" weight="[weight]" size="[size]" line-height="[lh]" tracking="[tracking]" used-in="[element context]" />
+  </typography>
   <colors [semantic-name]="[hex]" ... />
-  <shadows [name]="[value]" ... />
+  <shadows>
+    [Use named presets when available:]
+    <preset name="[Shadow/Button]" value="[full shadow definition]" />
+    [Fall back to flat attributes if no named presets exist:]
+    [name]="[value]"
+  </shadows>
 </tokens>
 
 </design>
@@ -173,7 +200,7 @@ Use these element types to build the tree:
 
 - `<frame>` — generic container (from Figma frames)
 - `<component>` — a named, reusable Figma component instance
-- `<element>` — a specific named element (logos, dividers, decorative)
+- `<element>` — a specific named element (logos, dividers, decorative). For brand logos and custom images (not icon-library icons), add `asset="custom"` to signal that the implementer needs to source the actual image file.
 - `<button>` — buttons. ALWAYS include `label` with the visible text, even when `connect` is also present. A Code Connect ref tells the dev which component to use; the label tells them what it says. Both are needed.
 - `<icon>` — standalone icons within nav or other containers
 - `<avatar>` — avatar elements
@@ -192,6 +219,7 @@ For repeated patterns (file lists, table rows, segments), show the pattern once 
 - Only call Figma MCP tools. Don't fetch external URLs or scan the filesystem.
 - Never return raw Figma-generated code. Your entire purpose is to compress it.
 - Never fabricate design details. Only report what you observe.
+- Your output is ONLY the markdown document with the XML code block. Do NOT add any prose, summaries, or explanations after the closing ``` of the XML block. The brief IS the output — nothing else.
 - If the Figma MCP server is not available, report that immediately and stop.
 - If the design is very large, focus on the target node. Recurse into at most 3 complex children. Mention any skipped nodes so the caller can request a follow-up pass.
 - Target 4-6K chars total for the brief (the data-model and interactions sections add ~500-800 chars)
@@ -203,3 +231,6 @@ For repeated patterns (file lists, table rows, segments), show the pattern once 
 - Interactions: only include actions/transitions with evidence in the design — no speculation
 - Text content: inline in layout, not a separate section
 - If something is ambiguous in the design, say so rather than guessing
+- `note` attributes: ONLY for context that cannot be expressed any other way. Valid examples: "rotated 180deg", "select-all control", "conditionally shown when editing". Invalid examples (NEVER put these in notes): colors (`#036FE3`), font specs (`Geist SemiBold 20px`), bg/border/shadow values, padding, radius — ALL of these belong in `<states>` and `<tokens>` sections. To show an element's current state, use `state="active"` or `variant="checked"` attributes directly on the element. If a note contains a hex color or a font name, you are doing it wrong — delete that note.
+- Colors: collect ALL unique colors from EVERY recursed child, not just the top-level pass. The `<colors>` section must be complete — missing a color palette (e.g. greens from a space badge) is a bug
+- Font inconsistencies: if sibling elements of the same component type use different font *families* (e.g. one checkbox label in Inter while others use SF Pro Text), flag with `note="font mismatch: uses [font family] instead of [expected family]"`. Only flag font family mismatches — different weights within the same family (e.g. Bold for "Select all" vs Regular for items) are intentional design choices, not bugs.
