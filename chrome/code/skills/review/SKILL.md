@@ -1,9 +1,8 @@
 ---
-name: code:review
 description: "Multi-agent review of your local diff"
-argument-hint: "[--pr <url-or-number> | --ref <branch>]"
 user-invocable: true
 disable-model-invocation: false
+argument-hint: "[--pr <url-or-number> | --ref <branch>]"
 allowed-tools: Read, Grep, Glob, Bash(python3 *), Agent
 model: opus
 ---

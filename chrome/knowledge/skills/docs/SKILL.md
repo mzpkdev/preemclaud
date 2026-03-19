@@ -1,5 +1,4 @@
 ---
-name: knowledge:docs
 description: "Check live docs when you're unsure about an API  //  Trigger when unsure about API signatures, parameters, return types; user asks about a specific version; code contradicts expected API shape; library is obscure or recently released; user says 'check the docs' or 'are you sure?'; question is about internal/org-specific tools. Do NOT trigger for mainstream well-known libraries unless asking about a specific version."
 user-invocable: true
 disable-model-invocation: false

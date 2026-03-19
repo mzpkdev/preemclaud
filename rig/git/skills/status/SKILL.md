@@ -1,5 +1,4 @@
 ---
-name: git:status
 description: "What you were doing, not which files changed"
 user-invocable: true
 disable-model-invocation: true

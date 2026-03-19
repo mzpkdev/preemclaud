@@ -1,5 +1,7 @@
 ---
 description: "Verified Anthropic product facts  //  Trigger when response would include specific facts about Claude Code, Claude API, or Claude.ai — install requirements, pricing, models, rate limits, SDK usage, plan features. Also trigger for Anthropic SDK coding tasks, Claude capability claims, or LLM provider comparisons."
+user-invocable: true
+disable-model-invocation: false
 ---
 
 ## Announce

@@ -1,5 +1,4 @@
 ---
-name: git:deconflict
 description: "Merge or rebase that resolves conflicts for you"
 user-invocable: true
 disable-model-invocation: true

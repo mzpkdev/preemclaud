@@ -1,5 +1,4 @@
 ---
-name: git:commit
 description: "Auto-group changes into logical commits"
 user-invocable: true
 disable-model-invocation: true
