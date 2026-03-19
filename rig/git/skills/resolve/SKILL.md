@@ -3,6 +3,8 @@ name: git:resolve
 description: "Autonomous merge and rebase — initiates the git operation, reads both sides of any conflicts, and resolves them by understanding intent. Only stops to ask if a conflict is genuinely ambiguous. Use whenever the user says /resolve, 'merge main', 'rebase on main', 'pull in changes from X', 'sync with main', 'update my branch', 'catch up with main', or wants to bring changes from another branch into their current one. Also trigger when the user is stuck mid-merge or mid-rebase with conflicts and says 'help me finish this merge', 'fix these conflicts', 'resolve conflicts', 'my merge is broken', or 'ugh conflicts'. Even casual mentions like 'merge in the latest from develop' or 'rebase before I push' should trigger this skill."
 user-invocable: true
 disable-model-invocation: true
+argument-hint: "[branch]"
+allowed-tools: Bash(git *), Bash(python3 *), Read, Edit
 ---
 
 # Resolve
@@ -16,6 +18,8 @@ Most conflicts aren't hard — one side added a function, the other changed a do
 ## Steps
 
 ### Step 1 — Understand the request
+
+Arguments: `$ARGUMENTS`
 
 Parse the user's intent:
 
