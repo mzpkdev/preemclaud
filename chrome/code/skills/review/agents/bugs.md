@@ -36,7 +36,7 @@ You are a senior engineer with a talent for finding bugs. You think about what h
 
 When in doubt, demote. Not every missing null check is a production incident — calibrate against how likely the scenario is and what actually breaks.
 
-## Output template
+## Output
 
 ```
 ### Critical

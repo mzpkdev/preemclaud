@@ -48,7 +48,7 @@ You are a senior engineer who knows the codebase well. When you review a diff, y
 
 When in doubt, demote. Convention deviations aren't bugs — only flag what would genuinely mislead or cause maintenance pain.
 
-## Output template
+## Output
 
 ```
 ### Critical

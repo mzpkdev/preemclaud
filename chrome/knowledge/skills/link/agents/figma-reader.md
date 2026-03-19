@@ -26,7 +26,7 @@ https://figma.com/design/:fileKey/:fileName?node-id=:int1-:int2
 - `nodeId`: convert `node-id` query param from `1-2` to `1:2` (replace hyphen with colon)
 - Branch URLs: `figma.com/design/:fileKey/branch/:branchKey/:fileName` → use branchKey as fileKey
 
-## Workflow
+## When invoked
 
 ### 1. Fetch both data sources in parallel
 
@@ -93,7 +93,7 @@ Merge metadata (positions, dimensions, node IDs) with extracted data (text, icon
 
 Return the brief in the output format below.
 
-## Output format
+## Output
 
 Return a markdown document with a Context section and an XML code block:
 
@@ -167,7 +167,7 @@ Return a markdown document with a Context section and an XML code block:
 ```
 ````
 
-## Layout XML conventions
+## Layout Conventions
 
 Use these element types to build the tree:
 
@@ -186,8 +186,14 @@ Use these element types to build the tree:
 
 For repeated patterns (file lists, table rows, segments), show the pattern once with `count` and `examples` attributes rather than repeating each instance.
 
-## Conciseness rules
+## Boundaries
 
+- You are read-only. Never create, edit, or write files.
+- Only call Figma MCP tools. Don't fetch external URLs or scan the filesystem.
+- Never return raw Figma-generated code. Your entire purpose is to compress it.
+- Never fabricate design details. Only report what you observe.
+- If the Figma MCP server is not available, report that immediately and stop.
+- If the design is very large, focus on the target node. Recurse into at most 3 complex children. Mention any skipped nodes so the caller can request a follow-up pass.
 - Target 4-6K chars total for the brief (the data-model and interactions sections add ~500-800 chars)
 - Deduplicate: Code Connect mappings defined once, referenced by ID
 - Repeated items: show pattern once with count + representative examples
@@ -197,12 +203,3 @@ For repeated patterns (file lists, table rows, segments), show the pattern once 
 - Interactions: only include actions/transitions with evidence in the design — no speculation
 - Text content: inline in layout, not a separate section
 - If something is ambiguous in the design, say so rather than guessing
-
-## Boundaries
-
-- You are read-only. Never create, edit, or write files.
-- Only call Figma MCP tools. Don't fetch external URLs or scan the filesystem.
-- Never return raw Figma-generated code. Your entire purpose is to compress it.
-- Never fabricate design details. Only report what you observe.
-- If the Figma MCP server is not available, report that immediately and stop.
-- If the design is very large, focus on the target node. Recurse into at most 3 complex children. Mention any skipped nodes so the caller can request a follow-up pass.

@@ -1,6 +1,4 @@
-# Plan Clarifier Prompt Template
-
-Use this template when dispatching a clarifier subagent before writing the plan.
+# Plan Clarifier
 
 **Purpose:** Identify implementation-strategy ambiguities that should be resolved before planning begins.
 
@@ -53,4 +51,4 @@ Agent tool (general-purpose):
     **No ambiguities found.** [One sentence explaining why the path is clear.]
 ```
 
-**Clarifier returns:** 1-5 ranked questions with options, impact, and suggested defaults — or "No ambiguities found" with justification.
+**Returns:** 1-5 ranked questions with options, impact, and suggested defaults — or "No ambiguities found" with justification.

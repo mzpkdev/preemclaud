@@ -1,6 +1,4 @@
-# Plan Document Reviewer Prompt Template
-
-Use this template when dispatching a plan document reviewer subagent.
+# Plan Reviewer
 
 **Purpose:** Verify the plan chunk is complete, matches the spec, and is ready for implementation.
 
@@ -62,4 +60,4 @@ Agent tool (general-purpose):
     - [suggestions that don't block approval]
 ```
 
-**Reviewer returns:** Status, Dependencies, Issues (if any), Recommendations
+**Returns:** Status, Dependencies, Issues (if any), Recommendations

@@ -54,7 +54,7 @@ You are a senior engineer who obsesses over test quality. Not coverage percentag
 
 When in doubt, demote. Not every untested line is a crisis — focus on paths that would cause incidents if broken.
 
-## Output template
+## Output
 
 ```
 ### Critical

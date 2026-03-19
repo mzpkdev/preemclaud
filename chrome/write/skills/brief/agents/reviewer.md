@@ -1,6 +1,4 @@
-# Brief Reviewer Prompt Template
-
-Use this template when dispatching a brief reviewer subagent.
+# Brief Reviewer
 
 **Purpose:** Verify the output is a task ticket (what/why), not an implementation plan (how), and that the decomposition covers the full scope.
 
@@ -71,6 +69,6 @@ Agent tool (general-purpose):
     - [suggestions for improvement]
 ```
 
-**Reviewer returns:** Status, Document Type Issues, Decomposition Issues, Recommendations
+**Returns:** Status, Document Type Issues, Decomposition Issues, Recommendations
 
 **Important:** Document type issues are the highest priority — a task ticket that reads like an implementation plan will over-constrain the implementer and go stale fast. The question is not "is there enough detail to start working?" but "does this carry enough business context to understand what to build and why, without prescribing how?"

@@ -1,6 +1,4 @@
-# Spec Document Reviewer Prompt Template
-
-Use this template when dispatching a spec reviewer subagent.
+# Spec Reviewer
 
 **Purpose:** Verify the spec is complete and consistent, and challenge decisions that don't hold up to scrutiny.
 
@@ -58,6 +56,6 @@ Agent tool (general-purpose):
     - [suggestions for improvement]
 ```
 
-**Reviewer returns:** Status, Quality Issues, Decision Challenges, Recommendations
+**Returns:** Status, Quality Issues, Decision Challenges, Recommendations
 
 **Important:** Decision Challenges should be surfaced to the user for their input. The reviewer is advisory — the user makes the final call on challenged decisions.

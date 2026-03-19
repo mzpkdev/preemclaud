@@ -1,10 +1,6 @@
-# Reflection Reviewer Prompt Template
+# Reflection Reviewer
 
-Use this template when dispatching a reviewer subagent to quality-check a reflection.
-
-**Purpose:** Catch apologetic filler, vague root causes, and non-actionable improvements
-before the reflection reaches the user. The whole point of the reflect skill is to
-replace "sorry" with real analysis — the reviewer enforces that.
+**Purpose:** Catch apologetic filler, vague root causes, and non-actionable improvements before the reflection reaches the user.
 
 **Dispatch after:** The reflection draft is written, before presenting to the user.
 
@@ -53,4 +49,4 @@ Agent tool (general-purpose):
     - [Root cause or improvement the reflection should have included]
 ```
 
-**Reviewer returns:** Status (Approved/Revise), Issues, Missing items.
+**Returns:** Status (Approved/Revise), Issues, Missing items.

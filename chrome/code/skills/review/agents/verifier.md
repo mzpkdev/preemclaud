@@ -24,7 +24,7 @@ You receive a compiled review report and the diff that was reviewed. For each fi
 
    Additionally, tag any confirmed or uncertain finding with **pre-existing** if the code it points to was not changed in the diff.
 
-## Output format
+## Output
 
 Return every finding with its verdict:
 
