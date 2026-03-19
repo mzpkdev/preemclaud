@@ -1,38 +1,64 @@
 ---
 name: code:review
 description: "Multi-focus code review that spawns specialized subagents to review your local diff in parallel. Covers code quality, security, bugs, architecture, test coverage, and pattern adherence. Use this skill whenever the user asks for a code review, wants feedback on their changes, says 'review my diff', 'check my code', 'review this PR', 'what did I miss', or any variation of wanting a second opinion on code changes — even if they don't say the word 'review'. Also trigger when the user says 'look over these changes', 'anything wrong with this', 'sanity check my diff', or 'before I commit'."
+argument-hint: "[--pr <url-or-number> | --ref <branch>]"
 user-invocable: true
 disable-model-invocation: false
+allowed-tools: Read, Grep, Glob, Bash(python3 *), Agent
 ---
 
 # Code Review
 
-Multi-agent code review. Spawns specialized reviewers in parallel, each focused on a different dimension of quality. Merges findings into a single prioritized report.
+Multi-agent code review. Spawns specialized reviewers in parallel, each focused on a different dimension of quality. 
+Merges findings into a single prioritized report.
 
 ## Announce
 
 > `code:review` — Spawning review agents on your diff.
 
+## Agent Frontmatter
+
+This skill bundles co-located agent definitions in `${CLAUDE_SKILL_DIR}/agents/`. 
+Each `.md` file uses standard Claude Code agent frontmatter — the same schema as files in `.claude/agents/` — but since they live inside the skill directory, Claude Code does not auto-discover or enforce them. The skill must parse and honor the frontmatter explicitly.
+
+When spawning a co-located agent:
+1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/agents/`
+2. **Parse** the YAML frontmatter (between `---` delimiters) and extract:
+   - `model` → pass to the Agent tool's `model` parameter
+   - `tools` → informational; enforced via `subagent_type` (see below)
+   - `name` → use as the Agent tool's `name` parameter
+   - `description` → use as the Agent tool's `description` parameter
+3. **Extract** the markdown body (everything below the closing `---`) and use it as the agent's system prompt
+4. **Spawn** with `subagent_type: "agents:reviewer"` to restrict available tools to the read-only set (Read, Grep, Glob, Bash), matching the `tools` declared in frontmatter
+
+| Field | Used | Purpose |
+|-------|------|---------|
+| `name` | Agent tool `name` | Identifies the agent in logs and UI |
+| `description` | Agent tool `description` | Short summary of the agent's focus |
+| `tools` | Informational | Documents intended tool access; enforced by `subagent_type` |
+| `model` | Agent tool `model` | Controls which model the agent runs on |
+
 ## Steps
 
 ### Step 1 — Determine the diff scope
 
-Run the scope script to compute the diff and metadata deterministically:
+The scope data is injected automatically below. Parse the JSON and use it for the rest of the review.
 
-```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/scope.py
-```
+<scope>
+!`python3 ${CLAUDE_SKILL_DIR}/scripts/scope.py $ARGUMENTS 2>/dev/null || echo '{"error": "scope script failed"}'`
+</scope>
 
-For a PR: `python3 ${CLAUDE_SKILL_DIR}/scripts/scope.py --pr <url-or-number>`
-For a specific ref: `python3 ${CLAUDE_SKILL_DIR}/scripts/scope.py --ref develop`
-
-The script outputs JSON with:
+The JSON contains:
 - `mode`: `"branch"`, `"main"`, `"pr"`, or `"ref"`
 - `main_branch`, `current_branch`, `merge_base`: git context
 - `files_changed`, `lines_changed`, `large_diff`: scope metrics for the report
 - `sources`: which diff sections have content (`"branch"`, `"staged"`, `"unstaged"`)
 - `diff.branch`, `diff.staged`, `diff.unstaged`: the actual diff content
 - `pr.*`: PR metadata (only in PR mode — `number`, `title`, `url`, `base`, `head`)
+
+If the JSON contains an `"error"` key, tell the user the scope script failed and stop.
+
+If `files_changed` is 0 and all diff sections are empty, tell the user there's nothing to review and stop.
 
 Combine `diff.branch` + `diff.staged` + `diff.unstaged` as the full diff for agents. Report `sources` in the Scope line of the template. If `large_diff` is true, mention it and ask if the user wants to narrow scope — but don't refuse to review.
 
@@ -62,7 +88,7 @@ Read each agent file from `agents/` relative to this skill directory and spawn t
 - Any relevant project guidelines from the step above
 - Access to read the surrounding codebase for context
 
-Spawn all 6 in parallel using the Agent tool:
+Spawn all 6 in parallel following the **Agent Frontmatter** section above to parse each `.md` file and invoke the Agent tool.
 
 | Agent | File | Focus |
 |-------|------|-------|
@@ -73,7 +99,7 @@ Spawn all 6 in parallel using the Agent tool:
 | Quality | `agents/quality.md` | Readability, naming, complexity, SRP |
 | Tests | `agents/tests.md` | Critical path gaps, flaky tests |
 
-For each agent, read its `.md` file and use it as the agent's system instructions. Pass the diff as part of the prompt:
+Pass the diff as part of each agent's prompt:
 
 ```
 Review the following diff. Focus on: [agent's specialty]
@@ -110,7 +136,7 @@ After merging, re-calibrate severity across the full list. Specialist agents inf
 
 Reviewers sometimes hallucinate issues — misread a variable name, flag a bug that's actually handled elsewhere, or reference a line that doesn't exist. Before presenting the report, spawn a verification subagent that checks every finding against the actual code.
 
-Read `agents/verifier.md` and spawn it with:
+Spawn `agents/verifier.md` following the **Agent Frontmatter** section, with:
 - The compiled report (all merged findings)
 - The full diff
 - Access to read the codebase
@@ -163,6 +189,25 @@ The report ends with an action menu. When the user responds:
 ```
 
 The carets should underline the specific characters or expression that cause the issue — not the whole line. Omit the fix section if there's no clear single fix (e.g., architectural concerns). Not every finding needs a code block — conceptual issues (e.g., "no authentication") just need a description.
+
+**Example expansion:**
+
+3  `src/auth.ts:42`  Security  User input passed to SQL query unsanitized
+
+User input from `req.query.id` is interpolated directly into a SQL string,
+enabling SQL injection on the `/users` endpoint.
+
+```
+  --> src/auth.ts:41-43
+   |
+42 |    const user = await db.query(`SELECT * FROM users WHERE id = ${req.query.id}`)
+   |                                                                ^^^^^^^^^^^^^^^ unsanitized user input in SQL template literal
+   |
+   = fix:
+   |
+42 |    const user = await db.query(`SELECT * FROM users WHERE id = $1`, [req.query.id])
+   |
+```
 
 **Dismiss** — When the user dismisses a finding (e.g., "dismiss 3" or "d 3"), acknowledge it and note it's dropped.
 

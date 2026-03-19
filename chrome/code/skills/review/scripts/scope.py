@@ -19,6 +19,8 @@ def run(cmd, check=True):
     """Run a command (list of args), return stripped stdout."""
     r = subprocess.run(cmd, capture_output=True, text=True)
     if check and r.returncode != 0:
+        if r.stderr.strip():
+            print(f"  warn: {' '.join(cmd)}: {r.stderr.strip()}", file=sys.stderr)
         return ""
     return r.stdout.strip()
 
