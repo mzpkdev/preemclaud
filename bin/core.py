@@ -62,7 +62,7 @@ PLUGIN_FLAVOR = {
     "scala": "installing `scala` lsp",
     "java": "installing `java` lsp",
     "sys": "booting `sys`",
-    "jetbrains": "interfacing `jetbrains` deck",
+    "jetbrains-ide": "interfacing `jetbrains-ide` deck",
     "git": "patching `git` firmware",
 }
 

@@ -7,10 +7,10 @@
   },
   "plugins": [
     {
-      "name": "jetbrains",
+      "name": "jetbrains-ide",
       "description": "",
       "version": "0.0.0",
-      "source": "./jetbrains"
+      "source": "./jetbrains-ide"
     },
     {
       "name": "git",
