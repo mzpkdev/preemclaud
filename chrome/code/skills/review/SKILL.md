@@ -5,6 +5,7 @@ argument-hint: "[--pr <url-or-number> | --ref <branch>]"
 user-invocable: true
 disable-model-invocation: false
 allowed-tools: Read, Grep, Glob, Bash(python3 *), Agent
+model: opus
 ---
 
 # Code Review
@@ -15,6 +16,17 @@ Merges findings into a single prioritized report.
 ## Announce
 
 > `code:review` — Spawning review agents on your diff.
+
+## Progress tracking
+
+Create a task at the start of the review and update it at each major milestone to give the user visibility into progress:
+
+1. "Scoping diff..."
+2. "Discovering guidelines..."
+3. "Spawning N reviewers..."
+4. "Merging findings..."
+5. "Verifying claims..."
+6. "Done"
 
 ## Agent Frontmatter
 
@@ -29,13 +41,13 @@ When spawning a co-located agent:
    - `name` → use as the Agent tool's `name` parameter
    - `description` → use as the Agent tool's `description` parameter
 3. **Extract** the markdown body (everything below the closing `---`) and use it as the agent's system prompt
-4. **Spawn** with `subagent_type: "agents:reviewer"` to restrict available tools to the read-only set (Read, Grep, Glob, Bash), matching the `tools` declared in frontmatter
+4. **Spawn** with `subagent_type: "Explore"` to restrict available tools to the read-only set (Read, Grep, Glob, Bash), matching the `tools` declared in frontmatter
 
 | Field | Used | Purpose |
 |-------|------|---------|
 | `name` | Agent tool `name` | Identifies the agent in logs and UI |
 | `description` | Agent tool `description` | Short summary of the agent's focus |
-| `tools` | Informational | Documents intended tool access; enforced by `subagent_type` |
+| `tools` | Informational | Documents intended tool access; enforced by `Explore` subagent type |
 | `model` | Agent tool `model` | Controls which model the agent runs on |
 
 ## Steps
@@ -64,9 +76,10 @@ Combine `diff.branch` + `diff.staged` + `diff.unstaged` as the full diff for age
 
 ### Step 2 — Discover project guidelines
 
-Before spawning reviewers, check if the project has guidelines the reviewers should know about. Use Glob to check for guide files matching `.claude/guides/*`.
+Available guides:
+!`ls .claude/guides/ 2>/dev/null || echo "(none)"`
 
-If guide files exist, read them. For each guide, decide which agents would benefit from it based on the guide's content — a guide about error handling conventions might be relevant to both the bugs and consistency agents, while API design guidelines might matter to architecture. Don't overthink the matching — skim the content, use your judgment, and pass each guide to whichever agents it makes sense for. Some guides might be relevant to all agents.
+If guides are listed above, read each one. For each guide, decide which agents would benefit from it based on the guide's content — a guide about error handling conventions might be relevant to both the bugs and consistency agents, while API design guidelines might matter to architecture. Don't overthink the matching — skim the content, use your judgment, and pass each guide to whichever agents it makes sense for. Some guides might be relevant to all agents.
 
 When passing guides to an agent, include them as additional context in the prompt:
 
@@ -78,7 +91,7 @@ The project has the following guidelines that are relevant to your review:
 </guide>
 ```
 
-If no guides directory exists or it's empty, skip this step — the agents will review against general best practices.
+If `(none)` is shown above, skip this step — the agents will review against general best practices.
 
 ### Step 3 — Spawn specialized reviewers
 
@@ -88,7 +101,7 @@ Read each agent file from `agents/` relative to this skill directory and spawn t
 - Any relevant project guidelines from the step above
 - Access to read the surrounding codebase for context
 
-Spawn all 6 in parallel following the **Agent Frontmatter** section above to parse each `.md` file and invoke the Agent tool.
+Spawn all 7 in parallel following the **Agent Frontmatter** section above to parse each `.md` file and invoke the Agent tool.
 
 | Agent | File | Focus |
 |-------|------|-------|
@@ -98,6 +111,7 @@ Spawn all 6 in parallel following the **Agent Frontmatter** section above to par
 | Consistency | `agents/consistency.md` | Convention adherence, duplication |
 | Quality | `agents/quality.md` | Readability, naming, complexity, SRP |
 | Tests | `agents/tests.md` | Critical path gaps, flaky tests |
+| Coherence | `agents/coherence.md` | Incomplete renames, orphaned types, stale names, structural debris |
 
 Pass the diff as part of each agent's prompt:
 
@@ -115,8 +129,10 @@ You have full read access to the codebase for context.
 **Not every agent applies every time.** Use judgment:
 - Skip **tests** if the project has no test files at all
 - Skip **consistency** if the diff is only 1-2 lines (not enough to judge pattern adherence)
+- Skip **coherence** if the diff is only additive (new files/features, no renames or removals)
 - Always run **quality**, **security**, and **bugs** — they apply universally
 
+<!-- ultrathink -->
 ### Step 4 — Merge findings
 
 Once all agents report back, merge their findings into a single report. Each agent produces findings in this structure:
@@ -125,7 +141,7 @@ Once all agents report back, merge their findings into a single report. Each age
 ### Critical
 ### Warnings
 ### Suggestions
-### Notes
+### Questions
 ```
 
 Merge them by severity across all agents, not by agent. The user cares about "what's most important" not "what the security agent said vs what the bug hunter said." But tag each finding with its source so the user knows the lens.
@@ -140,6 +156,8 @@ Spawn `agents/verifier.md` following the **Agent Frontmatter** section, with:
 - The compiled report (all merged findings)
 - The full diff
 - Access to read the codebase
+
+> **Exception:** Spawn the verifier with `subagent_type: "general-purpose"` instead of `Explore`. It needs LSP access to trace symbols and verify type information. Its prompt already contains strong read-only instructions.
 
 The verifier checks each finding: does the referenced file and line exist? Does the code snippet match what's actually there? Is the claimed issue real? Was the code actually changed in this diff? It returns a verdict for each finding — **confirmed**, **invalid**, or **uncertain** — plus a **pre-existing** flag for issues in code the changeset didn't touch.
 

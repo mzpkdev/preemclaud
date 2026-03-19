@@ -137,6 +137,8 @@ def main():
     parser = argparse.ArgumentParser(description="Scope the diff for code review.")
     parser.add_argument("--pr", metavar="URL_OR_NUMBER", help="Review a PR")
     parser.add_argument("--ref", metavar="BRANCH", help="Diff against a specific branch")
+    parser.add_argument("--max-diff-lines", type=int, default=10000, metavar="N",
+                        help="Truncate diffs that exceed N total lines (default: 10000)")
     args = parser.parse_args()
 
     # Sanity checks
@@ -213,6 +215,20 @@ def main():
     result["files_changed"] = files
     result["lines_changed"] = lines
     result["large_diff"] = large
+
+    # Truncate diffs if total lines exceed the limit
+    diff_keys = [k for k in ("branch", "staged", "unstaged") if result["diff"][k]]
+    total_lines = sum(result["diff"][k].count("\n") + 1 for k in diff_keys) if diff_keys else 0
+    if total_lines > args.max_diff_lines and diff_keys:
+        result["truncated"] = True
+        for k in diff_keys:
+            section_lines = result["diff"][k].count("\n") + 1
+            proportion = section_lines / total_lines
+            allowed = max(1, int(args.max_diff_lines * proportion))
+            lines = result["diff"][k].splitlines()
+            if len(lines) > allowed:
+                result["diff"][k] = "\n".join(lines[:allowed]) + \
+                    f"\n[diff truncated at {allowed} lines — use --ref or file filters to narrow scope]"
 
     print(json.dumps(result, indent=2))
 
