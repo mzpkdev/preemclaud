@@ -12,7 +12,7 @@ Help users connect Claude Code to external tools via MCP servers, manage existin
 
 When this skill is invoked, immediately tell the user which skill is running and what it will do — before any other work begins.
 
-> Daemon `setup:mcp` online. Establishing uplink.
+> Daemon `knowledge:mcp` online. Establishing uplink.
 
 ## Steps
 
