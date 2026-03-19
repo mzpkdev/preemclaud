@@ -34,7 +34,7 @@ PATCH_FLAVOR = {
 MARKETPLACES = {
     "chrome": {
         "path": CLAUDE_DIR / "chrome",
-        "skip": {"ghost"},
+        "skip": set(),
     },
     "lsp": {
         "path": CLAUDE_DIR / "lsp",
@@ -44,12 +44,15 @@ MARKETPLACES = {
         "path": CLAUDE_DIR / "rig",
         "skip": set(),
     },
+    "null": {
+        "path": CLAUDE_DIR / "null",
+        "skip": {"ghost"},
+    },
 }
 
 PLUGIN_FLAVOR = {
     "create": "modding `create`",
     "write": "encoding `write`",
-    "setup": "calibrating `setup`",
     "knowledge": "indexing `knowledge`",
     "code": "compiling `code`",
     "agents": "rezzing `agents`",
@@ -58,6 +61,7 @@ PLUGIN_FLAVOR = {
     "python": "installing `python` lsp",
     "scala": "installing `scala` lsp",
     "java": "installing `java` lsp",
+    "sys": "booting `sys`",
     "jetbrains": "interfacing `jetbrains` deck",
     "git": "patching `git` firmware",
 }
@@ -167,7 +171,7 @@ def ghost_disabled():
     if not SETTINGS.exists():
         return False
     settings = json.loads(SETTINGS.read_text())
-    return settings.get("enabledPlugins", {}).get("ghost@chrome") is False
+    return settings.get("enabledPlugins", {}).get("ghost@null") is False
 
 
 def haunt():
@@ -175,7 +179,7 @@ def haunt():
         return
     if random.randint(1, 5) != 1:
         return
-    install("ghost", "chrome")
+    install("ghost", "null")
 
 
 def cc_version():

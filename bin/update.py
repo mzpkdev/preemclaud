@@ -10,7 +10,7 @@ from core import (
 
 if "--force" in sys.argv:
     install_all()
-    install("ghost", "chrome")
+    install("ghost", "null")
     patch_cc()
 else:
     pull()

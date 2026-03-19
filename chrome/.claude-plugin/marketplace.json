@@ -19,12 +19,6 @@
       "source": "./write"
     },
     {
-      "name": "setup",
-      "description": "",
-      "version": "0.0.0",
-      "source": "./setup"
-    },
-    {
       "name": "knowledge",
       "description": "",
       "version": "0.0.0",
@@ -41,12 +35,6 @@
       "description": "",
       "version": "0.0.0",
       "source": "./agents"
-    },
-    {
-      "name": "ghost",
-      "description": "",
-      "version": "0.0.0",
-      "source": "./ghost"
     },
     {
       "name": "meta",
