@@ -4,7 +4,6 @@ description: "Intelligent diff summary — reads uncommitted changes, infers wha
 user-invocable: true
 disable-model-invocation: true
 allowed-tools: Read, Grep, Glob
-context: fork
 model: claude-sonnet-4-6
 ---
 
