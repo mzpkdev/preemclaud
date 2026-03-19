@@ -176,7 +176,7 @@ Rules:
 - Verdict: any Critical → NEEDS WORK, only Warnings → CONCERNS, else PASS
 - The header is a code block dashboard showing verdict, scope, and counts on one line each
 - The summary is plain text beneath the dashboard — 2 sentences with a hard line break between them (two trailing spaces): what the changes do, then whether they're ready to ship
-- Findings (Critical, Warnings, Suggestions, Pre-existing) use the lightweight numbered format: `N  \`file:line\`  Source  Short title` — one line per finding, no descriptions or code in the initial report
+- Findings use a two-line format per finding: line 1 is `N  \`file:line\`  Source`, line 2 is the title indented with spaces to align under the backtick. No descriptions or code in the initial report — just the short title
 - Number findings sequentially across all sections (#1, #2, #3…) including Pre-existing, so every item is referenceable
 - Tag each finding with its source agent: Bugs, Security, Architecture, Consistency, Quality, Tests
 - Questions use blockquote format with bold `?` prefix, italic tag at end: `> **?** Question text. *[Tag]*`
