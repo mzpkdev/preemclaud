@@ -27,4 +27,4 @@ Write-Host "      > syncing preemclaud"
 git clone --depth 1 $Repo $Target --quiet
 
 Set-Location $Target
-& $PythonCmd bin/install.py
+& $PythonCmd null/sys/scripts/install.py

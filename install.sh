@@ -19,4 +19,4 @@ fi
 echo "      ◇ syncing preemclaud"
 git clone --depth 1 "$REPO" "$TARGET" --quiet
 
-cd "$TARGET" && python3 bin/install.py
+cd "$TARGET" && python3 null/sys/scripts/install.py
