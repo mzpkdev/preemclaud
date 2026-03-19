@@ -89,7 +89,7 @@ I know your commit conventions, I resolve conflicts, and when you come back afte
 | Skill | The run |
 |---|---|
 | `git:commit` | Studies your commit history, matches style, scans for secrets. No cowboy commits. |
-| `git:resolve` | Merge conflicts. Handled. |
+| `git:deconflict` | Merge conflicts. Handled. |
 | `git:status` | Plain English diff summary. What you changed, what you were probably thinking. |
 
 ### MCP

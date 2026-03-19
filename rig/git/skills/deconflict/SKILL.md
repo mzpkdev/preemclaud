@@ -1,17 +1,17 @@
 ---
-name: git:resolve
-description: "Autonomous merge and rebase — initiates the git operation, reads both sides of any conflicts, and resolves them by understanding intent. Only stops to ask if a conflict is genuinely ambiguous. Use whenever the user says /resolve, 'merge main', 'rebase on main', 'pull in changes from X', 'sync with main', 'update my branch', 'catch up with main', or wants to bring changes from another branch into their current one. Also trigger when the user is stuck mid-merge or mid-rebase with conflicts and says 'help me finish this merge', 'fix these conflicts', 'resolve conflicts', 'my merge is broken', or 'ugh conflicts'. Even casual mentions like 'merge in the latest from develop' or 'rebase before I push' should trigger this skill."
+name: git:deconflict
+description: "Autonomous merge and rebase — initiates the git operation, reads both sides of any conflicts, and resolves them by understanding intent. Only stops to ask if a conflict is genuinely ambiguous. Use whenever the user says /deconflict, 'merge main', 'rebase on main', 'pull in changes from X', 'sync with main', 'update my branch', 'catch up with main', or wants to bring changes from another branch into their current one. Also trigger when the user is stuck mid-merge or mid-rebase with conflicts and says 'help me finish this merge', 'fix these conflicts', 'resolve conflicts', 'deconflict', 'my merge is broken', or 'ugh conflicts'. Even casual mentions like 'merge in the latest from develop' or 'rebase before I push' should trigger this skill."
 user-invocable: true
 disable-model-invocation: true
 argument-hint: "[branch]"
-allowed-tools: Bash(git *), Bash(python3 *), Read, Edit
+allowed-tools: Bash(git *), Bash(python3 *), Read, Edit, TaskCreate, TaskUpdate
 ---
 
-# Resolve
+# Deconflict
 
 ## Announce
 
-> `git:resolve` — Reading the situation.
+> `git:deconflict` — Reading the situation.
 
 Most conflicts aren't hard — one side added a function, the other changed a docstring. This skill reads both sides, understands intent from commit messages and diff context, and resolves automatically. It only stops to ask when both sides changed the same logic in incompatible ways.
 
@@ -27,13 +27,16 @@ Parse the user's intent:
 - **Rebase**: "rebase on main", "rebase onto develop"
 - **Resume**: "fix these conflicts", "resolve conflicts", "finish this merge"
 
-If just "resolve" with no branch, check for in-progress operation first. If one exists, resume it. If not, ask which branch.
+If no branch is specified, run `--status` first to check for an in-progress operation. If one exists, resume it. If not, ask which branch.
 
 ### Step 2 — Gather context
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py --context <target>
+python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py --status          # no target — just check state
+python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py --context <target> # full cross-branch context
 ```
+
+Use `--status` when the user didn't specify a branch. Use `--context <target>` when they did.
 
 The script checks preconditions, dirty tree, and gathers cross-branch context. It outputs JSON:
 
@@ -52,7 +55,7 @@ Read the commit messages on both sides — they explain *why* changes were made.
 
 ### Step 3 — Run the operation
 
-For merge: `git merge {target}`
+For merge: `git merge {target}` (let git decide fast-forward vs merge commit)
 For rebase: `git rebase {target}`
 
 If clean (exit 0) → skip to Step 6 (report).
@@ -73,6 +76,7 @@ Returns JSON with parsed conflict hunks:
 For binary files, ask: "Binary file X conflicts — keep ours or theirs?"
 
 ### Step 5 — Resolve
+<!-- ultrathink -->
 
 For each conflict hunk, classify and act:
 
@@ -122,10 +126,7 @@ Present using the template. Format rules for the success report:
 !`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
 
 > [!IMPORTANT]
-> This template is MANDATORY, not a suggestion. Reproduce the exact
-> structure and format. Do NOT improvise formats or collapse sections
-> into prose. Conflict views MUST end with the separator, action
-> menu, and "What would you like to do?"
+> Follow the template exactly — do not improvise the format.
 
 ## Safety
 
@@ -145,7 +146,7 @@ Present using the template. Format rules for the success report:
 
 - **Already up to date** → report and stop
 - **Fast-forward** → let git fast-forward, report cleanly
-- **Rebase with many commits** → show progress: "Resolving commit 3/7..."
+- **Rebase with many commits** → create a task per commit with `TaskCreate`, update status as you resolve each. Show progress: "Resolving commit 3/7..."
 - **User wants to abort** → `git merge --abort` or `git rebase --abort`, confirm
 - **Binary files** → ask ours/theirs, can't parse markers
 - **Auto-resolve was wrong** → `git checkout --conflict=merge -- {file}` restores conflict state

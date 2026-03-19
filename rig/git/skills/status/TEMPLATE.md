@@ -108,7 +108,7 @@ Summarize by directory inside the code block:
 **In-progress operations**
 Flag before the recap (outside code block):
 ```
-⚠ Mid-rebase onto main — 2 of 5 commits applied. Use `git:resolve` to continue.
+⚠ Mid-rebase onto main — 2 of 5 commits applied. Use `git:deconflict` to continue.
 ```
 
 **Clean tree**
