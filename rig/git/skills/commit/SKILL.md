@@ -3,13 +3,21 @@ name: git:commit
 description: "Smart git commit — groups dirty files into logical commits, shows a preview plan with proposed messages, and waits for approval before committing anything. Use whenever the user says /commit, 'commit this', 'commit my changes', 'save my work', 'stage and commit', or wants to commit their changes to git. Also trigger when the user has been working on changes and says 'let's save this', 'wrap this up', or 'done with these changes'."
 user-invocable: true
 disable-model-invocation: true
+argument-hint: "[optional message — omit for auto-grouping]"
+allowed-tools: Bash(git add *), Bash(git commit *), Bash(git restore *), Bash(git status *), Bash(git diff *), Bash(git log *), Bash(git rev-parse *), Bash(git symbolic-ref *), Bash(python3 *)
+hooks:
+  PostToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: "git log -1 --format='%h %s' 2>/dev/null || true"
 ---
 
 # Commit
 
 ## Announce
 
-> `git:commit` — Reading your changes.
+> `git:commit` — Reading changes on `!`git branch --show-current``.
 
 ## Preload
 
@@ -30,7 +38,7 @@ Flag types: **secrets** (skip + .gitignore), **large** (skip), **build** (skip +
 
 ### Step 2 — Group and write messages
 
-**Detect conventions** from `recent_commits`: if >60% follow a pattern, match it. Otherwise default to `type(scope): message`, imperative, lowercase. Infer type from diff content (feat/fix/refactor/test/docs/chore/ci/style/perf). Infer scope from branch ticket patterns or primary area changed.
+**Detect conventions** from `recent_commits`: if >60% follow a pattern, match it. If there are no prior commits (new repo), default to `type(scope): message`, imperative, lowercase. Infer type from diff content (feat/fix/refactor/test/docs/chore/ci/style/perf). Infer scope from branch ticket patterns or primary area changed.
 
 **Group files** into logical commits. Signals they belong together: same feature/fix, source + test, tightly coupled files. Signals they're separate: unrelated concerns, different modules, mixed change types.
 
@@ -88,6 +96,7 @@ Never skip a file without telling the user.
 
 ## Edge cases
 
+- **Staged + modified** → file has unstaged changes beyond what's staged; note "(has unstaged changes)" in plan so the user knows only the staged version will be committed
 - **Only deletions** → `git add` tracks them, handle normally
 - **Binary files** → note "(binary)" in plan
 - **Renamed files** → `R  old → new`

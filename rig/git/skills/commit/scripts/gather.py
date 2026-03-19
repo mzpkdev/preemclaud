@@ -30,7 +30,7 @@ SECRET_NAMES = {
 SECRET_EXTENSIONS = {".pem", ".key", ".p12", ".pfx", ".keystore"}
 SECRET_CONTENT_RE = re.compile(
     r"(API_KEY|SECRET|TOKEN|PRIVATE_KEY|PASSWORD"
-    r"|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY)\s*=\s*\S"
+    r"|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY)\s*[=:]\s*\S"
 )
 JUNK_NAMES = {".DS_Store", "Thumbs.db"}
 JUNK_EXTENSIONS = {".swp", ".swo"}
@@ -54,7 +54,11 @@ def run(cmd):
     git status --porcelain where column 0 can be a space.
     """
     r = subprocess.run(cmd, capture_output=True, text=True)
-    return r.stdout.rstrip() if r.returncode == 0 else ""
+    if r.returncode != 0:
+        if r.stderr:
+            print(f"warning: {' '.join(cmd)}: {r.stderr.strip()}", file=sys.stderr)
+        return ""
+    return r.stdout.rstrip()
 
 
 def truncate(text, limit):
@@ -210,15 +214,16 @@ def main():
         if " -> " in path:
             renamed_from, path = path.split(" -> ", 1)
 
-        # Categorize
+        # Categorize — check staged before deleted so staged
+        # deletions (D ) are grouped with other pre-staged files.
         if idx == "?" and wt == "?":
             cat = "untracked"
+        elif idx in "AMDRC" and wt == " ":
+            cat = "staged"
+        elif idx in "AMDRC" and wt != " ":
+            cat = "staged+modified"
         elif wt == "D" or idx == "D":
             cat = "deleted"
-        elif idx in "AMDR" and wt == " ":
-            cat = "staged"
-        elif idx in "AMDR" and wt != " ":
-            cat = "staged+modified"
         else:
             cat = "modified"
 
@@ -243,6 +248,8 @@ def main():
             "diff": diff,
             "flags": scan_safety(path),
         }
+        if cat == "staged+modified":
+            entry["unstaged_diff"] = get_diff(path, staged=False)
         if renamed_from:
             entry["renamed_from"] = renamed_from
         files.append(entry)
