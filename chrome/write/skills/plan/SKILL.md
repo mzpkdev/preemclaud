@@ -1,7 +1,10 @@
 ---
 description: "Plan the implementation before writing code"
+argument-hint: "[spec, feature description, or requirements brief]"
+model: claude-opus-4-6
 user-invocable: true
 disable-model-invocation: false
+allowed-tools: Read, Glob, Grep, Agent, AskUserQuestion, EnterPlanMode, ExitPlanMode, Write
 ---
 
 # Write Plan
@@ -18,11 +21,35 @@ When this skill is invoked, immediately tell the user which skill is running and
 
 Write the plan to the project's `.claude/plans/` directory using a whimsical two-word `<adjective>-<noun>.md` pattern (e.g., `sleepy-axolotl.md`, `cosmic-teapot.md`).
 
+## Agent Frontmatter
+
+This skill bundles co-located agent definitions in `${CLAUDE_SKILL_DIR}/agents/`.
+Each `.md` file uses standard Claude Code agent frontmatter — the same schema as files in `.claude/agents/` — but since they live inside the skill directory, Claude Code does not auto-discover or enforce them. The skill must parse and honor the frontmatter explicitly.
+
+When spawning a co-located agent:
+1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/agents/`
+2. **Parse** the YAML frontmatter (between `---` delimiters) and extract:
+   - `model` → pass to the Agent tool's `model` parameter
+   - `tools` → informational; enforced via `subagent_type` (see below)
+   - `name` → use as the Agent tool's `name` parameter
+   - `description` → use as the Agent tool's `description` parameter
+3. **Extract** the markdown body (everything below the closing `---`) and use it as the agent's system prompt
+4. **Spawn** with `subagent_type: "Explore"` to restrict available tools to the read-only set (Read, Grep, Glob, Bash), matching the `tools` declared in frontmatter
+
+| Field | Used | Purpose |
+|-------|------|---------|
+| `name` | Agent tool `name` | Identifies the agent in logs and UI |
+| `description` | Agent tool `description` | Short summary of the agent's focus |
+| `tools` | Informational | Documents intended tool access; enforced by `Explore` subagent type |
+| `model` | Agent tool `model` | Controls which model the agent runs on |
+
 ## Steps
 
 ### Step 1 — Research
 
 Don't plan blind. Before writing any tasks, build a working understanding of the relevant parts of the codebase. This isn't optional — a plan written without research will miss conventions, duplicate existing abstractions, and create integration pain.
+
+If `$ARGUMENTS` is empty, use `AskUserQuestion` to ask the user what they'd like to plan before proceeding.
 
 #### Understand the requirements
 Read the spec or requirements carefully. Identify every functional requirement, constraint, and acceptance criterion. If an upstream spec or brief exists, read it — you'll reference its codename in the plan's `From:` field.
@@ -39,26 +66,33 @@ Read the spec or requirements carefully. Identify every functional requirement, 
 #### Discover the quality toolchain
 - Find the test directory and read a few representative test files to learn the framework, style, and assertion patterns.
 - Discover all quality checks beyond tests — linters, formatters, type checkers, static analysis. Check project manifests for scripts, config files, pre-commit hooks, and CI workflows.
-- Record the exact commands to run each check — these are referenced by every work unit's verification step.
+- Record the exact commands to run each check — these are referenced by every task's verification step.
 
 #### Track gaps
 Note any ambiguities, missing context, or assumptions you had to make. These feed into the next step (Clarify) and into the plan's caveats bullet list.
 
 ### Step 2 — Clarify
 
-Dispatch a clarifier subagent to find implementation-strategy forks — places where two or more reasonable approaches exist and the choice would change the plan's structure.
+Read `${CLAUDE_SKILL_DIR}/agents/clarifier.md` and spawn following the **Agent Frontmatter** protocol above to find implementation-strategy forks — places where two or more reasonable approaches exist and the choice would change the plan's structure.
 
-1. Spawn a general-purpose subagent with the clarifier prompt (see `agents/clarifier.md`)
-   - Provide: the spec/requirements and the project directory
+1. Spawn with `subagent_type: "Explore"` — the clarifier is read-only
+   - Provide: the spec/requirements, the project directory, and your Step 1 research findings (discovered patterns, conventions, quality toolchain, gaps)
 2. Review the returned questions. Drop any that are purely stylistic or already resolved by codebase evidence.
-3. Use `AskUserQuestion` to ask the user the remaining questions. Prefer multiple choice — present the options the clarifier identified.
-   - Cap at ~3 questions. This is planning, not an interview.
-4. If the clarifier returns "No ambiguities found," proceed to the next step.
+3. **Handle strong defaults**: if a question's `Default:` is well-supported by codebase evidence, adopt it silently and record the decision in the plan's Decisions field — don't ask the user about choices that are already obvious.
+4. Use `AskUserQuestion` to ask the user the remaining questions. Prefer multiple choice — present the options the clarifier identified:
+   ```
+   AskUserQuestion(
+     question: "Where should the cache live?",
+     choices: ["A) In-process memory (simpler, already used in auth module)", "B) Redis (needed if we add worker processes later)"]
+   )
+   ```
+5. If the clarifier returns "No ambiguities found," proceed to the next step.
 
 ### Step 3 — Scope check
 
 If the spec covers multiple independent subsystems, suggest breaking it into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
 
+<!-- ultrathink -->
 ### Step 4 — Write the plan
 
 Use `EnterPlanMode` to present the plan for user approval before finalizing. Produce the plan following the **## Template** section below.
@@ -102,7 +136,7 @@ Whatever the approach, always include a verification step — even if it's "run 
 
 #### Verification beyond tests
 
-Each work unit's `Verify:` line should run **every relevant quality check**, not just the test suite. The principle: if the implementer follows your plan and opens a PR, what checks will CI run? The plan's verification steps should catch the same things locally so there are no surprises.
+Each task's `Verify:` line should run **every relevant quality check**, not just the test suite. The principle: if the implementer follows your plan and opens a PR, what checks will CI run? The plan's verification steps should catch the same things locally so there are no surprises.
 
 #### Key rules
 - **Exact file paths** — always. No "in the appropriate directory."
@@ -110,28 +144,22 @@ Each work unit's `Verify:` line should run **every relevant quality check**, not
 - **Exact commands with expected output** — so the engineer can verify without guessing.
 - **File markers** — `C` for create, `M` for modify, `D` for delete, `R` for rename. Same convention as the git skills.
 - **Indented `[ ]` checkboxes** on every step, aligned with the file list.
-- **Verify line** on every work unit — the exact commands to confirm the unit is done.
+- **Verify line** on every task — the exact commands to confirm the task is done.
 - **DRY, YAGNI** — don't plan features that aren't in the spec. Don't duplicate logic across tasks.
 - **Frequent commits** — each task ends with a commit. Working software at every checkpoint.
 
 ### Step 5 — Review
 
-After completing each chunk of the plan, dispatch a reviewer subagent if subagents are available:
-
-1. Spawn a general-purpose subagent with the reviewer prompt (see `agents/reviewer.md`)
-   - Provide: the chunk content and the path to the spec/requirements
-2. If issues found: fix them, re-dispatch the reviewer, repeat until approved
-3. If approved: proceed to next chunk
-
-**Chunking for review:** For large plans, review in chunks of work units (e.g., units 1-3, then 4-6). Each chunk should be logically self-contained and under 1000 lines. The plan document itself uses the template structure — chunks are only a review-process concept.
-
-If subagents aren't available, do a self-review pass checking for: TODOs/placeholders, incomplete steps, missing verification, spec gaps, dependency ordering issues, and parallelization opportunities.
-
-If the review loop exceeds 3 iterations on the same chunk, surface it to the user for guidance rather than spinning.
+Before saving, do a quick self-review pass:
+- No TODOs, placeholders, or incomplete steps
+- Every task has a Verify line with exact commands
+- Steps include actual code, not vague descriptions
+- Dependency ordering is correct — no circular or implicit dependencies
+- Spec requirements are fully covered, no scope creep
 
 ### Step 6 — Save
 
-Once the user approves, use `ExitPlanMode` and write the plan to a file per the [output](#output) convention. After saving, tell the user where it landed and give a brief overview:
+Once the user approves, use `ExitPlanMode` and write the plan to a file per the [output](#output) convention. Before writing, use `Glob` to list `.claude/plans/*.md` and check that the chosen codename doesn't already exist — pick a different one if it does. After saving, tell the user where it landed and give a brief overview:
 
 **"Plan saved to `.claude/plans/<codename>.md`."**
 
@@ -151,7 +179,7 @@ Then output a summary using this exact template:
 
 This lets the user quickly assess the direction without opening the file. Keep each section punchy — details live in the plan.
 
-Keep plans concise and actionable. Don't over-plan — just enough to say "yes, do that" or to dispatch work units to subagents.
+Keep plans concise and actionable. Don't over-plan — just enough to say "yes, do that" or to dispatch tasks to subagents.
 
 ## Template
 
@@ -159,7 +187,7 @@ Keep plans concise and actionable. Don't over-plan — just enough to say "yes, 
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
-> structure: dashboard header, summary, index, and work units with
+> structure: dashboard header, summary, index, and tasks with
 > file markers + indented checkboxes + Verify line. Do NOT improvise
 > formats or collapse sections into prose. The only acceptable
 > omission is the caveats bullet list when there are none.

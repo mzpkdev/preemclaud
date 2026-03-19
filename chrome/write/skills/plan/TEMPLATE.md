@@ -1,7 +1,7 @@
 # <Plan Title>
 > Codename: **<adjective-noun>** | From: **<spec/brief-codename or "prompt">**
 
-  <N> work units · ~<N> files
+  <N> tasks · ~<N> files
   ──────────────────────────────────────────────────────────────────
 
 <Summary — what this builds, approach, and architecture. 2-5 sentences scaled to complexity. For simple plans, one sentence suffices. For complex plans with multiple layers or services, expand to cover the key architectural decisions.>
@@ -10,7 +10,7 @@
 
   ──────────────────────────────────────────────────────────────────
 
-<Work unit index — one line per unit with dependency arrows and file counts>
+<Task index — one line per unit with dependency arrows and file counts>
 
 1  <Name>                                      <N> files
 2  <Name>                                ← #1  <N> files
