@@ -1,6 +1,6 @@
 ---
 name: git:commit
-description: "Smart git commit — groups dirty files into logical commits, shows a preview plan with proposed messages, and waits for approval before committing anything. Use whenever the user says /commit, 'commit this', 'commit my changes', 'save my work', 'stage and commit', or wants to commit their changes to git. Also trigger when the user has been working on changes and says 'let's save this', 'wrap this up', or 'done with these changes'."
+description: "Auto-group changes into logical commits"
 user-invocable: true
 disable-model-invocation: true
 argument-hint: "[optional message — omit for auto-grouping]"
