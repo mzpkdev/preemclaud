@@ -91,8 +91,8 @@ def main():
 
     # 2. Gather git metadata
     porcelain = run(["git", "status", "--porcelain"])
-    diff_stat = run(["git", "diff", "--stat"])
-    cached_stat = run(["git", "diff", "--cached", "--stat"])
+    numstat = run(["git", "diff", "--numstat"])
+    cached_numstat = run(["git", "diff", "--cached", "--numstat"])
     last_commit = run(["git", "log", "--oneline", "-1", "--format=%h %s (%cr)"])
     branch = run(["git", "branch", "--show-current"])
     stash_list = run(["git", "stash", "list"])
@@ -114,12 +114,13 @@ def main():
         detached_ref = run(["git", "rev-parse", "--short", "HEAD"])
 
     # 3. Early exit if clean
-    if not porcelain and not stash_list:
+    if not porcelain:
         result = {
             "clean": True,
             "branch": branch or f"(detached at {detached_ref})",
             "last_commit": last_commit,
             "remote_tracking": remote_tracking,
+            "stashes": stash_list.splitlines() if stash_list else [],
         }
         if precond.get("warnings"):
             result["warnings"] = precond["warnings"]
@@ -167,8 +168,13 @@ def main():
             diff = read_file(path)
         elif cat == "deleted":
             diff = "(deleted)"
-        elif cat in ("staged", "staged+modified"):
+        elif cat == "staged":
             diff = get_diff(path, staged=True)
+        elif cat == "staged+modified":
+            diff = get_diff(path, staged=True)
+            unstaged_diff = get_diff(path, staged=False)
+            if unstaged_diff:
+                diff += "\n--- unstaged changes ---\n" + unstaged_diff
         else:
             diff = get_diff(path, staged=False)
 
@@ -182,15 +188,14 @@ def main():
             entry["renamed_from"] = renamed_from
         files.append(entry)
 
-    # 5. Compute stats
+    # 5. Compute stats from --numstat (actual line counts, not visual bars)
     total_add = 0
     total_del = 0
-    for line in (diff_stat + "\n" + cached_stat).splitlines():
-        # Lines like: " file.py | 10 ++++----"
-        if "|" in line and ("+" in line or "-" in line):
-            parts = line.split("|")[-1].strip()
-            total_add += parts.count("+")
-            total_del += parts.count("-")
+    for line in (numstat + "\n" + cached_numstat).splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 2 and parts[0] != "-":  # "-" means binary
+            total_add += int(parts[0])
+            total_del += int(parts[1])
 
     # 6. Output
     result = {
