@@ -42,6 +42,9 @@ Return 1-5 questions, ranked by impact on the plan. Each question should state t
    Options: A) ... B) ...
    Impact: [how the plan changes depending on the answer]
    Default: [if the codebase evidence leans one way, say so — or "No clear default"]
+   Risk: [Low | Medium | High — how badly a wrong guess would derail the plan]
+
+**Surface to user:** [comma-separated fork numbers that should not be silently defaulted — at minimum, every fork with no clear default or High risk]
 
 If there are genuinely no forks — every choice is obvious from the codebase — return:
 

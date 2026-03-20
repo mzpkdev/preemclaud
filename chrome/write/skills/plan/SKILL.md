@@ -51,6 +51,9 @@ Don't plan blind. Before writing any tasks, build a working understanding of the
 
 If `$ARGUMENTS` is empty, use `AskUserQuestion` to ask the user what they'd like to plan before proceeding.
 
+#### Fetch external context first
+If the input or `$ARGUMENTS` contains URLs to external services (Jira, Figma, GitHub, Confluence, etc.), invoke the `knowledge:links` skill via the Skill tool before doing anything else. The links skill handles authentication, proper routing (MCP for Jira, CLI for GitHub, subagents for Figma), and — critically — follows embedded links found in the retrieved content. A Jira ticket often links to a Figma design, a Confluence spec, or a GitHub PR. Without following those links, your plan will be based on incomplete context — you'll miss visual specs, implementation details, or acceptance criteria that the ticket author deliberately linked.
+
 #### Understand the requirements
 Read the spec or requirements carefully. Identify every functional requirement, constraint, and acceptance criterion. If an upstream spec or brief exists, read it — you'll reference its codename in the plan's `From:` field.
 
@@ -77,16 +80,19 @@ Read `${CLAUDE_SKILL_DIR}/agents/clarifier.md` and spawn following the **Agent F
 
 1. Spawn with `subagent_type: "Explore"` — the clarifier is read-only
    - Provide: the spec/requirements, the project directory, and your Step 1 research findings (discovered patterns, conventions, quality toolchain, gaps)
-2. Review the returned questions. Drop any that are purely stylistic or already resolved by codebase evidence.
-3. **Handle strong defaults**: if a question's `Default:` is well-supported by codebase evidence, adopt it silently and record the decision in the plan's Decisions field — don't ask the user about choices that are already obvious.
-4. Use `AskUserQuestion` to ask the user the remaining questions. Prefer multiple choice — present the options the clarifier identified:
+2. Review the returned questions. Drop any that are purely stylistic.
+3. **Hard gate — do not override the clarifier's uncertainty.** If a fork's `Default:` says "No clear default" (or equivalent) or its `Risk:` is High, you MUST surface it to the user via `AskUserQuestion`. You cannot close these forks yourself — the clarifier flagged them because the codebase doesn't resolve them, and your interpretation of a mockup, spec, or general knowledge is not a substitute for the user's intent.
+4. **Silent defaults**: For remaining forks where the `Default:` is backed by codebase evidence, adopt silently and record the decision in the plan's Decisions field. The clarifier's `Surface to user:` list tells you which forks it recommends asking about — respect that recommendation.
+5. Use `AskUserQuestion` for everything not dropped or silently adopted. Prefer multiple choice — present the options the clarifier identified:
    ```
    AskUserQuestion(
      question: "Where should the cache live?",
      choices: ["A) In-process memory (simpler, already used in auth module)", "B) Redis (needed if we add worker processes later)"]
    )
    ```
-5. If the clarifier returns "No ambiguities found," proceed to the next step.
+6. If the clarifier returns "No ambiguities found," proceed to the next step.
+
+**What counts as codebase evidence:** a specific file, pattern, or convention you can point to by path. `src/auth/ uses Redis for sessions` is evidence. Interpreting a Figma mockup is not. Appealing to "standard UX" is not. If you can't cite a file path, it's inference — and inference doesn't close forks.
 
 ### Step 3 — Scope check
 
@@ -165,13 +171,7 @@ Use `Glob` to list `.claude/plans/*.md` and check that the chosen codename doesn
 
 #### 6b. Present for approval
 
-Use `EnterPlanMode` to present the plan for user review. If the user requests changes, compose revisions and re-present within Plan Mode.
-
-When the user approves, print the implementation command before exiting:
-
-> **To implement:** `/code:write .claude/plans/<codename>.md`
-
-Then use `ExitPlanMode`.
+Use `EnterPlanMode` to present the plan for user review. If the user requests changes, compose revisions and re-present within Plan Mode. Let Plan Mode run with its native options — do not exit it programmatically.
 
 #### 6c. Finalize
 
@@ -195,20 +195,7 @@ Tell the user where the plan landed and give a brief overview:
 
 This lets the user quickly assess the direction without opening the file. Keep each section punchy — details live in the plan.
 
-#### 6d. Handoff
-
-```
-AskUserQuestion({
-  question: "Implement now?",
-  choices: ["Yes — run code:write with this plan", "No — I'll review first"]
-})
-```
-
-If yes:
-
-```
-Skill({ name: "code:write", arguments: ".claude/plans/<codename>.md" })
-```
+> **To implement:** `/code:write .claude/plans/<codename>.md`
 
 ## Template
 
