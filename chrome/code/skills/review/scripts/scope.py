@@ -135,11 +135,21 @@ def compute_metadata(*diffs):
 
 def main():
     parser = argparse.ArgumentParser(description="Scope the diff for code review.")
+    parser.add_argument("arg", nargs="?", metavar="PR_OR_BRANCH",
+                        help="PR number/URL or branch name (auto-detected)")
     parser.add_argument("--pr", metavar="URL_OR_NUMBER", help="Review a PR")
     parser.add_argument("--ref", metavar="BRANCH", help="Diff against a specific branch")
     parser.add_argument("--max-diff-lines", type=int, default=10000, metavar="N",
                         help="Truncate diffs that exceed N total lines (default: 10000)")
     args = parser.parse_args()
+
+    # Auto-route bare positional arg → --pr or --ref
+    if args.arg and not args.pr and not args.ref:
+        val = args.arg
+        if re.match(r"^\d+$", val) or "github.com" in val or val.startswith("http"):
+            args.pr = val
+        else:
+            args.ref = val
 
     # Sanity checks
     if not run(["git", "rev-parse", "--is-inside-work-tree"]):
@@ -169,7 +179,11 @@ def main():
     elif args.ref:
         # Explicit ref mode
         ref = args.ref
-        merge_base = run(["git", "merge-base", ref, "HEAD"])
+        run(["git", "fetch", "origin", ref], check=False)
+        merge_base = run(["git", "merge-base", f"origin/{ref}", "HEAD"])
+        if not merge_base:
+            # fallback: local ref (e.g. not on origin, or detached)
+            merge_base = run(["git", "merge-base", ref, "HEAD"])
         if not merge_base:
             die(f"cannot compute merge-base against {ref}")
         result["mode"] = "ref"
