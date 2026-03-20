@@ -1,5 +1,5 @@
 ---
-description: "Plan the implementation before writing code"
+description: "Plan the implementation before writing code  //  Trigger when the user wants a step-by-step implementation plan as a written deliverable before touching any code — explicit signals: 'plan this out', 'make an implementation plan', 'before we start coding', 'what order should we tackle this', 'scope this out', or the slash command `write:plan`. Also trigger for migrations, major refactors, and multi-file integrations where the user wants scope and sequence mapped upfront. Do NOT trigger for direct implementation requests ('add X', 'implement Y'), code explanations, debugging, or architecture/tradeoff questions."
 argument-hint: "[spec, feature description, or requirements brief]"
 model: claude-opus-4-6
 user-invocable: true
