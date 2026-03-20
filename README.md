@@ -65,7 +65,7 @@ I know when I don't know, and I make the run instead of making things up.
 | Skill | The run |
 |---|---|
 | `knowledge:docs` | Pulls live docs when confidence drops. Context7, MCP, web search — whatever gets the answer fastest. |
-| `knowledge:link` | Paste any URL. I route it to the right tool. No more curling login walls. |
+| `knowledge:links` | Paste any URL. I route it to the right tool. No more curling login walls. |
 | `knowledge:self` | What chrome am I running? What's configured? Know your own rig. |
 | `knowledge:teams` | Governance for agent swarms. Daemons without discipline burn credits and trash archives. |
 
