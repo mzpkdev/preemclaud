@@ -9,7 +9,7 @@ argument-hint: "<feature description>"
 
 # Write
 
-Multi-agent feature implementation. The main agent researches the codebase and produces a briefing, then spawns a builder and critic in parallel — the builder writes the code while the critic preps. Both can pause to surface decisions. The critic applies its prep to the finished code.
+Multi-agent feature implementation with real-time peer verification. The lead researches and briefs, then spawns a builder and critic who work together directly — the builder writes code and sends checkpoints, the critic verifies each one and sends feedback. They communicate with each other, not through the lead. The lead only handles escalated decisions.
 
 ## Announce
 
@@ -29,7 +29,7 @@ Update at each pipeline milestone:
 TaskUpdate({ task_id: "<id>", status: "in_progress", description: "code:write — Researching…" })
 ```
 
-Pipeline milestones: "Researching…" → "Spawning team…" → "Implementing…" → "Reviewing…" → "Done" (set `status: "completed"` on the last one).
+Pipeline milestones: "Researching…" → "Spawning team…" → "Implementing…" → "Done" (set `status: "completed"` on the last one).
 
 ### Plan-aware tracking
 
@@ -55,6 +55,31 @@ Update subtasks as the builder reports `TASK <N> STARTED` / `TASK <N> DONE` mess
 !`cat ${CLAUDE_SKILL_DIR}/agents/recon.md`
 
 When spawning an agent, extract its YAML frontmatter (`name`, `description`, `model`) for the Agent tool parameters and use the markdown body as the system prompt. Spawn `team/` agents as `general-purpose`; spawn `agents/` agents as `Explore`.
+
+## Communication protocol
+
+Builder and critic talk directly via `SendMessage`. The lead stays out unless someone escalates.
+
+**Builder → Critic:**
+- `CHECKPOINT` — finished a unit of work, verify it (includes changed files and summary)
+- `DONE` — finished all building, do your final pass
+
+**Critic → Builder:**
+- `FIX NOW` — foundational issue that will compound; stop and fix before continuing
+- `FIX LATER` — contained issue; queue for next natural break
+- `LGTM` — checkpoint verified, keep going
+- `VERIFIED` — final pass complete, code is good
+
+**Either → Lead (escalation only):**
+- `ESCALATE` — need a decision that requires human judgment or product context
+
+**Builder → Lead:**
+- `TASK <N> STARTED/DONE` — plan progress updates
+- `COMPLETE` — all done, critic has verified
+
+**Critic → Lead:**
+- `VERIFIED` — final sign-off, code is clean
+- `BLOCKING` — final pass found unresolved issues
 
 ## Steps
 
@@ -142,79 +167,70 @@ TeamCreate({ team_name: "write-<short-feature-name>", description: "Implementing
 
 **Spawn both teammates in a single message** (per knowledge:teams — keystroke corruption risk if split across turns). Tell the user not to type until both confirm spawned.
 
-Use the injected agent definitions above — extract frontmatter for Agent tool parameters, use the markdown body as the system prompt. Spawn both:
+Use the injected agent definitions above — extract frontmatter for Agent tool parameters, use the markdown body as the system prompt.
 
 **Builder** receives:
-- The task
+- The task description
 - The full briefing from Step 1
 - Working directory
 - The recon file path: `${CLAUDE_SKILL_DIR}/agents/recon.md`
-- If working from a plan: the plan's task index with execution order, and the instruction to report `TASK <N> STARTED` / `TASK <N> DONE` before and after each numbered task
+- The critic's teammate name (so it can `SendMessage` directly)
+- If working from a plan: the plan's task index with execution order, and the instruction to report `TASK <N> STARTED` / `TASK <N> DONE` to the lead before and after each numbered task
 
 **Critic** receives:
-- The task
+- The task description
 - The full briefing from Step 1
 - Working directory
 - The recon file path (same as above)
-- This instruction: *"You are in PREP phase. Do your prep work now — spec analysis, codebase research, spec-based tests. When I send you the implementation, switch to REVIEW phase."*
+- The builder's teammate name (so it can `SendMessage` directly)
+- The quality toolchain commands extracted from the briefing
+- This instruction: *"Start by studying the briefing and plan. Build your verification checklist — expected patterns, utilities that should be reused, interface contracts, spec requirements. The builder will send you CHECKPOINTs as it works. Verify each one."*
 
-### Step 4 — Run the pipeline
+### Step 4 — Monitor
 
-Both teammates are now active. The builder is writing code; the critic is prepping. You are the coordinator.
+Both teammates are now working together. The builder sends checkpoints to the critic, the critic verifies and sends feedback to the builder. They handle their own loop.
 
-#### Handling pause messages
+**Your only job is to handle escalations and track progress.**
 
-Either teammate may send a PAUSE message. When one arrives:
+#### Handling ESCALATE messages
 
-1. Read it carefully — it includes what's done, the specific question, and a recommended default
-2. If it's answerable from the briefing or codebase context: answer directly and tell the agent to continue
-3. If it requires a product or architectural decision: use `AskUserQuestion`, then relay the answer
-4. If the pause seems unnecessary (style, something the codebase already answers): reply with `"Follow the existing pattern in <file>. Continue."`
+When either teammate sends an ESCALATE:
+
+1. Read it — it includes context, the specific question, and impact analysis
+2. If answerable from the briefing or codebase: answer directly and tell the agent to continue
+3. If it requires a product or architectural decision: use `AskUserQuestion`, then relay the answer to the agent that asked
 
 #### Handling plan task updates
 
-When working from a plan, the builder sends `TASK <N> STARTED` and `TASK <N> DONE` messages between pause/complete messages. When one arrives, update the corresponding subtask:
+When the builder sends `TASK <N> STARTED` or `TASK <N> DONE`, update the corresponding subtask:
 
 ```
 TaskUpdate({ task_id: "<subtask id for task N>", status: "in_progress" })  // on STARTED
 TaskUpdate({ task_id: "<subtask id for task N>", status: "completed" })    // on DONE
 ```
 
-Also update the parent task description to reflect the current plan task:
+Also update the parent task description:
 
 ```
 TaskUpdate({ task_id: "<parent id>", description: "code:write — Implementing task <N>: <name>" })
 ```
 
-Keep going until the builder sends COMPLETE.
+#### Do NOT relay
 
-#### When the builder sends COMPLETE
+Do not pass messages between builder and critic — they talk directly. Do not interrupt their work unless they escalate. Do not send status checks unless an agent has been silent for an unusually long time.
 
-Relay the implementation to the critic:
+### Step 5 — Collect completion
 
-```
-SendMessage({
-  to: "critic",
-  message: "Implementation complete. Switching you to REVIEW phase.\n\nChanged files:\n<list from builder's report>\n\nBuilder notes:\n<notes from builder's report>\n\nApply your prep work to the actual code."
-})
-```
+The pipeline ends when both signals arrive:
+1. Builder sends `COMPLETE` — done building, all FIX NOWs resolved, quality toolchain passes
+2. Critic sends `VERIFIED` — final pass confirms the code is clean
 
-Continue handling any pause messages from the critic until it sends COMPLETE.
+If the critic sends `BLOCKING` instead of `VERIFIED`:
+- Read the issues carefully
+- If they're clearly valid: send them to the builder with instructions to fix, then wait for another COMPLETE/VERIFIED cycle
+- If ambiguous: use `AskUserQuestion` to let the user decide
 
-### Step 5 — Revise (max 2 rounds)
-
-If the critic's report contains BLOCKING items, send them to the builder:
-
-```
-SendMessage({
-  to: "builder",
-  message: "Revision needed. BLOCKING issues:\n<list>\nFix these and report back."
-})
-```
-
-When the builder sends COMPLETE again, spawn a **fresh critic** — read `team/critic.md` again and spawn a new teammate with the same briefing. A fresh critic applies genuinely fresh eyes to the revision.
-
-After round 2, or when no BLOCKING issues remain, proceed.
+Maximum 2 rounds of BLOCKING. After that, present remaining issues to the user and let them decide.
 
 ### Step 6 — Cleanup and report
 
@@ -228,14 +244,13 @@ Present a summary:
 ```
 **Implemented:** <what was built — 1-2 sentences>
 **Files changed:** <list>
-**Decisions made:** <silent decisions from Step 2>
-**SHOULD:** <critic's strong recommendations — user can action or defer>
-**CONSIDER:** <critic's advisory notes>
+**Decisions made:** <silent decisions from Step 2 + any escalation resolutions>
+**Deferred:** <FIX LATER items the critic flagged, if any — user can action or ignore>
 ```
 
 ## Edge cases
 
-If the user asks to skip the review ("just implement it, no review needed"), spawn only the builder — no critic, no revision rounds. Still do the research and briefing.
+If the user asks to skip the review ("just implement it, no review needed"), spawn only the builder — no critic, no verification loop. Still do the research and briefing.
 
 If the user asks to skip tests ("don't worry about tests"), tell the builder to skip test writing but still run the quality toolchain. Note the skip in the final summary.
 
