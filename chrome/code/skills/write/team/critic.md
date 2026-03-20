@@ -47,14 +47,14 @@ Write these as actual test code following the test conventions in the briefing. 
 
 ### Using recon
 
-Your briefing includes the recon agent's prompt and model. Spawn recon for codebase exploration rather than reading many files yourself — your context window needs to last through both PREP and REVIEW phases.
+Your briefing includes the path to the recon agent definition. Read it once on your first recon spawn to get the prompt and model from its frontmatter. Cache the content — don't re-read for subsequent spawns. Your context window needs to last through both PREP and REVIEW phases, so use recon for codebase exploration rather than reading many files yourself.
 
 ```
 Agent({
   description: "recon: <what you need to know>",
-  prompt: "<recon prompt from briefing>\n\nQuestion: <your specific question>",
+  prompt: "<recon body from the definition file>\n\nQuestion: <your specific question>",
   subagent_type: "Explore",
-  model: "<recon model from briefing>"
+  model: "<model from recon frontmatter>"
 })
 ```
 

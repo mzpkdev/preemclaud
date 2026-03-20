@@ -17,44 +17,62 @@ Multi-agent feature implementation. The main agent researches the codebase and p
 
 ## Progress tracking
 
-Create a task at the start and update at each milestone:
+Create a parent task at the start:
 
-1. "Researching..."
-2. "Spawning team..."
-3. "Implementing..."
-4. "Reviewing..."
-5. "Done"
+```
+TaskCreate({ description: "code:write — <feature summary>", status: "in_progress" })
+```
 
-## Agent Frontmatter
+Update at each pipeline milestone:
 
-This skill bundles co-located agent definitions in two directories:
-- **`${CLAUDE_SKILL_DIR}/team/`** — team agents spawned via TeamCreate with persistent identity (builder, critic)
-- **`${CLAUDE_SKILL_DIR}/agents/`** — utility agents spawned as disposable subagents (recon)
+```
+TaskUpdate({ task_id: "<id>", status: "in_progress", description: "code:write — Researching…" })
+```
 
-Each `.md` file uses standard Claude Code agent frontmatter — the same schema as files in `.claude/agents/` — but since they live inside the skill directory, Claude Code does not auto-discover or enforce them. The skill must parse and honor the frontmatter explicitly.
+Pipeline milestones: "Researching…" → "Spawning team…" → "Implementing…" → "Reviewing…" → "Done" (set `status: "completed"` on the last one).
 
-When spawning a co-located agent:
-1. **Read** the `.md` file from `team/` or `agents/`
-2. **Parse** the YAML frontmatter (between `---` delimiters) and extract:
-   - `model` → pass to the Agent tool's `model` parameter
-   - `tools` → informational; enforced via `subagent_type` (see below)
-   - `name` → use as the Agent tool's `name` parameter
-   - `description` → use as the Agent tool's `description` parameter
-3. **Extract** the markdown body (everything below the closing `---`) and use it as the agent's system prompt
-4. **Spawn** with the appropriate `subagent_type`: `"general-purpose"` for team agents that need write access (builder, critic), `"Explore"` for read-only utility agents (recon)
+### Plan-aware tracking
 
-| Field | Used | Purpose |
-|-------|------|---------|
-| `name` | Agent tool `name` | Identifies the agent in logs and UI |
-| `description` | Agent tool `description` | Short summary of the agent's focus |
-| `tools` | Informational | Documents intended tool access; enforced by subagent type |
-| `model` | Agent tool `model` | Controls which model the agent runs on |
+When `$ARGUMENTS` points to a plan file, also create a subtask for each numbered task in the plan's index:
+
+```
+TaskCreate({ description: "Plan task 1 — <name from index>", status: "pending", parent_task_id: "<parent id>" })
+TaskCreate({ description: "Plan task 2 — <name from index>", status: "pending", parent_task_id: "<parent id>" })
+...
+```
+
+Update subtasks as the builder reports `TASK <N> STARTED` / `TASK <N> DONE` messages (see Step 4).
+
+## Agent definitions (injected at load time)
+
+### team/builder.md
+!`cat ${CLAUDE_SKILL_DIR}/team/builder.md`
+
+### team/critic.md
+!`cat ${CLAUDE_SKILL_DIR}/team/critic.md`
+
+### agents/recon.md
+!`cat ${CLAUDE_SKILL_DIR}/agents/recon.md`
+
+When spawning an agent, extract its YAML frontmatter (`name`, `description`, `model`) for the Agent tool parameters and use the markdown body as the system prompt. Spawn `team/` agents as `general-purpose`; spawn `agents/` agents as `Explore`.
 
 ## Steps
+
+<!-- ultrathink -->
 
 ### Step 1 — Research
 
 If `$ARGUMENTS` is empty, use `AskUserQuestion` to ask what to implement before proceeding.
+
+#### Detect plan input
+
+If `$ARGUMENTS` is a path to a `.claude/plans/*.md` file (or the user says "implement plan X"), read the plan file. The plan already contains file paths, task breakdown, patterns, and verification commands — use it as a head start, not a replacement for research.
+
+- Extract the **task index** (numbered tasks with names, dependencies, and file counts) — you'll use this for plan-aware progress tracking and for the builder's execution order.
+- Extract file paths, patterns, and quality toolchain commands to seed the briefing below.
+- Still do the research — the plan may be stale or missing runtime details (new files since the plan was written, updated dependencies). Verify that the plan's file paths and interfaces still match reality.
+
+#### Codebase research
 
 Research the codebase inline before spawning anyone. This produces the briefing that both teammates will rely on — don't skip it.
 
@@ -124,19 +142,20 @@ TeamCreate({ team_name: "write-<short-feature-name>", description: "Implementing
 
 **Spawn both teammates in a single message** (per knowledge:teams — keystroke corruption risk if split across turns). Tell the user not to type until both confirm spawned.
 
-Read `team/builder.md`, `team/critic.md`, and `agents/recon.md`, parse frontmatter, then spawn both:
+Use the injected agent definitions above — extract frontmatter for Agent tool parameters, use the markdown body as the system prompt. Spawn both:
 
 **Builder** receives:
 - The task
 - The full briefing from Step 1
 - Working directory
-- The recon prompt and model (body and `model` from `agents/recon.md` frontmatter, embedded so the builder can spawn recon without reading the file itself)
+- The recon file path: `${CLAUDE_SKILL_DIR}/agents/recon.md`
+- If working from a plan: the plan's task index with execution order, and the instruction to report `TASK <N> STARTED` / `TASK <N> DONE` before and after each numbered task
 
 **Critic** receives:
 - The task
 - The full briefing from Step 1
 - Working directory
-- The recon prompt and model (same as above)
+- The recon file path (same as above)
 - This instruction: *"You are in PREP phase. Do your prep work now — spec analysis, codebase research, spec-based tests. When I send you the implementation, switch to REVIEW phase."*
 
 ### Step 4 — Run the pipeline
@@ -151,6 +170,21 @@ Either teammate may send a PAUSE message. When one arrives:
 2. If it's answerable from the briefing or codebase context: answer directly and tell the agent to continue
 3. If it requires a product or architectural decision: use `AskUserQuestion`, then relay the answer
 4. If the pause seems unnecessary (style, something the codebase already answers): reply with `"Follow the existing pattern in <file>. Continue."`
+
+#### Handling plan task updates
+
+When working from a plan, the builder sends `TASK <N> STARTED` and `TASK <N> DONE` messages between pause/complete messages. When one arrives, update the corresponding subtask:
+
+```
+TaskUpdate({ task_id: "<subtask id for task N>", status: "in_progress" })  // on STARTED
+TaskUpdate({ task_id: "<subtask id for task N>", status: "completed" })    // on DONE
+```
+
+Also update the parent task description to reflect the current plan task:
+
+```
+TaskUpdate({ task_id: "<parent id>", description: "code:write — Implementing task <N>: <name>" })
+```
 
 Keep going until the builder sends COMPLETE.
 
