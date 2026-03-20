@@ -112,7 +112,7 @@ Spawn all 7 in parallel following the **Agent Frontmatter** section above to par
 | Tests | `agents/tests.md` | Critical path gaps, flaky tests |
 | Coherence | `agents/coherence.md` | Incomplete renames, orphaned types, stale names, structural debris |
 
-Pass the diff as part of each agent's prompt:
+Pass the diff as part of each agent's prompt. **Always embed the diff text directly in the prompt** — never save it to a temp file for agents to Read. The Read tool prefixes output with the file's own line numbers (positions within the file being read), and agents will mistake those for source-file line numbers, corrupting every reference in the report.
 
 ```
 Review the following diff. Focus on: [agent's specialty]
@@ -123,6 +123,16 @@ Review the following diff. Focus on: [agent's specialty]
 
 The code lives in: [working directory path]
 You have full read access to the codebase for context.
+
+## Reporting line references
+
+Every finding must include an accurate `file:line` reference pointing to the real source file.
+
+**Preferred method**: For each finding, Read or Grep the actual on-disk source file to confirm the real line number before reporting it. This is the most reliable approach.
+
+**From the diff** (for new files not yet on disk): Parse the hunk header `@@ -old,count +new_start,count @@`. `+new_start` is the line number of the first line in that hunk in the new file. Count forward: lines starting with `+` or ` ` (space) each occupy one source line; lines starting with `-` do not. The source line = new_start + number of `+`/` ` lines before your target line in that hunk.
+
+Never report line offsets from tool output (e.g. "760→" from the Read tool) as source-file line numbers.
 ```
 
 **Not every agent applies every time.** Use judgment:
@@ -158,11 +168,11 @@ Spawn `agents/verifier.md` following the **Agent Frontmatter** section, with:
 
 > **Exception:** Spawn the verifier with `subagent_type: "general-purpose"` instead of `Explore`. It needs LSP access to trace symbols and verify type information. Its prompt already contains strong read-only instructions.
 
-The verifier checks each finding: does the referenced file and line exist? Does the code snippet match what's actually there? Is the claimed issue real? Was the code actually changed in this diff? It returns a verdict for each finding — **confirmed**, **invalid**, or **uncertain** — plus a **pre-existing** flag for issues in code the changeset didn't touch.
+The verifier checks each finding along two axes: **is the claim valid?** and **is the line reference accurate?** A finding that points to the wrong line is as misleading as a hallucinated bug — both must be caught before the report ships. The verifier returns a verdict for each finding — **confirmed**, **invalid**, or **uncertain** — plus a **pre-existing** flag and, if the original line was wrong, the **corrected location**.
 
-- **confirmed** — keep as-is
+- **confirmed** — keep; if the verifier reports a corrected location, update the finding's `file:line` before including it
 - **invalid** — drop from the report entirely
-- **uncertain** — keep but add a note that this should be manually verified
+- **uncertain** — keep but add a note that this should be manually verified; apply any line correction
 - **pre-existing** — move to the dedicated Pre-existing section as a one-liner, not a full finding
 
 ### Step 6 — Present the unified report
