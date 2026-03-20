@@ -4,7 +4,7 @@ argument-hint: "[spec, feature description, or requirements brief]"
 model: claude-opus-4-6
 user-invocable: true
 disable-model-invocation: false
-allowed-tools: Read, Glob, Grep, Agent, AskUserQuestion, EnterPlanMode, ExitPlanMode, Write
+allowed-tools: Read, Glob, Grep, Agent, AskUserQuestion, EnterPlanMode, ExitPlanMode, Write, Skill
 ---
 
 # Write Plan
@@ -95,7 +95,7 @@ If the spec covers multiple independent subsystems, suggest breaking it into sep
 <!-- ultrathink -->
 ### Step 4 — Write the plan
 
-Use `EnterPlanMode` to present the plan for user approval before finalizing. Produce the plan following the **## Template** section below.
+Produce the plan following the **## Template** section below.
 
 #### Task granularity
 
@@ -157,13 +157,29 @@ Before saving, do a quick self-review pass:
 - Dependency ordering is correct — no circular or implicit dependencies
 - Spec requirements are fully covered, no scope creep
 
-### Step 6 — Save
+### Step 6 — Save and present
 
-Once the user approves, use `ExitPlanMode` and write the plan to a file per the [output](#output) convention. Before writing, use `Glob` to list `.claude/plans/*.md` and check that the chosen codename doesn't already exist — pick a different one if it does. After saving, tell the user where it landed and give a brief overview:
+#### 6a. Save draft
+
+Use `Glob` to list `.claude/plans/*.md` and check that the chosen codename doesn't already exist — pick a different one if it does. Write the plan file to disk per the [output](#output) convention. This happens **before** Plan Mode so the file exists on disk regardless of what happens next.
+
+#### 6b. Present for approval
+
+Use `EnterPlanMode` to present the plan for user review. If the user requests changes, compose revisions and re-present within Plan Mode.
+
+When the user approves, print the implementation command before exiting:
+
+> **To implement:** `/code:write .claude/plans/<codename>.md`
+
+Then use `ExitPlanMode`.
+
+#### 6c. Finalize
+
+If revisions were made during Plan Mode, update the file on disk with the final version.
+
+Tell the user where the plan landed and give a brief overview:
 
 **"Plan saved to `.claude/plans/<codename>.md`."**
-
-Then output a summary using this exact template:
 
 ```
 **Approach:** <1-2 sentences on the high-level strategy>
@@ -179,7 +195,20 @@ Then output a summary using this exact template:
 
 This lets the user quickly assess the direction without opening the file. Keep each section punchy — details live in the plan.
 
-Keep plans concise and actionable. Don't over-plan — just enough to say "yes, do that" or to dispatch tasks to subagents.
+#### 6d. Handoff
+
+```
+AskUserQuestion({
+  question: "Implement now?",
+  choices: ["Yes — run code:write with this plan", "No — I'll review first"]
+})
+```
+
+If yes:
+
+```
+Skill({ name: "code:write", arguments: ".claude/plans/<codename>.md" })
+```
 
 ## Template
 
