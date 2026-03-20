@@ -1,5 +1,5 @@
 ---
-description: "Read URLs without hitting login walls  //  Trigger when user shares any link — GitHub, Jira, Confluence, Slack, Bugsnag, Datadog, Grafana, Sentry, New Relic, Notion, Linear, Figma, or any URL. Always trigger when a message contains a URL, even without explicit ask to open or read it."
+description: "Read URLs without hitting login walls  //  Trigger whenever an https:// URL appears in the user's message — even bare links with no surrounding context. This skill is the designated handler for reading external content: GitHub PRs, issues, CI runs, and commits; Jira tickets; Confluence pages; Slack threads; Bugsnag errors; Datadog, Grafana, Sentry, New Relic dashboards; Linear issues; Notion pages; Figma designs. A URL in the message means the user wants you to read it — no explicit 'open this' or 'read this' required."
 user-invocable: true
 disable-model-invocation: false
 ---
@@ -10,11 +10,16 @@ disable-model-invocation: false
 
 When this skill is invoked, immediately tell the user which skill is running and what it will do — before any other work begins.
 
-> Daemon `knowledge:link` online. Tracing the link.
+> Daemon `knowledge:links` online. Tracing the link.
 
 ## Steps
 
-When the user gives you a link, don't blindly fetch it. Match the URL against the routing index below, follow the instructions for the matched route, and then respond to whatever the user asked about.
+When the user gives you a link:
+
+1. **Route** — match the URL against the routing index below and identify the handler.
+2. **Retrieve** — follow the matched route's instructions to fetch the content.
+3. **Follow embedded links** — scan the retrieved content for full URLs that match the routing index. For each match, execute the **full** route handler — including screenshots and subagent spawns where the route requires them (e.g. a Figma URL found inside a Jira ticket must go through the complete figma route: screenshot + figma-reader subagent). This applies regardless of which handler retrieved the original content. Follow up to 3 embedded links; if more exist, note them.
+4. **Answer** — respond to whatever the user actually asked, drawing on all retrieved content.
 
 ### Routing index
 
@@ -110,7 +115,6 @@ When the user gives you a link, don't blindly fetch it. Match the URL against th
 - **Patterns:** `*.atlassian.net/browse/*`
 - **Handler:** mcp
 - **Server:** `atlassian`
-- **Instructions:** After fetching the ticket, scan the description, comments, and all fields for URLs matching the routing index. Apply the matching route for each discovered link before responding.
 
 ### slack
 
@@ -182,7 +186,6 @@ When the user gives you a link, don't blindly fetch it. Match the URL against th
 ## Rules
 
 - **Match first, act second.** Check the URL against the routing index, then follow the matched route's instructions.
-- **Discovered links get routed too.** Links found inside fetched content (e.g. Figma URLs in a Jira ticket) are subject to the same routing table as user-provided links. Apply the matching route for each before responding.
 - **MCP means check for a matching MCP tool.** Search your available tools for the MCP server name shown in the route. If the server exists, use the appropriate tool from it. If it doesn't exist, tell the user you can't access that service and suggest they set up the MCP server for it (e.g. "I don't have a Datadog MCP connected — want me to help set one up?").
 - **Never raw-fetch authenticated services.** Jira, Confluence, Slack, Datadog, Grafana, Sentry, New Relic, Notion, Linear, Figma, and Bugsnag all sit behind auth walls. WebFetch will return a login page, not content.
 - **GitHub has CLI tools.** Use `gh` for all GitHub URLs. Parse the owner, repo, and resource ID from the URL and use the appropriate `gh` subcommand.
