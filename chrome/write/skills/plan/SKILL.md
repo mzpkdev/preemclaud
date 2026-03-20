@@ -171,7 +171,7 @@ Use `Glob` to list `.claude/plans/*.md` and check that the chosen codename doesn
 
 #### 6b. Present for approval
 
-Use `EnterPlanMode` to present the plan for user review. If the user requests changes, compose revisions and re-present within Plan Mode. Let Plan Mode run with its native options — do not exit it programmatically.
+Use `EnterPlanMode` to present the plan for user review. After `EnterPlanMode` is called, the system will inject a message specifying the plan file path (e.g., `.claude/plans/<system-codename>.md`). This path differs from the codename file you saved in 6a. **Immediately write the plan content to that system-specified path** using the Write tool — the "Clear context and implement" prompt reads from this path, so it must contain the plan. If the user requests changes, update the system-specified path with the revised content. Let Plan Mode run with its native options — do not exit it programmatically.
 
 #### 6c. Finalize
 
