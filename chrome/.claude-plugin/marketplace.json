@@ -31,12 +31,6 @@
       "source": "./code"
     },
     {
-      "name": "agents",
-      "description": "",
-      "version": "0.0.0",
-      "source": "./agents"
-    },
-    {
       "name": "meta",
       "description": "",
       "version": "0.0.0",
