@@ -42,7 +42,7 @@ MARKETPLACES = {
     },
     "rig": {
         "path": CLAUDE_DIR / "rig",
-        "skip": set(),
+        "skip": {"jetbrains-ide"},
     },
     "null": {
         "path": CLAUDE_DIR / "null",
