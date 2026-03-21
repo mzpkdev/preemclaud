@@ -3,6 +3,7 @@ import os
 import shlex
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -96,7 +97,8 @@ def install_lsp_deps(plugin_dir, name):
 
     install_cmd = deps.get("install")
     if install_cmd:
-        result = subprocess.run(shlex.split(install_cmd),
+        parts = install_cmd.split() if sys.platform == "win32" else shlex.split(install_cmd)
+        result = subprocess.run(parts,
                                 stdout=subprocess.DEVNULL,
                                 stderr=subprocess.PIPE,
                                 text=True)

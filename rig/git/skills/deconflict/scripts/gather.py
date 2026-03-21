@@ -12,6 +12,7 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 MAX_CONTENT_LINES = 500
@@ -71,7 +72,7 @@ def detect_in_progress(git_dir):
     in_progress_target = None
     if in_progress == "merge":
         merge_head = os.path.join(git_dir, "MERGE_HEAD")
-        sha = open(merge_head).read().strip() if os.path.isfile(merge_head) else ""
+        sha = Path(merge_head).read_text().strip() if os.path.isfile(merge_head) else ""
         if sha:
             # Resolve SHA to a branch name
             name = run(["git", "name-rev", "--name-only", "--no-undefined", sha])
@@ -80,13 +81,13 @@ def detect_in_progress(git_dir):
         for onto_path in ["rebase-merge/onto", "rebase-apply/onto"]:
             full = os.path.join(git_dir, onto_path)
             if os.path.isfile(full):
-                sha = open(full).read().strip()
+                sha = Path(full).read_text().strip()
                 name = run(["git", "name-rev", "--name-only", "--no-undefined", sha])
                 in_progress_target = name if name else sha[:10]
                 break
     elif in_progress == "cherry_pick":
         cp_head = os.path.join(git_dir, "CHERRY_PICK_HEAD")
-        sha = open(cp_head).read().strip() if os.path.isfile(cp_head) else ""
+        sha = Path(cp_head).read_text().strip() if os.path.isfile(cp_head) else ""
         if sha:
             in_progress_target = sha[:10]
 

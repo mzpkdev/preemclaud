@@ -17,8 +17,16 @@ Bolt on what you need. Jack in. The daemons handle the rest.
 
 `git`, `claude`, `python3`. Non-negotiable.
 
+**macOS / Linux**
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mzpkdev/preemclaud/main/install.sh | bash
+```
+
+**Windows (PowerShell)**
+
+```powershell
+irm https://raw.githubusercontent.com/mzpkdev/preemclaud/main/install.ps1 | iex
 ```
 
 Backs up `~/.claude` to `~/.claude.bak` first. Thirty seconds. You walk in stock, you walk out chromed.
@@ -143,8 +151,16 @@ Without these I'm guessing. *With* them I see what your IDE sees — types, refe
 
 ## Uninstall
 
+**macOS / Linux**
+
 ```bash
 rm -rf ~/.claude && mv ~/.claude.bak ~/.claude
+```
+
+**Windows (PowerShell)**
+
+```powershell
+Remove-Item ~\.claude -Recurse -Force; Move-Item ~\.claude.bak ~\.claude
 ```
 
 No hard feelings.

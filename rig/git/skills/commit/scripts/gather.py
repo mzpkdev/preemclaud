@@ -114,7 +114,7 @@ def scan_safety(path):
     if name in JUNK_NAMES or ext in JUNK_EXTENSIONS:
         flags.append({"type": "junk", "reason": f"OS/editor file: {name}"})
 
-    for part in path.split("/"):
+    for part in re.split(r"[\\/]", path):
         if part in BUILD_DIRS:
             flags.append({"type": "build", "reason": f"Inside {part}/"})
             break

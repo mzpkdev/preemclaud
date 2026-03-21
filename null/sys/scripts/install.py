@@ -7,8 +7,12 @@ import shutil
 import subprocess
 import sys
 import time
+from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(__file__))
+if sys.platform == "win32":
+    os.system("")  # enable VT100 escape processing on Windows 10+
+
+sys.path.insert(0, str(Path(__file__).parent))
 from core import (
     CLAUDE_DIR, MARKETPLACES, PLUGIN_FLAVOR, PATCH_FLAVOR,
     TWEAKCC, TWEAKCC_PATCHES,
@@ -56,6 +60,10 @@ def section(label):
     print(f"    {DIM}>>>{RESET} {BOLD}{label}{RESET}")
 
 
+def colorize(text):
+    return text.replace('`', CYAN + BOLD, 1).replace('`', RESET, 1)
+
+
 def sub(msg):
     print(f"        {DIM}\u203a{RESET} {msg}")
 
@@ -79,13 +87,13 @@ def preflight():
 
 
 def archive():
-    if not os.path.isdir(str(CLAUDE_DIR)):
+    if not CLAUDE_DIR.is_dir():
         return
     section("archiving previous rig")
     ts = int(time.time())
     dest = f"{CLAUDE_DIR}.bak.{ts}"
     sub(f"{DIM}{CLAUDE_DIR} -> {dest}{RESET}")
-    os.rename(str(CLAUDE_DIR), dest)
+    shutil.move(str(CLAUDE_DIR), dest)
     print()
 
 
@@ -137,7 +145,7 @@ def select_lsps(plugins, lsp_path):
     if not visible:
         return set()
     try:
-        tty = open("/dev/tty")
+        tty = open("CON" if sys.platform == "win32" else "/dev/tty")
     except OSError:
         tty = None
     section("choose your optics")
@@ -147,14 +155,14 @@ def select_lsps(plugins, lsp_path):
         flavor = PLUGIN_FLAVOR.get(name, name)
         if status == "skipped":
             deps = ", ".join(f"`{m}`" for m in missing)
-            sub(f"{flavor}    {DIM}[skip \u2014 {deps} not found]{RESET}")
+            sub(f"{colorize(flavor)}    {DIM}[skip \u2014 {deps} not found]{RESET}")
             continue
         if tty is None:
-            sub(f"{flavor}    {DIM}[auto]{RESET}")
+            sub(f"{colorize(flavor)}    {DIM}[auto]{RESET}")
             selected.add(name)
             continue
         try:
-            sys.stdout.write(f"        {DIM}\u203a{RESET} {flavor}    {BOLD}[Y/n]{RESET} ")
+            sys.stdout.write(f"        {DIM}\u203a{RESET} {colorize(flavor)}    {BOLD}[Y/n]{RESET} ")
             sys.stdout.flush()
             answer = tty.readline().strip().lower()
         except (EOFError, KeyboardInterrupt):
@@ -198,7 +206,7 @@ def install_plugins():
                 install(name, mkt_name)
                 continue
             flavor = name if name not in PLUGIN_FLAVOR else PLUGIN_FLAVOR[name]
-            sub(f"{flavor.replace('`', CYAN + BOLD, 1).replace('`', RESET, 1)}")
+            sub(colorize(flavor))
             install(name, mkt_name)
     SYNC_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
     SYNC_SENTINEL.write_text(remote_head())
@@ -209,7 +217,7 @@ def break_ice():
     section("breaking ICE")
     for patch in TWEAKCC_PATCHES:
         flavor = PATCH_FLAVOR.get(patch, patch)
-        sub(f"{flavor.replace('`', CYAN + BOLD, 1).replace('`', RESET, 1)}")
+        sub(colorize(flavor))
         result = subprocess.run(
             ["npx", TWEAKCC, "--apply", "--patches", patch],
             stdout=subprocess.DEVNULL,
