@@ -9,7 +9,9 @@ command -v claude >/dev/null  || { echo "      ⊘ claude not found"; exit 1; }
 command -v python3 >/dev/null || { echo "      ⊘ python3 not found"; exit 1; }
 
 if [ -d "$TARGET" ]; then
-  mv "$TARGET" "$TARGET.bak.$(date +%s)"
+  BACKUP="$TARGET.bak"
+  [ -d "$BACKUP" ] && BACKUP="$TARGET.bak.$(date +%s)"
+  mv "$TARGET" "$BACKUP"
 fi
 
 git clone --depth 1 --quiet "$REPO" "$TARGET"

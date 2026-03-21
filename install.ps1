@@ -8,8 +8,9 @@ if (-not (Get-Command claude -ErrorAction SilentlyContinue))  { Write-Host "    
 if (-not (Get-Command python3 -ErrorAction SilentlyContinue)) { Write-Host "      ⊘ python3 not found"; exit 1 }
 
 if (Test-Path $TARGET) {
-    $ts = [int](Get-Date -UFormat %s)
-    Move-Item $TARGET "$TARGET.bak.$ts"
+    $BACKUP = "$TARGET.bak"
+    if (Test-Path $BACKUP) { $BACKUP = "$TARGET.bak.$([int](Get-Date -UFormat %s))" }
+    Move-Item $TARGET $BACKUP
 }
 
 git clone --depth 1 --quiet $REPO $TARGET
