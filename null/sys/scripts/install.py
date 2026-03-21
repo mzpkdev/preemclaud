@@ -114,8 +114,70 @@ def register_marketplaces():
     print()
 
 
+def lsp_dep_status(lsp_path, name):
+    deps_file = lsp_path / name / "dependencies.json"
+    if not deps_file.exists():
+        return "ready", []
+    deps = json.loads(deps_file.read_text())
+    requires = deps.get("requires", [])
+    present = [r for r in requires if shutil.which(r)]
+    missing = [r for r in requires if not shutil.which(r)]
+    if not present and missing:
+        return "hidden", missing
+    if missing:
+        return "skipped", missing
+    return "ready", []
+
+
+def select_lsps(plugins, lsp_path):
+    visible = [(p, *lsp_dep_status(lsp_path, p["name"])) for p in plugins]
+    visible = [(p, status, missing) for p, status, missing in visible if status != "hidden"]
+    if not visible:
+        return set()
+    try:
+        tty = open("/dev/tty")
+    except OSError:
+        tty = None
+    section("select language servers")
+    selected = set()
+    for plugin, status, missing in visible:
+        name = plugin["name"]
+        flavor = PLUGIN_FLAVOR.get(name, name)
+        if status == "skipped":
+            deps = ", ".join(f"`{m}`" for m in missing)
+            sub(f"{flavor}    {DIM}[skip \u2014 {deps} not found]{RESET}")
+            continue
+        if tty is None:
+            sub(f"{flavor}    {DIM}[auto]{RESET}")
+            selected.add(name)
+            continue
+        try:
+            sys.stdout.write(f"        {DIM}\u203a{RESET} {flavor}    {BOLD}[Y/n]{RESET} ")
+            sys.stdout.flush()
+            answer = tty.readline().strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            answer = "n"
+            print()
+            fail("interrupted")
+        if answer in ("", "y", "yes"):
+            selected.add(name)
+    if tty is not None:
+        tty.close()
+    print()
+    return selected
+
+
 def install_plugins():
     section("installing plugins")
+    lsp_selected = None
+    lsp_mkt = MARKETPLACES.get("lsp")
+    if lsp_mkt:
+        manifest = lsp_mkt["path"] / ".claude-plugin" / "marketplace.json"
+        if manifest.exists():
+            marketplace = json.loads(manifest.read_text())
+            candidates = [p for p in marketplace.get("plugins", []) if p["name"] not in lsp_mkt["skip"]]
+            lsp_selected = select_lsps(candidates, lsp_mkt["path"])
+
     for mkt_name, mkt in MARKETPLACES.items():
         manifest = mkt["path"] / ".claude-plugin" / "marketplace.json"
         if not manifest.exists():
@@ -126,10 +188,12 @@ def install_plugins():
             if name in mkt["skip"]:
                 continue
             if mkt_name == "lsp":
+                if lsp_selected is not None and name not in lsp_selected:
+                    continue
                 plugin_dir = mkt["path"] / name
                 if not install_lsp_deps(plugin_dir, name):
                     continue
-            flavor = PLUGIN_FLAVOR.get(name, name)
+            flavor = name if name not in PLUGIN_FLAVOR else PLUGIN_FLAVOR[name]
             sub(f"{flavor.replace('`', CYAN + BOLD).replace('`', RESET)}")
             install(name, mkt_name)
     SYNC_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
