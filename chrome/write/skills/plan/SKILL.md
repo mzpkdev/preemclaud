@@ -144,9 +144,11 @@ Whatever the approach, always include a verification step — even if it's "run 
 
 Each task's `Verify:` line should run **every relevant quality check**, not just the test suite. The principle: if the implementer follows your plan and opens a PR, what checks will CI run? The plan's verification steps should catch the same things locally so there are no surprises.
 
+For test commands in Verify lines, scope to the relevant files when the project has a large test suite. Use the runner's filter syntax (e.g., `--testPathPattern`, `pytest -k`, `go test ./pkg/...`). A Verify line that runs hundreds of tests to confirm one task is slow and hides signal in noise. In small projects where the full suite is fast, a bare run command is fine.
+
 #### Key rules
 - **Exact file paths** — always. No "in the appropriate directory."
-- **Complete code** — if a step involves writing code, include the code. Not "add error handling" but the actual error handling code.
+- **Complete code** — if a step involves writing code, include the code. Not "add error handling" but the actual error handling code. **Exception: test steps.** Describe the behavioral contract each test must verify — the acceptance criterion — not the test implementation. Write "verify that submitting an empty form shows a validation error" not the test code. This preserves freedom for the implementer (or a test-writer agent) to derive tests that actually exercise the code rather than rubber-stamping a pre-written script.
 - **Exact commands with expected output** — so the engineer can verify without guessing.
 - **File markers** — `C` for create, `M` for modify, `D` for delete, `R` for rename. Same convention as the git skills.
 - **Indented `[ ]` checkboxes** on every step, aligned with the file list.
