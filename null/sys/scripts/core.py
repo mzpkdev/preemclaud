@@ -1,6 +1,5 @@
 import json
 import os
-import random
 import shlex
 import shutil
 import subprocess
@@ -123,18 +122,28 @@ def git(*args, capture=False):
     )
 
 
-def head():
-    return git("rev-parse", "HEAD", capture=True).stdout.strip()
+def fetch():
+    r = git("fetch", "origin", "--quiet", capture=True)
+    if r.returncode != 0:
+        log("⊘", f"fetch failed: {r.stderr.strip()}")
+        return False
+    return True
 
 
-def pull():
-    git("pull", "--ff-only")
+def remote_head():
+    return git("rev-parse", "origin/main", capture=True).stdout.strip()
 
 
 def in_sync():
     if not SYNC_SENTINEL.exists():
         return False
-    return SYNC_SENTINEL.read_text().strip() == head()
+    return SYNC_SENTINEL.read_text().strip() == remote_head()
+
+
+def sync_marketplaces():
+    git("checkout", "origin/main", "--", "chrome/", "lsp/", "rig/", "null/")
+    SYNC_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
+    SYNC_SENTINEL.write_text(remote_head())
 
 
 def install(name, marketplace="chrome"):
@@ -163,23 +172,7 @@ def install_all(verbose=False):
             if verbose:
                 log_sub(PLUGIN_FLAVOR.get(name, name))
             install(name, mkt_name)
-    SYNC_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
-    SYNC_SENTINEL.write_text(head())
 
-
-def ghost_disabled():
-    if not SETTINGS.exists():
-        return False
-    settings = json.loads(SETTINGS.read_text())
-    return settings.get("enabledPlugins", {}).get("ghost@null") is False
-
-
-def haunt():
-    if ghost_disabled():
-        return
-    if random.randint(1, 5) != 1:
-        return
-    install("ghost", "null")
 
 
 def cc_version():

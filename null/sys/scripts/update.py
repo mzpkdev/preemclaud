@@ -3,19 +3,18 @@
 import sys
 
 from core import (
-    install_all, install, haunt, pull, in_sync,
+    install_all, fetch, in_sync, sync_marketplaces,
     cc_needs_patch, patch_cc,
 )
 
 
 if "--force" in sys.argv:
+    sync_marketplaces()
     install_all()
-    install("ghost", "null")
     patch_cc()
 else:
-    pull()
-    if not in_sync():
-        haunt()
+    if fetch() and not in_sync():
+        sync_marketplaces()
         install_all()
     if cc_needs_patch():
         patch_cc()
