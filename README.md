@@ -18,14 +18,24 @@ Bolt on what you need. Jack in. The daemons handle the rest.
 `git`, `claude`, `python3`. Non-negotiable.
 
 ```bash
-# macOS / Linux
 curl -fsSL https://raw.githubusercontent.com/mzpkdev/preemclaud/main/install.sh | bash
-
-# Windows (PowerShell)
-irm https://raw.githubusercontent.com/mzpkdev/preemclaud/main/install.ps1 | iex
 ```
 
 Backs up `~/.claude` to `~/.claude.bak` first. Thirty seconds. You walk in stock, you walk out chromed.
+
+## Update
+
+```bash
+python3 ~/.claude/null/sys/scripts/update.py
+```
+
+Fetches latest chrome from upstream and hot-swaps the marketplace dirs. Your `settings.json` and everything else in `~/.claude` is untouched. If Claude Code itself updated, patches re-apply automatically.
+
+Force a full resync:
+
+```bash
+python3 ~/.claude/null/sys/scripts/update.py --force
+```
 
 ---
 
