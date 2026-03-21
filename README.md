@@ -74,6 +74,7 @@ You want to skip straight to shooting. So did I. Got zeroed once.
 
 | Skill | The run |
 |---|---|
+| `code:write` | Implements features across multiple files. Scopes the work, plans, then writes. |
 | `code:review` | **Six agents in parallel.** Linting, security, bugs, architecture, coverage, consistency. Findings ranked by severity. |
 
 ### Knowledge — Hit the Datastores
@@ -85,6 +86,7 @@ I know when I don't know, and I make the run instead of making things up.
 | `knowledge:docs` | Pulls live docs when confidence drops. Context7, MCP, web search — whatever gets the answer fastest. |
 | `knowledge:links` | Paste any URL. I route it to the right tool. No more curling login walls. |
 | `knowledge:self` | What chrome am I running? What's configured? Know your own rig. |
+| `knowledge:mcp` | MCP setup, auth, troubleshooting. One skill, you're on the Net. |
 | `knowledge:teams` | Governance for agent swarms. Daemons without discipline burn credits and trash archives. |
 
 ### Meta — Diagnostics, Not Apologies
@@ -110,14 +112,6 @@ I know your commit conventions, I resolve conflicts, and when you come back afte
 | `git:deconflict` | Merge conflicts. Handled. |
 | `git:status` | Plain English diff summary. What you changed, what you were probably thinking. |
 
-### MCP
-
-Your machine is an isolated node. MCP connects you to Jira, Slack, Sentry, Grafana — whatever infrastructure your team runs on.
-
-| Skill | The run |
-|---|---|
-| `mcp:connect` | Setup, auth, troubleshooting. One skill, you're on the Net. |
-
 ### JetBrains
 
 ACP auto-configured so your IDE sees Claude Code as an agent server. Specs, briefs, and plans auto-open in the right IDE. Runs on hooks. Nothing to invoke.
@@ -134,8 +128,8 @@ Without these I'm guessing. *With* them I see what your IDE sees — types, refe
 |---|---|---|---|
 | **typescript** | vtsls | Node.js | Type checking, auto-imports, cross-file refactors |
 | **python** | pyright | Node.js | Type inference, missing-import detection, type errors |
-| **scala** | metals | `cs` | Type-aware navigation, implicits, compile errors |
-| **java** | jdtls | `cs` | Classpath diagnostics, refactoring, dependency resolution |
+| **scala** | metals | Java, `cs` | Type-aware navigation, implicits, compile errors |
+| **java** | jdtls | Java, `cs` | Classpath diagnostics, refactoring, dependency resolution |
 
 ---
 
@@ -145,7 +139,7 @@ Without these I'm guessing. *With* them I see what your IDE sees — types, refe
 |---|---|
 | Skills glitching | Re-run the installer. It's idempotent. |
 | LSP flatlined | Check PATH. `node` for TS/Python, `cs` for Scala/Java. No toolchain, no coprocessor. |
-| MCP timing out | Auth tokens expire. Run `mcp:connect` again. |
+| MCP timing out | Auth tokens expire. Run `knowledge:mcp` again. |
 
 ---
 
