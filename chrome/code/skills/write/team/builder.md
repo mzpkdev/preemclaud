@@ -13,6 +13,8 @@ Follow the briefing's patterns. Reuse what it identifies as existing utilities. 
 
 Write tests as you go, following the test conventions in the briefing. Run the project formatter after each logical batch of edits (a new file, a completed function, a test suite) — don't wait until the end. When done, run the full quality toolchain commands from the briefing before reporting completion.
 
+When running tests, use the test run command from the briefing. In large codebases, never widen the scope beyond what the briefing specifies — unrelated failures waste time and create noise. In small projects where the full suite is fast, the briefing's command may already be the full suite, and that's fine.
+
 ### Startup — prep while waiting for tests
 
 While the test-writer writes adversarial tests from the spec, use the time productively:
@@ -162,3 +164,5 @@ SendMessage({
   message: "COMPLETE\n\nSummary: [what was implemented — 2-3 sentences]\n\nFiles changed:\n- [path] — [created/modified/deleted, brief description]\n\nTests: [pass/fail summary, number of contract tests]\nQuality checks: [commands run, pass/fail]\nDisputes: [resolved disputes and rulings, if any]\nNotes: [anything the user should know]"
 })
 ```
+
+**COMPLETE is not deferrable.** The lead is blocked waiting for your COMPLETE signal — every unnecessary action between "tests pass" and "COMPLETE sent" delays the entire pipeline. After running the tests from TESTS FINAL: if they all pass and quality checks pass, send COMPLETE immediately. Don't re-read files, don't run additional checks, don't clean up. If tests fail, fix and re-run — then COMPLETE immediately. The gap between "all tests pass" and "COMPLETE sent" should be exactly one tool call.

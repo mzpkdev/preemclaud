@@ -134,7 +134,7 @@ Existing utilities to reuse:
 
 Test conventions:
 - Framework: [name], style: [description]
-- Run: [exact command]
+- Run (scoped): [exact command targeting only the relevant tests — use the runner's filter syntax in large projects, e.g. --testPathPattern, pytest -k, go test ./pkg/...]
 
 Quality toolchain:
 - [exact command] — [what it checks]
@@ -265,6 +265,10 @@ TaskUpdate({ task_id: "<parent id>", description: "code:write — Implementing t
 
 Do not pass messages between builder and test-writer — they talk directly. Do not interrupt their work unless they escalate or dispute. Do not send status checks unless an agent has been silent for an unusually long time.
 
+Ignore these — they are not signals:
+- **System-level idle notifications.** These are heartbeats, not messages. Only act on messages containing a protocol keyword: TESTS READY, NEW TESTS, TESTS FINAL, CHECKPOINT, DONE, COMPLETE, DISPUTE, DISPUTE RESPONSE, ESCALATE, TASK.
+- **Transient diagnostics during active editing.** Type errors, lint warnings, and LSP diagnostics that appear while an agent is mid-edit are noise. Only treat diagnostics as problems when an agent explicitly flags them in a protocol message (CHECKPOINT, DONE, ESCALATE) as unresolvable.
+
 ### Step 5 — Collect completion
 
 The pipeline ends when the builder sends `COMPLETE` — all tests pass, quality toolchain passes, no pending disputes.
@@ -276,9 +280,10 @@ Maximum 2 post-COMPLETE rounds. After that, present remaining issues to the user
 ### Step 6 — Cleanup and report
 
 Shut down the team:
-1. Send `shutdown_request` to all active teammates, wait for confirmations
-2. `TeamDelete({ team_name: "..." })`
-3. If TeamDelete fails, force-clean per `knowledge:teams` skill
+1. Mark the parent task and all subtasks as completed using `TaskUpdate`
+2. Send `shutdown_request` to all active teammates, wait for confirmations
+3. `TeamDelete({ team_name: "..." })`
+4. If TeamDelete fails, force-clean per `knowledge:teams` skill
 
 Present a summary:
 
