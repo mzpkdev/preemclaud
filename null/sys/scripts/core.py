@@ -23,8 +23,8 @@ def get_env():
     return {**os.environ, "CI": "true"}
 
 PATCH_FLAVOR = {
-    "fix-lsp-support": "linking `fix-lsp-support` synapses",
-    "mcp-non-blocking": "freeing `mcp-non-blocking` daemons",
+    "fix-lsp-support": "splicing `fix-lsp-support` synapses",
+    "mcp-non-blocking": "unchaining `mcp-non-blocking` daemons",
     "model-customizations": "unlocking `model-customizations` deck",
     "session-memory": "implanting `session-memory` engrams",
     "agents-md": "bridging `agents-md` protocols",
@@ -51,15 +51,15 @@ MARKETPLACES = {
 
 PLUGIN_FLAVOR = {
     "create": "modding `create`",
-    "write": "encoding `write`",
+    "write": "arming `write`",
     "knowledge": "indexing `knowledge`",
     "code": "compiling `code`",
     "agents": "rezzing `agents`",
-    "meta": "tuning `meta`",
-    "typescript": "installing `typescript` lsp",
-    "python": "installing `python` lsp",
-    "scala": "installing `scala` lsp",
-    "java": "installing `java` lsp",
+    "meta": "calibrating `meta`",
+    "typescript": "wiring `typescript` lsp",
+    "python": "wiring `python` lsp",
+    "scala": "wiring `scala` lsp",
+    "java": "wiring `java` lsp",
     "sys": "booting `sys`",
     "jetbrains-ide": "interfacing `jetbrains-ide` deck",
     "git": "patching `git` firmware",

@@ -90,7 +90,7 @@ def archive():
 
 
 def sync():
-    section("syncing preemclaud")
+    section("cloning the shard")
     sub(f"{DIM}git clone --depth 1 {REPO}{RESET}")
     result = subprocess.run(
         ["git", "clone", "--depth", "1", REPO, str(CLAUDE_DIR), "--quiet"],
@@ -102,15 +102,17 @@ def sync():
 
 
 def register_marketplaces():
-    section("registering marketplaces")
+    section("hitting the ripperdoc")
+    names = []
     for mkt_name, mkt in MARKETPLACES.items():
-        sub(f"{CYAN}{mkt_name}{RESET}")
+        names.append(mkt_name)
         subprocess.run(
             ["claude", "plugin", "marketplace", "add", str(mkt["path"])],
             env=get_env(),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
+    sub(f"{DIM}{' · '.join(names)}{RESET}")
     print()
 
 
@@ -138,7 +140,7 @@ def select_lsps(plugins, lsp_path):
         tty = open("/dev/tty")
     except OSError:
         tty = None
-    section("select language servers")
+    section("choose your optics")
     selected = set()
     for plugin, status, missing in visible:
         name = plugin["name"]
@@ -168,7 +170,6 @@ def select_lsps(plugins, lsp_path):
 
 
 def install_plugins():
-    section("installing plugins")
     lsp_selected = None
     lsp_mkt = MARKETPLACES.get("lsp")
     if lsp_mkt:
@@ -178,6 +179,7 @@ def install_plugins():
             candidates = [p for p in marketplace.get("plugins", []) if p["name"] not in lsp_mkt["skip"]]
             lsp_selected = select_lsps(candidates, lsp_mkt["path"])
 
+    section("slotting chrome")
     for mkt_name, mkt in MARKETPLACES.items():
         manifest = mkt["path"] / ".claude-plugin" / "marketplace.json"
         if not manifest.exists():
@@ -193,8 +195,10 @@ def install_plugins():
                 plugin_dir = mkt["path"] / name
                 if not install_lsp_deps(plugin_dir, name):
                     continue
+                install(name, mkt_name)
+                continue
             flavor = name if name not in PLUGIN_FLAVOR else PLUGIN_FLAVOR[name]
-            sub(f"{flavor.replace('`', CYAN + BOLD).replace('`', RESET)}")
+            sub(f"{flavor.replace('`', CYAN + BOLD, 1).replace('`', RESET, 1)}")
             install(name, mkt_name)
     SYNC_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
     SYNC_SENTINEL.write_text(remote_head())
@@ -205,7 +209,7 @@ def break_ice():
     section("breaking ICE")
     for patch in TWEAKCC_PATCHES:
         flavor = PATCH_FLAVOR.get(patch, patch)
-        sub(f"{flavor.replace('`', CYAN + BOLD).replace('`', RESET)}")
+        sub(f"{flavor.replace('`', CYAN + BOLD, 1).replace('`', RESET, 1)}")
         result = subprocess.run(
             ["npx", TWEAKCC, "--apply", "--patches", patch],
             stdout=subprocess.DEVNULL,
@@ -227,7 +231,7 @@ def main():
     print(BANNER)
     time.sleep(0.3)
 
-    typing("initiating installation sequence...", delay=0.02)
+    typing("jacking in...", delay=0.02)
     print()
 
     preflight()
