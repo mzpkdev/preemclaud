@@ -98,6 +98,59 @@ System internals. Not user-facing chrome — the daemons that keep the rig alive
 
 ---
 
+## Examples
+
+A feature from napkin to commit in four commands.
+
+#### Plan → Build → Review → Ship
+
+```
+> /write:plan Add a REST endpoint that lets users export their dashboard as PDF
+
+  Daemon write:plan online. Breaking down the work.
+  ⟶ Researches codebase, finds existing patterns, discovers test/lint toolchain
+  ⟶ Surfaces ambiguities: "Stream the PDF or return a download link?"
+  ⟶ Writes step-by-step plan to .claude/plans/fuzzy-penguin.md
+
+> /code:write .claude/plans/fuzzy-penguin.md
+
+  Daemon code:write online. Starting pipeline.
+  ⟶ Spawns builder + adversarial test-writer as a team
+  ⟶ Test-writer writes behavioral tests from spec (never sees the plan)
+  ⟶ Builder implements, both communicate until all tests pass
+  ⟶ Quality toolchain (lint, types, tests) green
+
+> /code:review --pr https://github.com/acme/backend/pull/312
+
+  code:review — Spawning review agents on your diff.
+  ⟶ 7 specialist agents in parallel: bugs, security, architecture,
+     consistency, quality, tests, coherence
+  ⟶ Findings verified against actual code, ranked by severity
+  ⟶ "explain 2 5" to drill in, "dismiss 3" to drop a nit
+
+> /git:commit
+
+  git:commit — Reading changes on feature/pdf-export.
+  ⟶ Matches your commit style from history
+  ⟶ Groups files into logical commits, flags secrets/binaries
+  ⟶ "go" to execute
+```
+
+#### More one-liners
+
+```bash
+# Where did I leave off?
+> /git:status
+
+# Merge main, auto-resolve what's obvious, ask about the rest
+> /git:deconflict merge main
+
+# Review just a local diff
+> /code:review
+```
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
