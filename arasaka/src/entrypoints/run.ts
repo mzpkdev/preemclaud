@@ -10,7 +10,7 @@
 import * as core from "@actions/core";
 import { dirname } from "path";
 import { spawn } from "child_process";
-import { appendFile, writeFile } from "fs/promises";
+import { appendFile } from "fs/promises";
 import { existsSync, readFileSync } from "fs";
 
 // ─── Upstream imports: GitHub infrastructure ───────────────────────
@@ -406,19 +406,6 @@ async function run() {
     }
 
     await setupClaudeCodeSettings(process.env.INPUT_SETTINGS);
-
-    // Preemclaud (and other local rigs) may write custom model names like
-    // "opusplan" to ~/.claude/settings.json. The stock Claude Code binary
-    // arasaka installs doesn't recognise these and exits with code 1.
-    // Clear the model key if it doesn't look like a real claude-* model ID.
-    const claudeSettingsPath = `${process.env.HOME}/.claude/settings.json`;
-    if (existsSync(claudeSettingsPath)) {
-      const settings = JSON.parse(readFileSync(claudeSettingsPath, "utf-8"));
-      if (settings.model && !String(settings.model).startsWith("claude-")) {
-        delete settings.model;
-        await writeFile(claudeSettingsPath, JSON.stringify(settings, null, 2));
-      }
-    }
 
     await installPlugins(
       process.env.INPUT_PLUGIN_MARKETPLACES,
