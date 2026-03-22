@@ -95,23 +95,23 @@ await $`chmod +x ${DIST}/scripts/git-push.sh`;
 console.log("Generating v1 action.yml...");
 let actionYml = await readFile("./action.yml", "utf-8");
 
-// Patch entrypoint path
+// Patch entrypoint path (v1 branch root IS the dist/ dir, so no dist/ prefix)
 actionYml = actionYml.replace(
   "bun run ${GITHUB_ACTION_PATH}/src/entrypoints/run.ts",
-  "bun run ${GITHUB_ACTION_PATH}/dist/run.js",
+  "bun run ${GITHUB_ACTION_PATH}/run.js",
 );
-// Patch cleanup paths (upstream/ prefix removed, point to dist/)
+// Patch cleanup paths (v1 branch root IS the dist/ dir)
 actionYml = actionYml.replace(
   "bun run ${GITHUB_ACTION_PATH}/upstream/src/entrypoints/cleanup-ssh-signing.ts",
-  "bun run ${GITHUB_ACTION_PATH}/dist/src/entrypoints/cleanup-ssh-signing.ts",
+  "bun run ${GITHUB_ACTION_PATH}/src/entrypoints/cleanup-ssh-signing.ts",
 );
 actionYml = actionYml.replace(
   "bun run ${GITHUB_ACTION_PATH}/upstream/src/entrypoints/post-buffered-inline-comments.ts",
-  "bun run ${GITHUB_ACTION_PATH}/dist/src/entrypoints/post-buffered-inline-comments.ts",
+  "bun run ${GITHUB_ACTION_PATH}/src/entrypoints/post-buffered-inline-comments.ts",
 );
-// Remove the bun install step for v1 (everything is pre-bundled)
+// Remove the bun install step for v1 (everything is pre-bundled, package.json has no deps)
 actionYml = actionYml.replace(
-  /    - name: Install Dependencies\n.*\n.*\n.*bun install --production\n/,
+  /    - name: Install Dependencies\n.*\n.*\n.*\n.*bun install --production\n/,
   "",
 );
 
