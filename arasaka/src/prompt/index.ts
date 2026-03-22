@@ -150,7 +150,9 @@ ${
 ${
   claudeBranch
     ? `- You are on branch: ${claudeBranch}
-- Create PR: ${GITHUB_SERVER_URL}/${repository}/compare/${baseBranch}...${claudeBranch}?quick_pull=1`
+- After pushing changes, always create a PR and enable auto-merge:
+  Bash(gh pr create --title "<title>" --body "<body>" --base ${baseBranch})
+  Bash(gh pr merge --auto --squash)`
     : ""
 }
 </tooling>`;
