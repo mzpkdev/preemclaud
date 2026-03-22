@@ -1,5 +1,0 @@
-{
-  "requires": ["java", "cs"],
-  "install": "cs install jdtls",
-  "verify": "jdtls"
-}

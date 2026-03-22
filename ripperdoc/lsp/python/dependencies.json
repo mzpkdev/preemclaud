@@ -1,5 +1,0 @@
-{
-  "requires": ["node"],
-  "install": "npm install -g pyright",
-  "verify": "pyright-langserver"
-}
