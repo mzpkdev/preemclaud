@@ -32,7 +32,10 @@ jobs:
 
       - name: Deploy to v1 branch
         run: |
-          cd arasaka/dist
+          # uses: mzpkdev/preemclaud/arasaka@v1 resolves to arasaka/ subdir on v1 branch
+          mkdir -p /tmp/v1-release/arasaka
+          cp -r arasaka/dist/. /tmp/v1-release/arasaka/
+          cd /tmp/v1-release
 
           git init
           git checkout --orphan v1
