@@ -16,4 +16,4 @@ if (Test-Path $TARGET) {
 git clone --depth 1 --quiet $REPO $TARGET
 
 Set-Location $TARGET
-python3 null/sys/scripts/install.py @args
+python3 ripperdoc/null/sys/scripts/install.py @args

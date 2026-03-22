@@ -1,0 +1,22 @@
+{
+  "name": "rig",
+  "description": "",
+  "owner": {
+    "name": "preemclaud",
+    "email": "preemclaud"
+  },
+  "plugins": [
+    {
+      "name": "jetbrains-ide",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./jetbrains-ide"
+    },
+    {
+      "name": "git",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./git"
+    }
+  ]
+}

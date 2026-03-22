@@ -16,4 +16,4 @@ fi
 
 git clone --depth 1 --quiet "$REPO" "$TARGET"
 
-cd "$TARGET" && exec python3 null/sys/scripts/install.py "$@"
+cd "$TARGET" && exec python3 ripperdoc/null/sys/scripts/install.py "$@"

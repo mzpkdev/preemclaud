@@ -1,0 +1,5 @@
+{
+  "requires": ["node"],
+  "install": "npm install -g @vtsls/language-server typescript",
+  "verify": "vtsls"
+}
