@@ -29,6 +29,7 @@
 __pycache__/
 **/evals/
 **/*-workspace/
+node_modules/
 
 # IDE
 /.claude/

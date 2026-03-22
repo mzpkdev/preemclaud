@@ -1,0 +1,3 @@
+[submodule "arasaka/upstream"]
+	path = arasaka/upstream
+	url = https://github.com/anthropics/claude-code-action.git

@@ -1,0 +1,270 @@
+name: "Arasaka"
+description: "Custom Claude Code Action with full system prompt control"
+branding:
+  icon: "terminal"
+  color: "purple"
+
+inputs:
+  # First-class: system prompt control
+  system_prompt:
+    description: "Complete system prompt for Claude. Controls all behavioral instructions. If empty, no preset is applied."
+    required: false
+    default: ""
+
+  # Standard inputs
+  trigger_phrase:
+    description: "Trigger phrase in comments"
+    required: false
+    default: "@claude"
+  assignee_trigger:
+    description: "Assignee username that triggers the action"
+    required: false
+  label_trigger:
+    description: "Label that triggers the action"
+    required: false
+    default: "claude"
+  base_branch:
+    description: "Base branch for new branches"
+    required: false
+  branch_prefix:
+    description: "Prefix for Claude branches"
+    required: false
+    default: "claude/"
+  branch_name_template:
+    description: "Template for branch naming"
+    required: false
+    default: ""
+  allowed_bots:
+    description: "Comma-separated allowed bot usernames, or '*' for all"
+    required: false
+    default: ""
+  allowed_non_write_users:
+    description: "Comma-separated users allowed without write permissions"
+    required: false
+    default: ""
+  include_comments_by_actor:
+    description: "Comma-separated actor usernames to include in comments"
+    required: false
+    default: ""
+  exclude_comments_by_actor:
+    description: "Comma-separated actor usernames to exclude from comments"
+    required: false
+    default: ""
+  prompt:
+    description: "Direct instructions for Claude (agent mode)"
+    required: false
+    default: ""
+  settings:
+    description: "Claude Code settings as JSON string or path"
+    required: false
+    default: ""
+
+  # Auth
+  anthropic_api_key:
+    description: "Anthropic API key"
+    required: false
+  claude_code_oauth_token:
+    description: "Claude Code OAuth token"
+    required: false
+  github_token:
+    description: "GitHub token with repo and PR permissions"
+    required: false
+  use_bedrock:
+    description: "Use Amazon Bedrock"
+    required: false
+    default: "false"
+  use_vertex:
+    description: "Use Google Vertex AI"
+    required: false
+    default: "false"
+  use_foundry:
+    description: "Use Microsoft Foundry"
+    required: false
+    default: "false"
+
+  # Behavior
+  claude_args:
+    description: "Additional CLI arguments for Claude"
+    required: false
+    default: ""
+  use_commit_signing:
+    description: "Enable commit signing via GitHub API"
+    required: false
+    default: "false"
+  ssh_signing_key:
+    description: "SSH private key for signing commits"
+    required: false
+    default: ""
+  bot_id:
+    description: "GitHub user ID for git operations"
+    required: false
+    default: "41898282"
+  bot_name:
+    description: "GitHub username for git operations"
+    required: false
+    default: "claude[bot]"
+  track_progress:
+    description: "Force tag mode with tracking comments"
+    required: false
+    default: "false"
+  use_sticky_comment:
+    description: "Reuse a single comment"
+    required: false
+    default: "false"
+  classify_inline_comments:
+    description: "Buffer and classify inline comments before posting"
+    required: false
+    default: "true"
+  display_report:
+    description: "Display Claude Code Report in Step Summary"
+    required: false
+    default: "false"
+  show_full_output:
+    description: "Show full JSON output (may contain secrets)"
+    required: false
+    default: "false"
+  path_to_claude_code_executable:
+    description: "Path to custom Claude Code executable"
+    required: false
+    default: ""
+  path_to_bun_executable:
+    description: "Path to custom Bun executable"
+    required: false
+    default: ""
+
+outputs:
+  execution_file:
+    description: "Path to execution output file"
+    value: ${{ steps.run.outputs.execution_file }}
+  branch_name:
+    description: "Branch created by Claude"
+    value: ${{ steps.run.outputs.branch_name }}
+  github_token:
+    description: "GitHub token used"
+    value: ${{ steps.run.outputs.github_token }}
+  structured_output:
+    description: "JSON structured output"
+    value: ${{ steps.run.outputs.structured_output }}
+  session_id:
+    description: "Claude Code session ID"
+    value: ${{ steps.run.outputs.session_id }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Bun
+      if: inputs.path_to_bun_executable == ''
+      uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3
+      with:
+        bun-version: 1.3.6
+        token: ${{ inputs.github_token || github.token }}
+
+    - name: Setup Custom Bun Path
+      if: inputs.path_to_bun_executable != ''
+      shell: bash
+      env:
+        PATH_TO_BUN_EXECUTABLE: ${{ inputs.path_to_bun_executable }}
+      run: |
+        echo "Using custom Bun executable: $PATH_TO_BUN_EXECUTABLE"
+        BUN_DIR=$(dirname "$PATH_TO_BUN_EXECUTABLE")
+        echo "$BUN_DIR" >> "$GITHUB_PATH"
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        cd ${GITHUB_ACTION_PATH}
+        bun install --production
+
+    - name: Run Arasaka
+      id: run
+      shell: bash
+      run: |
+        bun run ${GITHUB_ACTION_PATH}/src/entrypoints/run.ts
+      env:
+        # Arasaka-specific
+        SYSTEM_PROMPT: ${{ inputs.system_prompt }}
+
+        # Standard inputs
+        PROMPT: ${{ inputs.prompt }}
+        TRIGGER_PHRASE: ${{ inputs.trigger_phrase }}
+        ASSIGNEE_TRIGGER: ${{ inputs.assignee_trigger }}
+        LABEL_TRIGGER: ${{ inputs.label_trigger }}
+        BASE_BRANCH: ${{ inputs.base_branch }}
+        BRANCH_PREFIX: ${{ inputs.branch_prefix }}
+        BRANCH_NAME_TEMPLATE: ${{ inputs.branch_name_template }}
+        OVERRIDE_GITHUB_TOKEN: ${{ inputs.github_token }}
+        ALLOWED_BOTS: ${{ inputs.allowed_bots }}
+        ALLOWED_NON_WRITE_USERS: ${{ inputs.allowed_non_write_users }}
+        INCLUDE_COMMENTS_BY_ACTOR: ${{ inputs.include_comments_by_actor }}
+        EXCLUDE_COMMENTS_BY_ACTOR: ${{ inputs.exclude_comments_by_actor }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
+        USE_STICKY_COMMENT: ${{ inputs.use_sticky_comment }}
+        CLASSIFY_INLINE_COMMENTS: ${{ inputs.classify_inline_comments }}
+        DEFAULT_WORKFLOW_TOKEN: ${{ github.token }}
+        USE_COMMIT_SIGNING: ${{ inputs.use_commit_signing }}
+        SSH_SIGNING_KEY: ${{ inputs.ssh_signing_key }}
+        BOT_ID: ${{ inputs.bot_id }}
+        BOT_NAME: ${{ inputs.bot_name }}
+        TRACK_PROGRESS: ${{ inputs.track_progress }}
+        CLAUDE_ARGS: ${{ inputs.claude_args }}
+        ALL_INPUTS: ${{ toJson(inputs) }}
+
+        # Base-action inputs
+        INPUT_PROMPT_FILE: ${{ runner.temp }}/claude-prompts/claude-prompt.txt
+        INPUT_SETTINGS: ${{ inputs.settings }}
+        INPUT_PATH_TO_CLAUDE_CODE_EXECUTABLE: ${{ inputs.path_to_claude_code_executable }}
+        INPUT_SHOW_FULL_OUTPUT: ${{ inputs.show_full_output }}
+        DISPLAY_REPORT: ${{ inputs.display_report }}
+        PATH_TO_CLAUDE_CODE_EXECUTABLE: ${{ inputs.path_to_claude_code_executable }}
+
+        # Provider config
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+        CLAUDE_CODE_OAUTH_TOKEN: ${{ inputs.claude_code_oauth_token }}
+        CLAUDE_CODE_USE_BEDROCK: ${{ inputs.use_bedrock == 'true' && '1' || '' }}
+        CLAUDE_CODE_USE_VERTEX: ${{ inputs.use_vertex == 'true' && '1' || '' }}
+        CLAUDE_CODE_USE_FOUNDRY: ${{ inputs.use_foundry == 'true' && '1' || '' }}
+
+        # AWS
+        AWS_REGION: ${{ env.AWS_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}
+        ANTHROPIC_BEDROCK_BASE_URL: ${{ env.ANTHROPIC_BEDROCK_BASE_URL || (env.AWS_REGION && format('https://bedrock-runtime.{0}.amazonaws.com', env.AWS_REGION)) }}
+
+        # GCP
+        ANTHROPIC_VERTEX_PROJECT_ID: ${{ env.ANTHROPIC_VERTEX_PROJECT_ID }}
+        CLOUD_ML_REGION: ${{ env.CLOUD_ML_REGION }}
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+        ANTHROPIC_VERTEX_BASE_URL: ${{ env.ANTHROPIC_VERTEX_BASE_URL }}
+
+        # Microsoft Foundry
+        ANTHROPIC_FOUNDRY_RESOURCE: ${{ env.ANTHROPIC_FOUNDRY_RESOURCE }}
+        ANTHROPIC_FOUNDRY_BASE_URL: ${{ env.ANTHROPIC_FOUNDRY_BASE_URL }}
+
+    - name: Cleanup SSH signing key
+      if: always() && inputs.ssh_signing_key != ''
+      shell: bash
+      run: |
+        bun run ${GITHUB_ACTION_PATH}/upstream/src/entrypoints/cleanup-ssh-signing.ts
+
+    - name: Post buffered inline comments
+      if: always() && inputs.classify_inline_comments != 'false'
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ steps.run.outputs.github_token || inputs.github_token || github.token }}
+        REPO_OWNER: ${{ github.event.repository.owner.login }}
+        REPO_NAME: ${{ github.event.repository.name }}
+        PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+      run: |
+        bun run ${GITHUB_ACTION_PATH}/upstream/src/entrypoints/post-buffered-inline-comments.ts
+
+    - name: Revoke app token
+      if: always() && inputs.github_token == '' && steps.run.outputs.skipped_due_to_workflow_validation_mismatch != 'true'
+      shell: bash
+      run: |
+        curl -L -X DELETE \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ steps.run.outputs.github_token }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          ${GITHUB_API_URL:-https://api.github.com}/installation/token
