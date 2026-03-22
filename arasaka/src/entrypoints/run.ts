@@ -298,10 +298,13 @@ async function writeStepSummary(executionFile: string): Promise<void> {
 // ═══════════════════════════════════════════════════════════════════
 
 async function run() {
-  // Override GITHUB_ACTION_PATH so upstream functions find MCP servers
-  // in the submodule directory. This only affects the process scope —
-  // composite action steps in action.yml still see the original path.
-  process.env.GITHUB_ACTION_PATH = `${process.env.GITHUB_ACTION_PATH}/upstream`;
+  // On the dev branch, MCP servers live in the upstream/ submodule so we
+  // append '/upstream'. On the pre-built v1 branch there is no upstream/
+  // directory — the bundled servers sit directly under src/mcp/.
+  const actionPath = process.env.GITHUB_ACTION_PATH!;
+  if (existsSync(`${actionPath}/upstream`)) {
+    process.env.GITHUB_ACTION_PATH = `${actionPath}/upstream`;
+  }
 
   let githubToken: string | undefined;
   let commentId: number | undefined;
