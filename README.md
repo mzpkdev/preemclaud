@@ -70,7 +70,7 @@ Your cyberdeck. Version control that reads your commit style. IDE integration wi
 <tr>
 <td width="50%" valign="top">
 
-#### [`LSP`](docs/lsp.md)
+#### [`OPTICS`](docs/optics.md)
 
 Without these I'm guessing. With them I see what your IDE sees — types, refs, definitions, diagnostics.
 
@@ -84,7 +84,7 @@ Without these I'm guessing. With them I see what your IDE sees — types, refs, 
 </td>
 <td width="50%" valign="top">
 
-#### [`NULL`](docs/null.md)
+#### [`BLACKWALL`](docs/blackwall.md)
 
 System internals. Not user-facing chrome — the daemons that keep the rig alive.
 
@@ -156,7 +156,7 @@ A feature from napkin to commit in four commands.
 | Problem | Fix |
 |---|---|
 | Skills glitching | Re-run the installer. It's idempotent. |
-| LSP flatlined | Check PATH. `node` for TS/Python, `cs` for Scala/Java. No toolchain, no coprocessor. |
+| Optics flatlined | Check PATH. `node` for TS/Python, `cs` for Scala/Java. No toolchain, no coprocessor. |
 | MCP timing out | Auth tokens expire. Corps love expiring keys. Run `knowledge:mcp` again. |
 
 ---
