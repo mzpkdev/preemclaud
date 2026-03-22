@@ -1,0 +1,22 @@
+{
+  "name": "blackwall",
+  "description": "",
+  "owner": {
+    "name": "preemclaud",
+    "email": "preemclaud"
+  },
+  "plugins": [
+    {
+      "name": "sys",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./sys"
+    },
+    {
+      "name": "ghost",
+      "description": "",
+      "version": "0.0.0",
+      "source": "./ghost"
+    }
+  ]
+}
