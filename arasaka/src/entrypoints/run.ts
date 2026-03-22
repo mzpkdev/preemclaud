@@ -168,6 +168,7 @@ async function prepareTagModeCustom({
       "Bash(git commit:*)",
       `Bash(${gitPushWrapper}:*)`,
       "Bash(git rm:*)",
+      "Bash(gh pr:*)",
     );
   } else {
     tagModeTools.push(
