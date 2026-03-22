@@ -1,0 +1,47 @@
+name: Release Arasaka v1
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'arasaka/**'
+      - '.github/workflows/release-arasaka.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3
+        with:
+          bun-version: 1.3.6
+
+      - name: Install dependencies
+        run: cd arasaka && bun install
+
+      - name: Build
+        run: cd arasaka && bun run build
+
+      - name: Deploy to v1 branch
+        run: |
+          cd arasaka/dist
+
+          git init
+          git checkout --orphan v1
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "Release arasaka v1 from ${{ github.sha }}"
+
+          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git push -f origin v1

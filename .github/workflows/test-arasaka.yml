@@ -1,0 +1,27 @@
+name: Test Arasaka
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  test:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Run Arasaka
+        uses: ./arasaka
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          system_prompt: |
+            You are a helpful coding assistant.
+            Respond concisely. Update your tracking comment with progress.
