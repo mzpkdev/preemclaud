@@ -24,13 +24,13 @@ model: claude-sonnet-4-6
 If `--force` was passed in args:
 
 ```bash
-python3 "$HOME/.claude/blackwall/sys/scripts/update.py" --force
+python3 "$HOME/.claude/ripperdoc/blackwall/sys/scripts/update.py" --force
 ```
 
 Otherwise:
 
 ```bash
-python3 "$HOME/.claude/blackwall/sys/scripts/update.py"
+python3 "$HOME/.claude/ripperdoc/blackwall/sys/scripts/update.py"
 ```
 
 ### Step 2 — Report
