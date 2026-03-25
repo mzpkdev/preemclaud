@@ -67,7 +67,7 @@
       "Write(~/.gnupg/*)",
       "Write(~/.aws/*)"
     ],
-    "defaultMode": "dontAsk"
+    "defaultMode": "acceptEdits"
   },
   "model": "opusplan",
   "effortLevel": "high",
