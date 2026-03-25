@@ -1,4 +1,4 @@
-# Blackwall
+# Cortex
 
 System-level internals. Not user-facing chrome — the daemons that keep the rig alive.
 

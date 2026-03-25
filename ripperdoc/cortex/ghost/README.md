@@ -12,16 +12,16 @@ Persona files are stored as base64-encoded `.dat` files to keep the raw characte
 
 ```bash
 # Decode .dat files back to editable .md
-python3 ripperdoc/blackwall/ghost/hooks/ghost.py decode
+python3 ripperdoc/cortex/ghost/hooks/ghost.py decode
 
 # Edit the .md files as needed, then re-encode
-python3 ripperdoc/blackwall/ghost/hooks/ghost.py encode
+python3 ripperdoc/cortex/ghost/hooks/ghost.py encode
 
 # Push changes to the plugin cache
-python3 ripperdoc/blackwall/sys/scripts/update.py --force
+python3 ripperdoc/cortex/sys/scripts/update.py --force
 ```
 
-`decode` keeps the `.dat` files in place so `boot.py` continues to work while you edit. `encode` deletes the `.md` files after writing the `.dat` versions. After encoding, run `ripperdoc/blackwall/sys/scripts/update.py --force` to sync changes to the plugin cache.
+`decode` keeps the `.dat` files in place so `boot.py` continues to work while you edit. `encode` deletes the `.md` files after writing the `.dat` versions. After encoding, run `ripperdoc/cortex/sys/scripts/update.py --force` to sync changes to the plugin cache.
 
 ## Resetting first boot
 

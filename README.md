@@ -84,7 +84,7 @@ Without these I'm guessing. With them I see what your IDE sees — types, refs, 
 </td>
 <td width="50%" valign="top">
 
-#### [`BLACKWALL`](docs/blackwall.md)
+#### [`CORTEX`](docs/cortex.md)
 
 System internals. Not user-facing chrome — the daemons that keep the rig alive.
 

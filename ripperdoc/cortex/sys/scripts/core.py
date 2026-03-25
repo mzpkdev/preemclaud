@@ -44,8 +44,8 @@ MARKETPLACES = {
         "path": CLAUDE_DIR / "ripperdoc" / "rig",
         "skip": {"jetbrains-ide"},
     },
-    "blackwall": {
-        "path": CLAUDE_DIR / "ripperdoc" / "blackwall",
+    "cortex": {
+        "path": CLAUDE_DIR / "ripperdoc" / "cortex",
         "skip": {"ghost"},
     },
 }
@@ -143,7 +143,7 @@ def in_sync():
 
 
 def sync_marketplaces():
-    git("checkout", "origin/main", "--", "ripperdoc/chrome/", "ripperdoc/optics/", "ripperdoc/rig/", "ripperdoc/blackwall/")
+    git("checkout", "origin/main", "--", "ripperdoc/chrome/", "ripperdoc/optics/", "ripperdoc/rig/", "ripperdoc/cortex/")
     SYNC_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
     SYNC_SENTINEL.write_text(remote_head())
 

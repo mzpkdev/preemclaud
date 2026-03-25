@@ -16,4 +16,4 @@ fi
 
 git clone --depth 1 --quiet "$REPO" "$TARGET"
 
-cd "$TARGET" && exec python3 ripperdoc/blackwall/sys/scripts/install.py "$@"
+cd "$TARGET" && exec python3 ripperdoc/cortex/sys/scripts/install.py "$@"
