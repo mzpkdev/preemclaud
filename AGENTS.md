@@ -23,6 +23,7 @@ ripperdoc/
           scripts/                # helper scripts — snake_case.py
           workers/                # co-located agents — kebab-case.md
             <agent-name>.md       # agent definition — frontmatter + system prompt
+          references/             # optional: non-executable documentation for the skill
 ```
 
 Skills are invoked as `<plugin>:<skill>` — e.g. `git:commit`, `code:review`, `write:plan`.
@@ -75,6 +76,35 @@ Everything else follows the convention of its file type:
 
 - `.md` files (workers, templates, commands) → lowercase kebab-case: `security-reviewer.md`, `action-explain.md`
 - `.py` files (scripts, hooks) → snake_case: `gather_data.py`, `post_bash.py`
+
+## Whimsical File Naming
+
+Skills that produce artifact files (specs, briefs, plans) write them to a project directory using a two-word `<adjective>-<noun>.md` pattern:
+
+- `.claude/specs/velvet-compass.md`
+- `.claude/briefs/rusty-compass.md`
+- `.claude/plans/sleepy-axolotl.md`
+
+The names are random and whimsical — memorable, easy to reference in conversation, and collision-resistant without timestamps or UUIDs. Before writing, glob the target directory to ensure the chosen name doesn't already exist.
+
+Used by: `write:spec`, `write:brief`, `write:plan`.
+
+## References Directory
+
+A skill can include a `references/` directory alongside `SKILL.md` for non-executable documentation that's too large to inline but central to the skill's function — hook reference guides, schema definitions, agent creation references.
+
+```
+skills/
+  <skill>/
+    SKILL.md
+    references/
+      hooks-reference.md
+      schemas.md
+```
+
+Reference files are loaded on demand (via Read or `` !`cat` ``), not injected automatically. Keep them factual and versioned with the skill — if the reference drifts from the skill's behavior, it becomes a liability.
+
+Used by: `knowledge:teams`, `knowledge:mcp`, `create:agent`, `create:hook`, `create:superskill`.
 
 ## Agent Spawning
 
@@ -298,6 +328,22 @@ args = prompt.removeprefix("/my-command").lstrip()
 print(json.dumps({"decision": "block", "reason": message}))
 ```
 
+## Skill-to-Skill Invocation
+
+A skill can invoke another skill using the `Skill` tool. This is useful when one skill's output feeds into another — e.g., fetching external context before planning.
+
+```markdown
+### Step 1 — Fetch external context
+
+If `$ARGUMENTS` contains URLs, invoke `knowledge:links` via the Skill tool before proceeding.
+```
+
+The invoked skill runs in the same conversation context. It inherits the current tool permissions, not the calling skill's `allowed-tools`. The calling skill must list `Skill` in its own `allowed-tools` for this to work.
+
+Use sparingly — skill-to-skill calls add complexity. Prefer them only when the invoked skill handles authentication, routing, or multi-step retrieval that would be wrong to duplicate.
+
+Used by: `write:plan` (invokes `knowledge:links` for URL context).
+
 ## Extended Thinking
 
 Place an HTML comment `<!-- ultrathink -->` immediately before any step that requires deep reasoning — complex merges, severity re-calibration, multi-variable decisions:
@@ -414,6 +460,20 @@ Multiple hooks matching the same event run in parallel. Identical commands on th
 | `http` | POST to a URL |
 | `prompt` | Single-turn LLM eval — returns `{"ok": bool, "reason": "..."}` |
 | `agent` | Multi-turn subagent with tools — same return format as `prompt`; 60s timeout, 50 tool turns max |
+
+**`async` flag**
+
+Add `"async": true` to a hook object to run it without blocking. The hook fires and the triggering action proceeds immediately — the hook's exit code and output are ignored. Use for side effects that don't need to gate execution: IDE file opens, telemetry, background setup.
+
+```json
+{
+  "type": "command",
+  "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/auto_open.py\"",
+  "async": true
+}
+```
+
+Used by: `jetbrains-ide` (SessionStart and PostToolUse hooks).
 
 **`CLAUDE_ENV_FILE`**
 
@@ -560,6 +620,15 @@ hooks:                                    # optional — skill-scoped lifecycle 
 ---
 ```
 
+**`allowed-tools` filtering:** `Bash` can be restricted to specific command patterns with `Bash(pattern *)`. The skill can only run Bash commands matching the pattern — everything else is blocked.
+
+```yaml
+allowed-tools: Read, Grep, Glob, Bash(python3 *)    # only python3 commands
+allowed-tools: Read, Agent, Bash(git *)              # only git commands
+```
+
+Used by: `code:review` (`python3 *`), `code:write` (`git *`).
+
 ```markdown
 # Skill Name
 
@@ -676,10 +745,12 @@ Do not add output before or after. The agent handles everything.
 # --- Frontmatter ---
 name: worker                              # passed to Agent tool name parameter
 description: What this agent does         # passed to Agent tool description parameter
-tools: Read, Grep, Glob, Bash             # documentation only — actual access set by subagent_type at spawn time
+tools: Read, Grep, Glob, Bash             # documentation only — see note below
 model: sonnet                             # sonnet | opus | haiku | full model ID
 ---
 ```
+
+**`tools` field:** Lists the tools the agent is designed to use, but does not enforce access. Actual tool access is controlled by the `subagent_type` parameter passed to the Agent tool at spawn time (`Explore` = read-only set, `general-purpose` = all tools). The `tools` field serves as readable documentation for anyone reviewing the agent file — it signals intent and makes the expected access level obvious without reading the spawning skill.
 
 ```markdown
 # Agent Name

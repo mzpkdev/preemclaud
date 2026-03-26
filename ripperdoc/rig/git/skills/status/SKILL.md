@@ -10,15 +10,15 @@ model: claude-sonnet-4-6
 
 ## Announce
 
-> `git:status` — Scanning your changes.
+> Daemon `git:status` online. Scanning your changes.
 
 ## Agent Frontmatter
 
-This skill delegates to a co-located agent in `${CLAUDE_SKILL_DIR}/agents/`.
+This skill delegates to a co-located agent in `${CLAUDE_SKILL_DIR}/workers/`.
 The agent runs in its own context window — git diffs and gather output never appear here.
 
 When spawning the agent:
-1. **Read** `${CLAUDE_SKILL_DIR}/agents/worker.md`
+1. **Read** `${CLAUDE_SKILL_DIR}/workers/worker.md`
 2. **Parse** YAML frontmatter between `---` delimiters — extract `name`, `description`, `model`
 3. **Extract** the markdown body (below closing `---`) as the agent's system prompt
 4. **Spawn** with `subagent_type: "Explore"` and the prompt below

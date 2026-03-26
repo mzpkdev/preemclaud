@@ -10,15 +10,15 @@ allowed-tools: Read, Agent
 
 ## Announce
 
-> `git:commit` — Reading changes on `!`git branch --show-current``.
+> Daemon `git:commit` online. Reading changes on `!`git branch --show-current``.
 
 ## Agent Frontmatter
 
-This skill delegates to a co-located agent in `${CLAUDE_SKILL_DIR}/agents/`.
+This skill delegates to a co-located agent in `${CLAUDE_SKILL_DIR}/workers/`.
 The agent runs git operations in its own context window — diffs, planning, and execution never appear here.
 
 When spawning the agent:
-1. **Read** `${CLAUDE_SKILL_DIR}/agents/worker.md`
+1. **Read** `${CLAUDE_SKILL_DIR}/workers/worker.md`
 2. **Parse** YAML frontmatter between `---` delimiters — extract `name`, `description`, `model`
 3. **Extract** the markdown body (below closing `---`) as the agent's system prompt
 4. **Spawn** with `subagent_type: "general-purpose"` and the prompt below

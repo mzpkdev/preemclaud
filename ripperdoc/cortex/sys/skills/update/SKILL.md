@@ -10,12 +10,12 @@ model: claude-sonnet-4-6
 
 ## Announce
 
-> `sys:update` — syncing the rig.
+> Daemon `sys:update` online. Syncing the rig.
 
 ## Preload
 
 ### Args
-!`echo "${SKILL_ARGS}"`
+!`echo "${ARGUMENTS}"`
 
 ## Steps
 

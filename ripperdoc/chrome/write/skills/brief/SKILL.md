@@ -88,7 +88,7 @@ A developer reading only one task should have enough to produce an implementatio
 
 After writing the brief, dispatch a reviewer subagent:
 
-1. Spawn a general-purpose subagent with the reviewer prompt (see `agents/reviewer.md`)
+1. Spawn a general-purpose subagent with the reviewer prompt (see `workers/reviewer.md`)
    - Provide: the brief file path and the spec path (if any)
 2. If issues found: fix them, re-dispatch the reviewer, repeat until approved
 3. If approved: proceed to next step
@@ -131,7 +131,7 @@ The test: if removing a sentence wouldn't change *what* gets built, only *how*, 
 
 ## Template
 
-!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/templates/report.md').read(), end='')"`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact

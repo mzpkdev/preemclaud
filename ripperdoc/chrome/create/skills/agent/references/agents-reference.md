@@ -220,7 +220,7 @@ and where.
 | `--agents` CLI flag          | Current session only    | 1 (highest) |
 | `.claude/agents/`            | Current project         | 2           |
 | `~/.claude/agents/`          | All your projects       | 3           |
-| Plugin's `agents/` directory | Where plugin is enabled | 4 (lowest)  |
+| Plugin's `workers/` directory | Where plugin is enabled | 4 (lowest)  |
 
 When multiple agents share the same name, the higher-priority location wins.
 

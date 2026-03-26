@@ -75,7 +75,7 @@ concise enough to fit comfortably on one screen.
 
 After writing the reflection, dispatch a reviewer subagent if available:
 
-1. Spawn a general-purpose subagent with the prompt from `agents/reviewer.md`
+1. Spawn a general-purpose subagent with the prompt from `workers/reviewer.md`
    - Provide: the reflection content and the conversation context
 2. If issues found: revise the reflection and re-dispatch, up to 2 iterations
 3. If approved: present to the user
@@ -141,7 +141,7 @@ The user's time is valuable — every sentence should carry information.
 
 ## Template
 
-Read `TEMPLATE.md` for the reflection format.
+Read `templates/report.md` for the reflection format.
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact

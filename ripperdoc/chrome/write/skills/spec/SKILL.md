@@ -99,7 +99,7 @@ The **numbered decisions** capture every meaningful design choice made during th
 
 After writing the spec, dispatch a reviewer subagent:
 
-1. Spawn a general-purpose subagent with the reviewer prompt (see `agents/reviewer.md`)
+1. Spawn a general-purpose subagent with the reviewer prompt (see `workers/reviewer.md`)
    - Provide: the spec file path
 2. If issues found: fix them, re-dispatch the reviewer, repeat until approved
 3. If approved: proceed to next step
@@ -118,7 +118,7 @@ Write the spec to a file per the [output](#output) convention. After saving, tel
 
 ## Template
 
-!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/templates/report.md').read(), end='')"`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact

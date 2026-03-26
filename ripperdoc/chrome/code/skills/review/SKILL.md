@@ -14,7 +14,7 @@ Merges findings into a single prioritized report.
 
 ## Announce
 
-> `code:review` — Spawning review agents on your diff.
+> Daemon `code:review` online. Spawning review agents on your diff.
 
 ## Progress tracking
 
@@ -29,11 +29,11 @@ Create a task at the start of the review and update it at each major milestone t
 
 ## Agent Frontmatter
 
-This skill bundles co-located agent definitions in `${CLAUDE_SKILL_DIR}/agents/`. 
+This skill bundles co-located agent definitions in `${CLAUDE_SKILL_DIR}/workers/`. 
 Each `.md` file uses standard Claude Code agent frontmatter — the same schema as files in `.claude/agents/` — but since they live inside the skill directory, Claude Code does not auto-discover or enforce them. The skill must parse and honor the frontmatter explicitly.
 
 When spawning a co-located agent:
-1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/agents/`
+1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/workers/`
 2. **Parse** the YAML frontmatter (between `---` delimiters) and extract:
    - `model` → pass to the Agent tool's `model` parameter
    - `tools` → informational; enforced via `subagent_type` (see below)
@@ -94,7 +94,7 @@ If `(none)` is shown above, skip this step — the agents will review against ge
 
 ### Step 3 — Spawn specialized reviewers
 
-Read each agent file from `agents/` relative to this skill directory and spawn them as subagents in parallel. Each agent gets:
+Read each agent file from `workers/` relative to this skill directory and spawn them as subagents in parallel. Each agent gets:
 - The full diff content
 - The review focus area
 - Any relevant project guidelines from the step above
@@ -104,13 +104,13 @@ Spawn all 7 in parallel following the **Agent Frontmatter** section above to par
 
 | Agent | File | Focus |
 |-------|------|-------|
-| Bugs | `agents/bugs.md` | Logic errors, edge cases, race conditions |
-| Security | `agents/security.md` | Injection, auth, secrets, OWASP |
-| Architecture | `agents/architecture.md` | Coupling, abstractions, dependency direction |
-| Consistency | `agents/consistency.md` | Convention adherence, duplication |
-| Quality | `agents/quality.md` | Readability, naming, complexity, SRP |
-| Tests | `agents/tests.md` | Critical path gaps, flaky tests |
-| Coherence | `agents/coherence.md` | Incomplete renames, orphaned types, stale names, structural debris |
+| Bugs | `workers/bugs.md` | Logic errors, edge cases, race conditions |
+| Security | `workers/security.md` | Injection, auth, secrets, OWASP |
+| Architecture | `workers/architecture.md` | Coupling, abstractions, dependency direction |
+| Consistency | `workers/consistency.md` | Convention adherence, duplication |
+| Quality | `workers/quality.md` | Readability, naming, complexity, SRP |
+| Tests | `workers/tests.md` | Critical path gaps, flaky tests |
+| Coherence | `workers/coherence.md` | Incomplete renames, orphaned types, stale names, structural debris |
 
 Pass the diff as part of each agent's prompt. **Always embed the diff text directly in the prompt** — never save it to a temp file for agents to Read. The Read tool prefixes output with the file's own line numbers (positions within the file being read), and agents will mistake those for source-file line numbers, corrupting every reference in the report.
 
@@ -161,7 +161,7 @@ After merging, re-calibrate severity across the full list. Specialist agents inf
 
 Reviewers sometimes hallucinate issues — misread a variable name, flag a bug that's actually handled elsewhere, or reference a line that doesn't exist. Before presenting the report, spawn a verification subagent that checks every finding against the actual code.
 
-Spawn `agents/verifier.md` following the **Agent Frontmatter** section, with:
+Spawn `workers/verifier.md` following the **Agent Frontmatter** section, with:
 - The compiled report (all merged findings)
 - The full diff
 - Access to read the codebase
@@ -242,7 +242,7 @@ enabling SQL injection on the `/users` endpoint.
 
 ## Template
 
-!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/templates/report.md').read(), end='')"`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact

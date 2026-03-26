@@ -16,7 +16,7 @@ When this skill is invoked, immediately tell the user which skill is running and
 
 ## Steps
 
-- Read `TEMPLATE.md` first — it's the skeleton you fill in for every agent. Start from this template rather than writing from scratch. It includes all common frontmatter fields (with extras commented out) and a system prompt structure that covers the key sections.
+- Read `templates/report.md` first — it's the skeleton you fill in for every agent. Start from this template rather than writing from scratch. It includes all common frontmatter fields (with extras commented out) and a system prompt structure that covers the key sections.
 - Read `references/agents-reference.md` for the complete technical reference (all frontmatter fields, available tools, model options, permission modes, MCP configuration, hooks, memory). Use it to look up specifics as you build the agent. Don't load it into the conversation unless you need to check a detail.
 
 ### Interview flow
@@ -42,7 +42,7 @@ Where should the agent live? This determines who can use it and when.
 
 - `~/.claude/agents/` — **User-level**: available in all your projects (personal)
 - `.claude/agents/` — **Project-level**: this project only, can be committed and shared with the team
-- Plugin `agents/` directory — distributed with a plugin
+- Plugin `workers/` directory — distributed with a plugin
 
 Default recommendation: user-level for personal productivity agents, project-level for team-specific workflows. If the user is unsure, suggest user-level — they can always move it later.
 
@@ -99,7 +99,7 @@ Only bring these up if they're relevant to what the user described. Don't overwh
 
 ### 7. Write the agent file
 
-Read `TEMPLATE.md` and use it as your starting point. Fill in each placeholder based on the interview decisions. Uncomment any extras that apply (memory, hooks, MCP, etc.) and delete the ones that don't. Don't leave commented-out fields in the final output.
+Read `templates/report.md` and use it as your starting point. Fill in each placeholder based on the interview decisions. Uncomment any extras that apply (memory, hooks, MCP, etc.) and delete the ones that don't. Don't leave commented-out fields in the final output.
 
 #### Naming guidelines
 - Lowercase letters and hyphens only (e.g., `code-reviewer`, `db-reader`)

@@ -23,11 +23,11 @@ Write the plan to the project's `.claude/plans/` directory using a whimsical two
 
 ## Agent Frontmatter
 
-This skill bundles co-located agent definitions in `${CLAUDE_SKILL_DIR}/agents/`.
+This skill bundles co-located agent definitions in `${CLAUDE_SKILL_DIR}/workers/`.
 Each `.md` file uses standard Claude Code agent frontmatter — the same schema as files in `.claude/agents/` — but since they live inside the skill directory, Claude Code does not auto-discover or enforce them. The skill must parse and honor the frontmatter explicitly.
 
 When spawning a co-located agent:
-1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/agents/`
+1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/workers/`
 2. **Parse** the YAML frontmatter (between `---` delimiters) and extract:
    - `model` → pass to the Agent tool's `model` parameter
    - `tools` → informational; enforced via `subagent_type` (see below)
@@ -76,7 +76,7 @@ Note any ambiguities, missing context, or assumptions you had to make. These fee
 
 ### Step 2 — Clarify
 
-Read `${CLAUDE_SKILL_DIR}/agents/clarifier.md` and spawn following the **Agent Frontmatter** protocol above to find implementation-strategy forks — places where two or more reasonable approaches exist and the choice would change the plan's structure.
+Read `${CLAUDE_SKILL_DIR}/workers/clarifier.md` and spawn following the **Agent Frontmatter** protocol above to find implementation-strategy forks — places where two or more reasonable approaches exist and the choice would change the plan's structure.
 
 1. Spawn with `subagent_type: "Explore"` — the clarifier is read-only
    - Provide: the spec/requirements, the project directory, and your Step 1 research findings (discovered patterns, conventions, quality toolchain, gaps)
@@ -201,7 +201,7 @@ This lets the user quickly assess the direction without opening the file. Keep e
 
 ## Template
 
-!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/templates/report.md').read(), end='')"`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact

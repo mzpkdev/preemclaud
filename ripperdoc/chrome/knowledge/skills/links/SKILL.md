@@ -206,14 +206,14 @@ No shortcuts. The fact that the URL was found inside another page does not reduc
 
 - **Patterns:** `*.figma.com/*`
 - **Handler:** subagent
-- **Agent definition:** `${CLAUDE_SKILL_DIR}/agents/figma-reader.md`
+- **Agent definition:** `${CLAUDE_SKILL_DIR}/workers/figma-reader.md`
 - **URL parsing:** Extract `fileKey` (segment after `/design/`) and `nodeId` (convert `node-id` query param from `1-2` to `1:2` format).
 - **Instructions:**
   1. **Screenshot in main context.** Call `get_screenshot` with the parsed fileKey and nodeId so the main conversation has visual context. Keep the screenshot — don't discard it.
 
   > **STOP. You are NOT ready to move on until the figma-reader subagent has been spawned and its summary returned.** The screenshot is visual context for you — it does NOT fulfill this route. Proceeding to answer without spawning the subagent is a failure.
 
-  2. **Delegate analysis to subagent.** Read `${CLAUDE_SKILL_DIR}/agents/figma-reader.md` and use its content as the agent's system instructions. Spawn via the Agent tool, passing the URL, parsed fileKey/nodeId, and the user's question in the prompt. Note that a screenshot was already captured so the agent can skip taking its own.
+  2. **Delegate analysis to subagent.** Read `${CLAUDE_SKILL_DIR}/workers/figma-reader.md` and use its content as the agent's system instructions. Spawn via the Agent tool, passing the URL, parsed fileKey/nodeId, and the user's question in the prompt. Note that a screenshot was already captured so the agent can skip taking its own.
   3. **Return the agent's summary.** Present the structured XML brief the agent returns. If the user asks follow-up questions, you have the screenshot for visual reference — only re-spawn the agent if deeper analysis is needed.
 
 ### generic
