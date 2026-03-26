@@ -17,18 +17,26 @@ ripperdoc/
           SKILL.md                # skill definition — frontmatter + instructions
           TEMPLATE.md             # output format (optional, loaded or embedded)
           scripts/                # helper scripts called at load or runtime
-          agents/                 # co-located agents spawned by the skill
-            worker.md             # agent definition — frontmatter + system prompt
+          workers/                # co-located agents spawned by the skill
+            <agent>.md            # agent definition — frontmatter + system prompt
 ```
 
 Skills are invoked as `<plugin>:<skill>` — e.g. `git:commit`, `code:review`, `write:plan`.
 
-Two variables are available inside `SKILL.md`:
+Variables available inside `SKILL.md` and co-located agent files:
 
 | Variable | Resolves to |
 |---|---|
 | `${CLAUDE_SKILL_DIR}` | Absolute path to the skill's directory |
+| `${CLAUDE_PLUGIN_ROOT}` | Absolute path to the plugin's installation directory |
+| `${CLAUDE_PLUGIN_DATA}` | Persistent per-plugin data directory — survives plugin updates |
+| `${CLAUDE_SESSION_ID}` | Current session ID |
 | `$ARGUMENTS` | What the user typed after the slash command |
+| `$ARGUMENTS[N]` / `$N` | Specific argument by zero-based index |
+
+`${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` are also exported as environment variables to hook processes.
+
+`CLAUDE.md` preloads have no special variables — use relative paths (resolved from the project root) or standard shell environment variables.
 
 ---
 
@@ -47,6 +55,7 @@ All scripts, hooks, and commands must work on macOS, Linux, and Windows. Avoid s
 Python is a required preemclaud dependency — prefer it over shell for any script where portability is a concern. Bash is fine for simple hooks on known environments, but if a script uses OS-specific utilities or flag differences, rewrite it in Python.
 
 Common traps to avoid:
+- Hardcoded absolute paths (`/home/user/...`, `C:\Users\...`) — use `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PLUGIN_ROOT}`, or relative paths instead
 - macOS-only tools (`pbcopy`, `open`, `gstat`, `brew`)
 - GNU vs BSD flag differences (`sed -i ''` vs `sed -i`)
 - Hardcoded `/` path separators in Python (use `pathlib` or `os.path`)
@@ -94,9 +103,9 @@ Existing trampolines: `git:status`, `git:commit`, `git:deconflict`.
 
 ## Co-located Agents
 
-Agent `.md` files stored in `skills/<skill>/agents/`. Claude Code does not auto-discover these — the skill reads, parses, and spawns them manually using the Agent Frontmatter protocol:
+Agent `.md` files stored in `skills/<skill>/workers/`. Claude Code does not auto-discover these — the skill reads, parses, and spawns them manually using the Agent Frontmatter protocol:
 
-1. **Read** `${CLAUDE_SKILL_DIR}/agents/worker.md`
+1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/workers/`
 2. **Parse** YAML frontmatter — extract `name`, `description`, `model`
 3. **Extract** the markdown body as the system prompt
 4. **Spawn** via Agent tool with the parsed fields and appropriate `subagent_type`
@@ -112,7 +121,9 @@ Subagent types — pick the most restrictive that works:
 | `Explore` | Read, Grep, Glob, Bash (read-only) | Analysis, research, synthesis |
 | `general-purpose` | All | File writes, git operations, task creation |
 
-Multi-agent variant: `code:review` spawns several specialists in parallel from the same `agents/` directory and merges their findings. Same protocol, same frontmatter — see `ripperdoc/chrome/code/skills/review/SKILL.md`.
+**Exception:** a particular agent may need tools only available in `general-purpose` even when the overall pattern is read-only (e.g., `code:review`'s verifier needs LSP to trace symbols). Spawn that agent with `general-purpose` and enforce read-only behavior through its system prompt instead.
+
+Multi-agent variant: `code:review` spawns several specialists in parallel from the same `workers/` directory and merges their findings. Same protocol, same frontmatter — see `ripperdoc/chrome/code/skills/review/SKILL.md`.
 
 ## Preload Command
 
@@ -128,24 +139,6 @@ Multi-agent variant: `code:review` spawns several specialists in parallel from t
 Preloads run regardless of `allowed-tools` restrictions. They are not Claude tool calls — they're executed by the plugin loader.
 
 In a trampoline, don't preload. The agent gathers its own data at runtime to avoid injecting large payloads into the main context.
-
-## Template
-
-Prescribed output format for a skill. Stored in `TEMPLATE.md`, loaded in the skill body:
-
-```markdown
-## Template
-
-!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/TEMPLATE.md').read(), end='')"`
-
-> [!IMPORTANT]
-> This template is MANDATORY, not a suggestion. Reproduce the exact
-> heading hierarchy, field names, and structure.
-```
-
-Always follow the load with an `[!IMPORTANT]` callout. Without it, Claude treats the format as a suggestion.
-
-In a co-located agent, embed the template content directly in the agent body — agents don't have `${CLAUDE_SKILL_DIR}` resolved at load time. They receive it as runtime input and would need an extra tool call to read the file. Embedding avoids this.
 
 ## Skill-scoped Hooks
 
@@ -202,6 +195,173 @@ args = prompt.removeprefix("/my-command").lstrip()
 
 print(json.dumps({"decision": "block", "reason": message}))
 ```
+
+## Extended Thinking
+
+Place an HTML comment `<!-- ultrathink -->` immediately before any step that requires deep reasoning — complex merges, severity re-calibration, multi-variable decisions:
+
+```markdown
+<!-- ultrathink -->
+### Step 4 — Merge findings
+```
+
+The comment is invisible in rendered output but signals Claude to engage extended thinking for that step. Use sparingly — one or two steps per skill at most. Don't annotate every step.
+
+---
+
+# Mechanics
+
+How the runtime actually behaves — facts you need to reason about what your skill, hook, or agent will do.
+
+## Hooks
+
+**Exit codes**
+
+| Code | Meaning |
+|---|---|
+| `0` | Success — stdout parsed as JSON for structured output |
+| `2` | Blocking error — stdout ignored, stderr fed to Claude as feedback; blocks the triggering action |
+| other | Non-blocking — stderr visible in verbose mode only |
+
+The `2` code is what makes `PreToolUse` block a tool call, `Stop` prevent stopping, `UserPromptSubmit` erase a prompt, etc.
+
+**Parallel execution**
+
+Multiple hooks matching the same event run in parallel. Identical commands on the same event are deduplicated and run once.
+
+**Hook types**
+
+| Type | Description |
+|---|---|
+| `command` | Shell script — receives JSON on stdin |
+| `http` | POST to a URL |
+| `prompt` | Single-turn LLM eval — returns `{"ok": bool, "reason": "..."}` |
+| `agent` | Multi-turn subagent with tools — same return format as `prompt`; 60s timeout, 50 tool turns max |
+
+**`CLAUDE_ENV_FILE`**
+
+`SessionStart` and `CwdChanged` hooks can append `export VAR=val` lines to this file. Those vars are applied before every subsequent Bash command in the session — useful for direnv-style env loading on directory change.
+
+## Agents
+
+**Model resolution order**
+
+1. `CLAUDE_CODE_SUBAGENT_MODEL` env var
+2. Per-invocation `model` parameter
+3. Agent frontmatter `model` field
+4. Parent session model
+
+**`Stop` hook remapping**
+
+`Stop` hooks defined in agent frontmatter are silently converted to `SubagentStop`. Write `SubagentStop` directly to be explicit.
+
+**Skill injection**
+
+Skills listed in agent frontmatter are injected in full at startup. The agent does not inherit skills loaded in the parent session.
+
+## Skills
+
+**`disable-model-invocation: true`**
+
+Removes the description from Claude's context entirely — not just prevents auto-invocation. Claude won't know the skill exists until the user invokes it directly.
+
+**`context: fork`**
+
+Runs the skill in an isolated subagent. Conversation history is not available. Skill content must be an actionable task; guidelines-only content leaves the subagent with nothing to do.
+
+---
+
+# Constraints
+
+Things that look like they should work but don't.
+
+**Shell profile interference**
+
+Hooks run in non-interactive shells. Any `echo` or output in `.zshrc`/`.bashrc` prepends to stdout and breaks JSON parsing. Guard profile output: `if [[ $- == *i* ]]; then echo "..."; fi`
+
+**Stop hook loop**
+
+A `Stop` hook that always returns `{"decision": "block"}` causes Claude to loop forever. Read `stop_hook_active` from the hook input to detect re-entry and exit cleanly.
+
+**Plugin agent restrictions**
+
+Agents shipped inside a plugin cannot use `hooks`, `mcpServers`, or `permissionMode` frontmatter fields. If those are needed, the agent must live in `.claude/agents/` instead.
+
+**`${CLAUDE_PLUGIN_ROOT}` changes on update**
+
+`${CLAUDE_PLUGIN_ROOT}` points to the current install path, which changes when the plugin updates. Don't cache it. Store persistent artifacts in `${CLAUDE_PLUGIN_DATA}` instead.
+
+---
+
+# Template
+
+Prescribed output format for a skill. Stored in `TEMPLATE.md`, loaded in the skill body:
+
+```markdown
+## Template
+
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/TEMPLATE.md').read(), end='')"`
+
+> [!IMPORTANT]
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure.
+```
+
+Use the `python3 -c` form — it works on all platforms.
+
+Always follow the load with an `[!IMPORTANT]` callout. Without it, Claude treats the format as a suggestion.
+
+## Code snippets
+
+When referencing source code in output, use the Rust diagnostic style — line number gutter, pipe separator, and caret annotation:
+
+````
+```
+  → path/to/file.rs:42
+   |
+42 |     let x = foo();
+   |             ^^^^^ issue annotation here
+```
+````
+
+Rules:
+- Show 1–3 lines of context around the highlighted line
+- Use `^` for single-token highlights, `~` for multi-token spans
+- Wrap in a fenced code block so indentation renders consistently
+- Omit entirely if the finding needs no code — don't pad with irrelevant lines
+
+This keeps inline references scannable and visually consistent with compiler/linter output the user already reads.
+
+## Action menu
+
+A template can end with an interactive action menu — a fenced code block containing keyboard shortcuts the user can invoke after the report:
+
+````
+```
+  ──────────────────────────────────────────────────────────────────
+  ▸ [E]xplain #N     ▸ [D]ismiss #N     ▸ [V]erify
+```
+````
+
+The fenced code block ensures consistent rendering. Every action listed in the menu must have a corresponding handler in the skill body — typically a **Handle user actions** step placed after the present step. That step defines exactly what Claude does when the user types each shortcut (e.g., "explain 1 4 7" expands full detail for findings 1, 4, and 7).
+
+## Sub-templates and two-level output
+
+When a skill spawns multiple agents and merges their results, two template levels exist:
+
+1. **Agent output format** — embedded directly in each agent's body as an `## Output` section. This defines the structure the agent uses to report its findings (e.g. `### Critical / ### Warnings / ### Suggestions / ### Questions`). It is what the skill's merge step processes.
+
+2. **Skill TEMPLATE.md** — the final output format presented to the user after merging, de-duplication, severity re-calibration, and any verification pass.
+
+The flow: agents produce findings using their embedded format → skill merge step re-categorizes, de-duplicates, and re-calibrates severity → skill presents using TEMPLATE.md.
+
+Agent output formats don't need to match TEMPLATE.md. They're a contract between agents and the merge logic. Agents produce raw findings; the skill adds structure (sequential numbering, cross-agent de-duplication, compact-first layout).
+
+**Compact-first design:** A common TEMPLATE.md pattern where the initial render is a scannable index — each finding is a short two-line entry — and full detail is only shown on demand via the action menu (Explain action). This keeps the report readable at a glance and lets the user drill into only what matters.
+
+## Embedding in co-located agents
+
+In a co-located agent, embed the template content directly in the agent body — agents don't have `${CLAUDE_SKILL_DIR}` resolved at load time. They receive it as runtime input and would need an extra tool call to read the file. Embedding avoids this.
 
 ---
 
@@ -288,10 +448,10 @@ allowed-tools: Read, Agent
 
 ## Agent Frontmatter
 
-This skill delegates to a co-located agent in `${CLAUDE_SKILL_DIR}/agents/`.
+This skill delegates to a co-located agent in `${CLAUDE_SKILL_DIR}/workers/`.
 
 When spawning the agent:
-1. **Read** `${CLAUDE_SKILL_DIR}/agents/worker.md`
+1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/workers/`
 2. **Parse** YAML frontmatter between `---` delimiters — extract `name`, `description`, `model`
 3. **Extract** the markdown body (below closing `---`) as the agent's system prompt
 4. **Spawn** with `subagent_type: "..."` and the prompt below

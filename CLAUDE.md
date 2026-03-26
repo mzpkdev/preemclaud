@@ -1,1 +1,1 @@
-!`cat /home/mzpk/Projects/preemclaud/AGENTS.md`
+!`python3 -c "print(open('AGENTS.md').read(), end='')"`
