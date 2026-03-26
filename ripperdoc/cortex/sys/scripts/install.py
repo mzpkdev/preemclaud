@@ -109,6 +109,25 @@ def sync():
     print()
 
 
+CLEANUP = [
+    "CLAUDE.md", "AGENTS.md", "README.md",
+    "install.sh", "install.ps1",
+    "docs", ".github",
+]
+
+
+def scrub():
+    section("scrubbing repo artifacts")
+    for name in CLEANUP:
+        target = CLAUDE_DIR / name
+        if target.is_dir():
+            shutil.rmtree(target)
+        elif target.exists():
+            target.unlink()
+        sub(f"{DIM}{name}{RESET}")
+    print()
+
+
 def register_marketplaces():
     section("hitting the ripperdoc")
     names = []
@@ -245,6 +264,7 @@ def main():
     preflight()
     archive()
     sync()
+    scrub()
     register_marketplaces()
     install_plugins()
     break_ice()

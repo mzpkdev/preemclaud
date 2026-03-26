@@ -1,7 +1,7 @@
 ---
 name: commit
 description: Groups changes into logical commits, presents a plan for approval, and executes
-model: opus
+model: sonnet
 ---
 
 # Commit

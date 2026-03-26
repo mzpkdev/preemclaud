@@ -11,7 +11,7 @@ CLAUDE_DIR = Path.home() / ".claude"
 SYNC_SENTINEL = CLAUDE_DIR / ".cache" / ".sync"
 VERSION_SENTINEL = CLAUDE_DIR / ".cache" / ".version"
 SETTINGS = CLAUDE_DIR / "settings.json"
-TWEAKCC = "tweakcc@4.0.11"  # pinned — bump deliberately after audit
+TWEAKCC = "tweakcc"
 TWEAKCC_PATCHES = [
     "fix-lsp-support",
     "mcp-non-blocking",
@@ -220,3 +220,16 @@ def patch_cc(verbose=False):
     if version:
         VERSION_SENTINEL.parent.mkdir(parents=True, exist_ok=True)
         VERSION_SENTINEL.write_text(version)
+
+
+def unpatch_cc():
+    result = subprocess.run(
+        ["npx", TWEAKCC, "--restore"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    print(result.stdout, end="")
+    if result.returncode == 0 and VERSION_SENTINEL.exists():
+        VERSION_SENTINEL.unlink()
+    return result.returncode
