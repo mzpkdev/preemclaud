@@ -34,7 +34,7 @@ Variables available inside `SKILL.md` and co-located agent files:
 | `${CLAUDE_SKILL_DIR}` | Absolute path to the skill's directory |
 | `${CLAUDE_PLUGIN_ROOT}` | Absolute path to the plugin's installation directory |
 | `${CLAUDE_PLUGIN_DATA}` | Persistent per-plugin data directory — survives plugin updates |
-| `${CLAUDE_SESSION_ID}` | Current session ID |
+| `${CLAUDE_SESSION_ID}` | Current session ID — no current usage in repo |
 | `$ARGUMENTS` | What the user typed after the slash command |
 | `$ARGUMENTS[N]` / `$N` | Specific argument by zero-based index |
 
@@ -76,9 +76,55 @@ Everything else follows the convention of its file type:
 - `.md` files (workers, templates, commands) → lowercase kebab-case: `security-reviewer.md`, `action-explain.md`
 - `.py` files (scripts, hooks) → snake_case: `gather_data.py`, `post_bash.py`
 
+## Agent Spawning
+
+The only way to reliably spawn a subagent inside a skill or agent is to explicitly call the **Agent tool**. Never instruct Claude to "spawn an agent" or "run this in a subagent" using natural language alone — that works conversationally but is not reliable inside skill execution.
+
+Any `SKILL.md` or agent body that spawns a subagent must write the call explicitly:
+
+```
+Call the Agent tool with:
+- description: <value from frontmatter>
+- subagent_type: "Explore" | "general-purpose"
+- model: <value from frontmatter>
+- name: <value from frontmatter>
+- prompt: |
+    CLAUDE_SKILL_DIR: ${CLAUDE_SKILL_DIR}
+    ARGUMENTS: $ARGUMENTS
+    <task-specific context>
+```
+
+**Required parameters:**
+
+| Parameter | Source |
+|---|---|
+| `description` | Agent frontmatter `description` field |
+| `subagent_type` | Skill decision — see subagent types table in Co-located Agents |
+| `prompt` | Skill-assembled string — always include `CLAUDE_SKILL_DIR` and `ARGUMENTS` |
+
+**Optional parameters:**
+
+| Parameter | Values | Notes |
+|---|---|---|
+| `model` | `sonnet`, `opus`, `haiku`, full ID | Overrides frontmatter; see model resolution order in Mechanics |
+| `name` | string | Makes subagent addressable via `SendMessage` for follow-ups |
+| `mode` | `default`, `acceptEdits`, `bypassPermissions`, `plan`, `dontAsk` | Permission mode for the subagent |
+| `run_in_background` | `true` / `false` | `true` = non-blocking; you are notified on completion. No current usage in repo. |
+| `isolation` | `worktree` | Subagent works in a temporary git worktree |
+
+Omitting explicit parameters causes the Agent tool to fall back to defaults that may not match the intended behavior.
+
 ---
 
 # Patterns
+
+| Pattern | Agents | Coordination | Use when |
+|---|---|---|---|
+| Direct | 0 | — | Skill can do everything inline |
+| Trampoline | 1 | — | Heavy data or multi-turn that shouldn't pollute main context |
+| Parallel Agents | N | None (merge after) | Multiple independent viewpoints on same artifact |
+| Team | N | Live (SendMessage) | Agents must coordinate during execution |
+| Prompt Intercept | 0 | — | Pure side effect, no reasoning needed |
 
 ## Trigger Description
 
@@ -123,7 +169,7 @@ Agent `.md` files stored in `skills/<skill>/workers/`. Claude Code does not auto
 1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/workers/`
 2. **Parse** YAML frontmatter — extract `name`, `description`, `model`
 3. **Extract** the markdown body as the system prompt
-4. **Spawn** via Agent tool with the parsed fields and appropriate `subagent_type`
+4. **Call the Agent tool** — pass `name`, `description`, `subagent_type`, `model`, and the assembled prompt (see **Agent Spawning** principle for full parameter reference)
 
 Pass `${CLAUDE_SKILL_DIR}` and `$ARGUMENTS` in the agent's prompt so it can find scripts and know what the user asked for.
 
@@ -138,7 +184,48 @@ Subagent types — pick the most restrictive that works:
 
 **Exception:** a particular agent may need tools only available in `general-purpose` even when the overall pattern is read-only (e.g., `code:review`'s verifier needs LSP to trace symbols). Spawn that agent with `general-purpose` and enforce read-only behavior through its system prompt instead.
 
-Multi-agent variant: `code:review` spawns several specialists in parallel from the same `workers/` directory and merges their findings. Same protocol, same frontmatter — see `ripperdoc/chrome/code/skills/review/SKILL.md`.
+## Parallel Agents
+
+A skill that spawns multiple specialist agents in parallel, each analyzing the same input from a different perspective, then merges their output into a unified report.
+
+Use when the skill needs multiple independent viewpoints on the same artifact.
+Don't use when agents would need to coordinate or share state during execution — use the Team pattern instead.
+
+Flow:
+1. **Scope** — Gather the input (diff, artifact, etc.)
+2. **Fan out** — Spawn all agents in parallel in a single message. Each agent gets the same input but a different focus. Embed the input directly in the prompt — don't save to a temp file (agents may misread injected line numbers as source line numbers).
+3. **Merge** — Collect findings and merge by severity across all agents, not by agent. Tag each finding with its source agent.
+4. **Re-calibrate** — Specialist agents inflate severity within their domain. Apply a shared rubric across the full merged list and demote liberally.
+5. **Verify** — Optionally spawn a verifier agent to validate merged findings against the actual source (see Error Handling — Verifier pass).
+6. **Present** — Format using the skill's `templates/report.md`.
+
+**Selective spawning:** Not every agent applies every time. Skip agents whose focus area is irrelevant to the input (e.g., skip a tests agent if no test files exist).
+
+**Agent output format:** Each agent uses an embedded output structure (e.g., `### Critical / ### Warnings / ### Suggestions`) — a contract between agents and the merge step, separate from `templates/report.md`. See Sub-templates in the Template section.
+
+Reference: `code:review` — 7 parallel specialists + verifier.
+
+## Team
+
+A skill that creates a persistent agent team with inter-agent communication. Agents communicate directly with each other via `SendMessage`; the skill acts as lead and handles only escalations and disputes.
+
+Use when agents must coordinate during execution — the defining characteristic is a communication protocol with named message types.
+Don't use when agents can work independently — use Parallel Agents instead.
+
+Required tools: `TeamCreate`, `SendMessage`, `TeamDelete`, `Agent`.
+
+Flow:
+1. **Research** — Lead gathers context and produces differentiated briefings per teammate (different agents may receive different subsets of information by design).
+2. **Spawn** — `TeamCreate`, then spawn all teammates in a single message. Splitting across turns risks keystroke corruption during agent startup.
+3. **Monitor** — Handle protocol messages only. Do not relay messages between teammates — they communicate directly. Ignore idle notifications.
+4. **Arbitrate** — Handle `DISPUTE` and `ESCALATE` messages. For disputes, hear both sides before ruling. For escalations, answer from context or surface to the user.
+5. **Cleanup** — `TeamDelete` when done. If it fails, force-clean per `knowledge:teams`.
+
+**Communication protocol:** Define named message types (e.g., `CHECKPOINT`, `DISPUTE`, `ESCALATE`, `COMPLETE`) so the lead can distinguish protocol signals from noise.
+
+**Agent definitions:** Store in `team/` (not `workers/`) to signal the coordination model. Same frontmatter protocol as Co-located Agents.
+
+Reference: `code:write` (lead/builder/test-writer). See `knowledge:teams` for guardrails and cleanup procedures.
 
 ## Preload Command
 
@@ -221,6 +308,41 @@ Place an HTML comment `<!-- ultrathink -->` immediately before any step that req
 ```
 
 The comment is invisible in rendered output but signals Claude to engage extended thinking for that step. Use sparingly — one or two steps per skill at most. Don't annotate every step.
+
+## Error Handling
+
+Pick the appropriate strategy for each failure mode — not every skill needs all of these.
+
+**Preload script fallback** — The script must always emit valid JSON — catch all exceptions and output `{"error": "gather failed"}` on failure:
+
+```python
+# gather.py — always exits with valid JSON
+try:
+    # ... gather logic ...
+    print(json.dumps(result))
+except Exception:
+    print(json.dumps({"error": "gather failed"}))
+```
+
+Then the preload needs no shell-level fallback:
+
+```
+!`python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py`
+```
+
+Check for the `error` key before proceeding. Tell the user and stop. Used by: `code:review`.
+
+**Precondition check** — Gather scripts return a `precondition_failures` array in their JSON output. Stop and report which precondition failed. Don't attempt automatic recovery — precondition failures represent states that require human intervention (detached HEAD, merge in progress, not a git repo). Used by: `git:commit`, `git:deconflict`.
+
+**Verifier pass** — After agents produce findings, spawn a separate verifier agent to validate claims against the actual codebase. Drop invalid findings, flag uncertain ones with a manual-verify note, correct line references. Used by: `code:review`.
+
+**Review loop cap** — When a reviewer subagent iterates on an artifact, cap at 3 iterations. If still failing after 3, surface to the user for guidance rather than spinning. Used by: `write:brief`, `write:spec`.
+
+**Stall detection** — Track reviewer feedback across iterations. If two consecutive reviews flag the same core issue: first stall, restructure and try a fundamentally different approach. Second stall (third consecutive same-issue), stop early and tell the user what was tried. Used by: `meta:improve`.
+
+**Dispute cap** — In multi-agent teams, cap disputes at 3 per session. After 3, batch remaining disputes and present to the user at once. Used by: `code:write`.
+
+**Recovery guidance** — When a destructive operation fails, stop immediately. Explain what happened, show repo state, and provide exact commands to recover. Don't attempt automatic recovery. Used by: `git:deconflict`.
 
 ## Action Dispatch
 
@@ -332,7 +454,7 @@ Things that look like they should work but don't.
 
 **Shell profile interference**
 
-Hooks run in non-interactive shells. Any `echo` or output in `.zshrc`/`.bashrc` prepends to stdout and breaks JSON parsing. Guard profile output: `if [[ $- == *i* ]]; then echo "..."; fi`
+Hooks run in non-interactive shells. Any `echo` or output in `.zshrc`/`.bashrc` prepends to stdout and breaks JSON parsing. Guard profile output (Unix only — `.zshrc`/`.bashrc` don't exist on Windows): `if [ -n "$PS1" ]; then echo "..."; fi`
 
 **Stop hook loop**
 
@@ -402,9 +524,17 @@ Agent output formats don't need to match `templates/report.md`. They're a contra
 
 **Compact-first design:** A common `templates/report.md` pattern where the initial render is a scannable index — each finding is a short two-line entry — and full detail is only shown on demand via the action menu (Explain action). This keeps the report readable at a glance and lets the user drill into only what matters.
 
-## Embedding in co-located Agents
+## Reading templates in co-located Agents
 
-In a co-located agent, embed the template content directly in the agent body — agents don't have `${CLAUDE_SKILL_DIR}` resolved at load time. They receive it as runtime input and would need an extra tool call to read the file. Embedding avoids this.
+In a co-located agent, read the template at runtime — the agent receives `$CLAUDE_SKILL_DIR` as part of its prompt input (passed by the skill). Add a Read step before the output step:
+
+```
+Read $CLAUDE_SKILL_DIR/templates/report.md
+```
+
+Don't embed `templates/` content directly in the agent body. If the template changes, embedded copies drift silently.
+
+**Exception:** agent output formats used for inter-agent communication (raw findings structures) stay embedded — they're a contract between agents and the merge step, not files in `templates/`.
 
 ---
 
@@ -419,7 +549,7 @@ description: "Summary  //  trigger rules (omit // side if manual-only)"
 user-invocable: true                      # appears as /plugin:skill slash command
 disable-model-invocation: true            # true = manual only; false = Claude can auto-trigger
 argument-hint: "[optional args]"          # shown in autocomplete
-allowed-tools: Read, Grep, Glob          # restricts tool access during this skill
+allowed-tools: Read, Grep, Glob           # restricts tool access during this skill
 model: sonnet                             # sonnet | opus | haiku | full model ID
 hooks:                                    # optional — skill-scoped lifecycle hooks
   PostToolUse:
@@ -435,7 +565,7 @@ hooks:                                    # optional — skill-scoped lifecycle 
 
 ## Announce
 
-> `plugin:skill` — Short line shown on activation.
+> Daemon `plugin:skill` online. Action phrase.
 
 ## Preload
 
@@ -507,7 +637,7 @@ allowed-tools: Read, Agent
 
 ## Announce
 
-> `plugin:skill` — Announce line.
+> Daemon `plugin:skill` online. Action phrase.
 
 ## Agent Frontmatter
 
@@ -517,20 +647,24 @@ When spawning the agent:
 1. **Read** the `.md` file from `${CLAUDE_SKILL_DIR}/workers/`
 2. **Parse** YAML frontmatter between `---` delimiters — extract `name`, `description`, `model`
 3. **Extract** the markdown body (below closing `---`) as the agent's system prompt
-4. **Spawn** with `subagent_type: "..."` and the prompt below
+4. **Call the Agent tool** with `name`, `description`, `subagent_type`, `model`, and the prompt below
 
 ## Steps
 
 ### Step 1 — Spawn the agent
 
-Read, parse, and spawn following the **Agent Frontmatter** section above.
+Read `${CLAUDE_SKILL_DIR}/workers/worker.md`, parse YAML frontmatter, extract the markdown body, then:
 
-Agent prompt:
+Call the Agent tool with:
+- name: \<from frontmatter\>
+- description: \<from frontmatter\>
+- subagent_type: "Explore" | "general-purpose"
+- model: \<from frontmatter\>
+- prompt: |
+    CLAUDE_SKILL_DIR: ${CLAUDE_SKILL_DIR}
+    ARGUMENTS: $ARGUMENTS
 
-\```
-Skill directory: ${CLAUDE_SKILL_DIR}
-Arguments: $ARGUMENTS
-\```
+    \<agent body from the .md file\>
 
 Do not add output before or after. The agent handles everything.
 ```
@@ -542,7 +676,7 @@ Do not add output before or after. The agent handles everything.
 # --- Frontmatter ---
 name: worker                              # passed to Agent tool name parameter
 description: What this agent does         # passed to Agent tool description parameter
-tools: Read, Grep, Glob, Bash            # informational — enforced by subagent_type
+tools: Read, Grep, Glob, Bash             # documentation only — actual access set by subagent_type at spawn time
 model: sonnet                             # sonnet | opus | haiku | full model ID
 ---
 ```
@@ -554,9 +688,12 @@ You are [role]. [One-sentence framing of perspective and focus.]
 
 ## Input
 
-You receive:
-- **Skill directory** — absolute path to the skill directory; use for script calls
-- **Arguments** — user-provided arguments forwarded from the skill
+The skill passes these values in its prompt:
+
+```
+CLAUDE_SKILL_DIR: <absolute path>
+ARGUMENTS: <user args>
+```
 
 ## Steps
 
@@ -564,7 +701,7 @@ You receive:
 
 Run:
 \```bash
-python3 <skill_dir>/scripts/gather.py
+python3 $CLAUDE_SKILL_DIR/scripts/gather.py
 \```
 
 Handle preconditions from the JSON output.
@@ -575,14 +712,10 @@ Handle preconditions from the JSON output.
 
 ### Step 3 — Present output
 
-Format using the template below.
-
-## Template
-
-[TEMPLATE.md content embedded directly — not loaded at runtime.]
+Read `$CLAUDE_SKILL_DIR/templates/report.md` and format using that template.
 
 > [!IMPORTANT]
-> This template is MANDATORY, not a suggestion.
+> The template is MANDATORY, not a suggestion.
 
 ## Safety
 
