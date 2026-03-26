@@ -1,7 +1,6 @@
 ---
 name: figma-reader
 description: Extracts implementation-ready design briefs from Figma designs. Spawned by the link skill when a Figma URL is detected. Calls Figma MCP tools in an isolated context — processes ~100K of raw output and returns a compact XML brief with layout, tokens, states, and Code Connect mappings. Keeps the main conversation window clean.
-tools: Bash
 model: sonnet
 mcpServers:
   - figma-remote-mcp

@@ -1,7 +1,6 @@
 ---
 name: consistency
 description: Reviews whether code changes follow established codebase conventions and flags duplication of existing functionality that could be reused. Delegate when you want to check that new code fits the existing codebase.
-tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 

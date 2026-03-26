@@ -1,7 +1,6 @@
 ---
 name: verifier
 description: Verifies review findings against the actual codebase. Checks that referenced files, lines, and code snippets exist and that claimed issues are real. Filters out hallucinated or invalid findings.
-tools: Read, Grep, Glob, Bash, LSP
 model: sonnet
 ---
 

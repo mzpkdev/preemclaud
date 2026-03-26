@@ -1,7 +1,6 @@
 ---
 name: builder
 description: Implements the feature. Runs the test-writer's adversarial tests to verify correctness. Sends checkpoints with public API surface so the test-writer can adapt tests. Escalates to lead only for decisions.
-tools: Read, Write, Edit, Grep, Glob, Bash, Agent, SendMessage
 model: sonnet
 ---
 

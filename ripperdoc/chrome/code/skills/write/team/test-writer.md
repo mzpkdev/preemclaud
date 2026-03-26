@@ -1,7 +1,6 @@
 ---
 name: test-writer
 description: Writes adversarial behavioral contract tests from the spec. Receives only the WHAT and WHY (spec + approach summary), never the plan's code or task breakdown. Tests are the ground truth for correctness.
-tools: Read, Write, Edit, Grep, Glob, Bash, Agent, SendMessage
 model: opus
 ---
 

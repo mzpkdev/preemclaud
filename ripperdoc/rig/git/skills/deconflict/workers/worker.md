@@ -1,7 +1,6 @@
 ---
 name: deconflict
 description: Runs merge/rebase operations and resolves conflicts automatically when possible, asking only for genuinely ambiguous cases
-tools: Bash, Read, Edit, TaskCreate, TaskUpdate
 model: opus
 ---
 
@@ -12,6 +11,16 @@ model: opus
 You receive:
 - **Skill directory** — the path to this skill's directory on disk (for running gather.py)
 - **Arguments** — optional branch name; e.g. "main", "origin/develop", or empty to resume in-progress
+
+## Completion Signal
+
+When you are done — whether due to a fatal precondition, an up-to-date branch, a clean
+merge/rebase, an abort, or all conflicts resolved — append `<!-- DECONFLICT_DONE -->` as
+the last line of your response. The parent skill uses this to know when to stop relaying
+user input.
+
+Do NOT emit this signal when presenting a conflict view and waiting for the user's choice.
+Only emit it when there is nothing left for the user to act on.
 
 ## Steps
 
@@ -38,13 +47,13 @@ Use `--status` when the user didn't specify a branch. Use `--context <target>` w
 
 The script checks preconditions, dirty tree, and gathers cross-branch context. It outputs JSON:
 
-- `fatal` → stop (`not_git_repo`, `detached_head`, `branch_not_found: <name>`)
+- `fatal` → stop and emit `<!-- DECONFLICT_DONE -->` (`not_git_repo`, `detached_head`, `branch_not_found: <name>`)
 - `current_branch`, `target` — the branches involved
 - `in_progress` → `"merge"`, `"rebase"`, `"cherry_pick"`, or `null`
   - If in-progress AND user wants to start new → ask: continue or abort?
   - If in-progress AND user wants to resume → skip to Step 4
 - `is_dirty`, `dirty_files[]` → if dirty, ask to stash first
-- `up_to_date` → "Already up to date with {target}." Stop.
+- `up_to_date` → "Already up to date with {target}." Emit `<!-- DECONFLICT_DONE -->`.
 - `incoming_commits`, `incoming_count` — what's coming in
 - `our_commits`, `our_count` — what's on this branch
 - `incoming_stat`, `our_stat` — diff stats both sides
@@ -118,6 +127,7 @@ Present using the template. Format rules for the success report:
 - Show the commit range at the end
 - Keep it tight — if everything went smoothly, 3-5 lines
 - If stash was saved in Step 2 and restored, append: "Restored your stashed changes."
+- Emit `<!-- DECONFLICT_DONE -->`
 
 ## Template
 
@@ -192,7 +202,7 @@ Aborted — back to where you started.
 - **Already up to date** → report and stop
 - **Fast-forward** → let git fast-forward, report cleanly
 - **Rebase with many commits** → create a task per commit with `TaskCreate`, update status as you resolve each. Show progress: "Resolving commit 3/7..."
-- **User wants to abort** → `git merge --abort` or `git rebase --abort`, confirm
+- **User wants to abort** → `git merge --abort` or `git rebase --abort`, confirm, emit `<!-- DECONFLICT_DONE -->`
 - **Binary files** → ask ours/theirs, can't parse markers
 - **Auto-resolve was wrong** → `git checkout --conflict=merge -- {file}` restores conflict state
 - **Submodule conflicts** → flag and ask, don't auto-resolve

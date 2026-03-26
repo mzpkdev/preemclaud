@@ -765,12 +765,9 @@ Do not add output before or after. The agent handles everything.
 # --- Frontmatter ---
 name: worker                              # passed to Agent tool name parameter
 description: What this agent does         # passed to Agent tool description parameter
-tools: Read, Grep, Glob, Bash             # documentation only — see note below
 model: sonnet                             # sonnet | opus | haiku | full model ID
 ---
 ```
-
-**`tools` field:** Lists the tools the agent is designed to use, but does not enforce access. Actual tool access is controlled by the `subagent_type` parameter passed to the Agent tool at spawn time (`Explore` = read-only set, `general-purpose` = all tools). The `tools` field serves as readable documentation for anyone reviewing the agent file — it signals intent and makes the expected access level obvious without reading the spawning skill.
 
 ```markdown
 # Agent Name

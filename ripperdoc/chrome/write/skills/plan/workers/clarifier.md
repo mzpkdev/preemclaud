@@ -1,7 +1,6 @@
 ---
 name: clarifier
 description: Identifies implementation-strategy ambiguities that would fork the plan in meaningfully different directions. Delegate after research is complete to surface places where two or more reasonable approaches exist and the choice affects the plan's structure.
-tools: Read, Grep, Glob, Bash
 model: opus
 ---
 

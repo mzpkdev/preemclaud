@@ -1,7 +1,6 @@
 ---
 name: architecture
 description: Reviews code changes for architectural concerns — coupling, cohesion, dependency direction, abstraction quality, and design pattern adherence. Delegate when you need a structural lens on a diff.
-tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 

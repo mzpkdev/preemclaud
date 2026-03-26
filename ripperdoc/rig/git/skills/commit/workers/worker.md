@@ -1,7 +1,6 @@
 ---
 name: commit
 description: Groups changes into logical commits, presents a plan for approval, and executes
-tools: Bash, Read
 model: opus
 ---
 

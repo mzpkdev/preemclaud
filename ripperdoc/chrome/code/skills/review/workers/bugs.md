@@ -1,7 +1,6 @@
 ---
 name: bugs
 description: Reviews code changes for logic errors, edge cases, race conditions, off-by-ones, null handling, and other bug-prone patterns. Delegate when you need someone to poke holes in the logic.
-tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 

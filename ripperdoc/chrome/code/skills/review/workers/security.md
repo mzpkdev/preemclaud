@@ -1,7 +1,6 @@
 ---
 name: security
 description: Reviews code changes for security vulnerabilities — injection, auth issues, secrets exposure, input validation, and OWASP top 10. Delegate when you need a security-focused audit of a diff.
-tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 

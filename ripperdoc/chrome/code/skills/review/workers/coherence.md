@@ -1,7 +1,6 @@
 ---
 name: coherence
 description: Reviews whether a diff fully carries through its intent — catches incomplete renames, orphaned types, leftover artifacts, and structural debris from refactors. Delegate when you want to check that a change finished what it started.
-tools: Read, Grep, Glob, Bash
 model: opus
 ---
 

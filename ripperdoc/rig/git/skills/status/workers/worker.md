@@ -1,7 +1,6 @@
 ---
 name: status
 description: Synthesizes git state into a narrative summary of what you were working on
-tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 
