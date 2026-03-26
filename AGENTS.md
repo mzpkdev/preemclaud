@@ -15,10 +15,14 @@ ripperdoc/
       skills/
         <skill>/
           SKILL.md                # skill definition — frontmatter + instructions
-          TEMPLATE.md             # output format (optional, loaded or embedded)
-          scripts/                # helper scripts called at load or runtime
-          workers/                # co-located agents spawned by the skill
-            <agent>.md            # agent definition — frontmatter + system prompt
+          templates/              # output formats — see File Naming and Action Dispatch
+            report.md             # main report format
+            menu.md               # action menu bar (if skill has one)
+            action.md             # optional: shared action response format
+            action-<name>.md      # optional: per-action response format
+          scripts/                # helper scripts — snake_case.py
+          workers/                # co-located agents — kebab-case.md
+            <agent-name>.md       # agent definition — frontmatter + system prompt
 ```
 
 Skills are invoked as `<plugin>:<skill>` — e.g. `git:commit`, `code:review`, `write:plan`.
@@ -61,6 +65,17 @@ Common traps to avoid:
 - Hardcoded `/` path separators in Python (use `pathlib` or `os.path`)
 - Assuming `bash` is available on Windows
 
+## Naming Conventions
+
+Protocol files — those the framework reads by a fixed, conventional name — use UPPERCASE:
+
+`SKILL.md`, `CLAUDE.md`, `AGENTS.md`, `MEMORY.md`
+
+Everything else follows the convention of its file type:
+
+- `.md` files (workers, templates, commands) → lowercase kebab-case: `security-reviewer.md`, `action-explain.md`
+- `.py` files (scripts, hooks) → snake_case: `gather_data.py`, `post_bash.py`
+
 ---
 
 # Patterns
@@ -76,7 +91,7 @@ description: "Summary  //  Trigger when X. Do NOT trigger for Y."
 The left side is for humans (slash command menu).  
 The right side is Claude's dispatch logic — list concrete phrases to match and exclusions to prevent false positives.
 
-## Announce
+## Announcer
 
 Every skill opens with an announce line — a blockquote printed on activation so the user knows which skill fired:
 
@@ -207,6 +222,46 @@ Place an HTML comment `<!-- ultrathink -->` immediately before any step that req
 
 The comment is invisible in rendered output but signals Claude to engage extended thinking for that step. Use sparingly — one or two steps per skill at most. Don't annotate every step.
 
+## Action Dispatch
+
+A skill with an action menu operates in two phases:
+
+1. **Report phase** — generate and present using `templates/report.md` and `templates/menu.md`
+2. **Action phase** — handle user-selected actions, optionally using `templates/action*.md`
+
+**Input parsing rules (consistent across all skills):**
+
+- Accept both short key and spelled-out word: `E 3` and `explain 3` are equivalent
+- Match case-insensitively
+- Accept multiple indices in one invocation: `E 1 3 7`
+
+**Action template progression** — use the simplest that fits:
+
+| Case | File | Use when |
+|---|---|---|
+| No structured output | none — inline instructions | Dismiss, Pin, state toggles |
+| All actions share a format | `templates/action.md` | Single output shape regardless of action |
+| Actions have distinct formats | `templates/action-<name>.md` | Explain vs Verify produce different structures |
+
+**`## Actions` section in SKILL.md** — one named subsection per action, placed after `## Template`:
+
+```markdown
+## Actions
+
+Wait for user input. Parse case-insensitively; accept both short key and spelled-out word. Apply to all provided indices in one response.
+
+### [E]xplain #N
+
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/templates/action-explain.md').read(), end='')"`
+
+> [!IMPORTANT]
+> This template is MANDATORY. Apply to each requested N in sequence.
+
+### [D]ismiss #N
+
+Remove finding N from the active set. Reprint the findings header with updated counts.
+```
+
 ---
 
 # Mechanics
@@ -295,23 +350,11 @@ Agents shipped inside a plugin cannot use `hooks`, `mcpServers`, or `permissionM
 
 # Template
 
-Prescribed output format for a skill. Stored in `TEMPLATE.md`, loaded in the skill body:
+Output formats live in `templates/` co-located with `SKILL.md`. See **Action Dispatch** for the full layout and the **File Naming** principle for naming rules.
 
-```markdown
-## Template
+Use the `python3 -c` form to load — it works on all platforms. Always follow a template load with an `[!IMPORTANT]` callout. Without it, Claude treats the format as a suggestion.
 
-!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/TEMPLATE.md').read(), end='')"`
-
-> [!IMPORTANT]
-> This template is MANDATORY, not a suggestion. Reproduce the exact
-> heading hierarchy, field names, and structure.
-```
-
-Use the `python3 -c` form — it works on all platforms.
-
-Always follow the load with an `[!IMPORTANT]` callout. Without it, Claude treats the format as a suggestion.
-
-## Code snippets
+## Code Snippets
 
 When referencing source code in output, use the Rust diagnostic style — line number gutter, pipe separator, and caret annotation:
 
@@ -332,7 +375,7 @@ Rules:
 
 This keeps inline references scannable and visually consistent with compiler/linter output the user already reads.
 
-## Action menu
+## Action Menu
 
 A template can end with an interactive action menu — a fenced code block containing keyboard shortcuts the user can invoke after the report:
 
@@ -343,23 +386,23 @@ A template can end with an interactive action menu — a fenced code block conta
 ```
 ````
 
-The fenced code block ensures consistent rendering. Every action listed in the menu must have a corresponding handler in the skill body — typically a **Handle user actions** step placed after the present step. That step defines exactly what Claude does when the user types each shortcut (e.g., "explain 1 4 7" expands full detail for findings 1, 4, and 7).
+The fenced code block ensures consistent rendering. Every action listed in the menu must have a corresponding handler — structured using the **Action Dispatch** pattern (see Patterns).
 
-## Sub-templates and two-level output
+## Sub-templates
 
 When a skill spawns multiple agents and merges their results, two template levels exist:
 
 1. **Agent output format** — embedded directly in each agent's body as an `## Output` section. This defines the structure the agent uses to report its findings (e.g. `### Critical / ### Warnings / ### Suggestions / ### Questions`). It is what the skill's merge step processes.
 
-2. **Skill TEMPLATE.md** — the final output format presented to the user after merging, de-duplication, severity re-calibration, and any verification pass.
+2. **Skill `templates/report.md`** — the final output format presented to the user after merging, de-duplication, severity re-calibration, and any verification pass.
 
-The flow: agents produce findings using their embedded format → skill merge step re-categorizes, de-duplicates, and re-calibrates severity → skill presents using TEMPLATE.md.
+The flow: agents produce findings using their embedded format → skill merge step re-categorizes, de-duplicates, and re-calibrates severity → skill presents using `templates/report.md`.
 
-Agent output formats don't need to match TEMPLATE.md. They're a contract between agents and the merge logic. Agents produce raw findings; the skill adds structure (sequential numbering, cross-agent de-duplication, compact-first layout).
+Agent output formats don't need to match `templates/report.md`. They're a contract between agents and the merge logic. Agents produce raw findings; the skill adds structure (sequential numbering, cross-agent de-duplication, compact-first layout).
 
-**Compact-first design:** A common TEMPLATE.md pattern where the initial render is a scannable index — each finding is a short two-line entry — and full detail is only shown on demand via the action menu (Explain action). This keeps the report readable at a glance and lets the user drill into only what matters.
+**Compact-first design:** A common `templates/report.md` pattern where the initial render is a scannable index — each finding is a short two-line entry — and full detail is only shown on demand via the action menu (Explain action). This keeps the report readable at a glance and lets the user drill into only what matters.
 
-## Embedding in co-located agents
+## Embedding in co-located Agents
 
 In a co-located agent, embed the template content directly in the agent body — agents don't have `${CLAUDE_SKILL_DIR}` resolved at load time. They receive it as runtime input and would need an extra tool call to read the file. Embedding avoids this.
 
@@ -410,7 +453,7 @@ Continue.
 
 ## Template
 
-!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/TEMPLATE.md').read(), end='')"`
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/templates/report.md').read(), end='')"`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
@@ -418,6 +461,26 @@ Continue.
 > formats, collapse sections into prose, reorder fields, or omit
 > sections that have entries. The only acceptable omission is a
 > section with zero entries.
+
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/templates/menu.md').read(), end='')"`
+
+> [!IMPORTANT]
+> Append this menu verbatim after the report body.
+
+## Actions
+
+Wait for user input. Parse case-insensitively; accept both short key and spelled-out word. Apply to all provided indices in one response.
+
+### [E]xplain #N
+
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/templates/action-explain.md').read(), end='')"`
+
+> [!IMPORTANT]
+> This template is MANDATORY. Apply to each requested N in sequence.
+
+### [D]ismiss #N
+
+Inline instructions — no template file needed.
 
 ## Safety
 
