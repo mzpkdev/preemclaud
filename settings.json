@@ -69,6 +69,10 @@
     ],
     "defaultMode": "acceptEdits"
   },
+  "statusLine": {
+    "type": "command",
+    "command": "python3 ~/.claude/ripperdoc/cortex/sys/scripts/statusline.py"
+  },
   "model": "opusplan",
   "effortLevel": "high",
   "voiceEnabled": true,
