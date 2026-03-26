@@ -32,6 +32,28 @@ Two variables are available inside `SKILL.md`:
 
 ---
 
+# Principles
+
+## Self-Containment
+
+Plugins should wire themselves. If a behavior can be expressed inside the plugin — in `hooks.json`, `SKILL.md` frontmatter, or `plugin.json` — do it there. Only fall back to `settings.json` for wiring that has no in-plugin equivalent.
+
+The canonical example is hooks: a `UserPromptSubmit` hook belongs in `hooks/hooks.json`, not in the global `settings.json`. Skill-scoped lifecycle hooks belong in `SKILL.md` frontmatter. `settings.json` is for user-level configuration that spans plugins or has no plugin home.
+
+## Platform Compatibility
+
+All scripts, hooks, and commands must work on macOS, Linux, and Windows. Avoid shell features or system utilities that differ across platforms.
+
+Python is a required preemclaud dependency — prefer it over shell for any script where portability is a concern. Bash is fine for simple hooks on known environments, but if a script uses OS-specific utilities or flag differences, rewrite it in Python.
+
+Common traps to avoid:
+- macOS-only tools (`pbcopy`, `open`, `gstat`, `brew`)
+- GNU vs BSD flag differences (`sed -i ''` vs `sed -i`)
+- Hardcoded `/` path separators in Python (use `pathlib` or `os.path`)
+- Assuming `bash` is available on Windows
+
+---
+
 # Patterns
 
 ## Trigger Description
@@ -114,7 +136,7 @@ Prescribed output format for a skill. Stored in `TEMPLATE.md`, loaded in the ski
 ```markdown
 ## Template
 
-!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/TEMPLATE.md').read(), end='')"`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
@@ -135,7 +157,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "git log -1 --format='%h %s' 2>/dev/null || true"
+          command: "python3 ${CLAUDE_SKILL_DIR}/scripts/post_bash.py"
 ```
 
 Supported events: `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `Notification`.
@@ -154,30 +176,31 @@ Don't use when the command needs Claude to reason, generate output, or hold a co
 Three pieces:
 
 1. **Stub command** (`commands/<name>.md`) — registers the slash command in `/help`. `disable-model-invocation: true` prevents programmatic invocation. The body is a fallback message shown only if the hook fails to intercept.
-2. **Hook config** (`hooks/hooks.json`) — wires `UserPromptSubmit` to the shell script via `${CLAUDE_PLUGIN_ROOT}`.
+2. **Hook config** (`hooks/hooks.json`) — wires `UserPromptSubmit` to the Python script via `${CLAUDE_PLUGIN_ROOT}`.
 3. **Hook script** — matches the command, does the work, outputs the block decision.
 
 Rules:
-- Always `case`-match your command first. Unmatched prompts must pass through with `echo '{}'` — never block commands that aren't yours.
-- Strip the command prefix to parse arguments: `args="${prompt#/my-command}"; args="${args# }"`.
+- Always check your command first and pass unmatched prompts through with `print("{}")` — never block commands that aren't yours.
+- Strip the command prefix to parse arguments: `args = prompt.removeprefix("/my-command").lstrip()`.
 - `decision: "block"` is the only required output field. `reason` is the user-visible message.
 - Write the stub body as a real error message — it surfaces if the hook environment breaks.
 
-```bash
-input="$(cat)"
-prompt="$(echo "$input" | jq -r '.prompt // .user_prompt // ""')"
+```python
+#!/usr/bin/env python3
+import json, sys
 
-case "$prompt" in
-  /my-command*) ;;
-  *) echo '{}'; exit 0 ;;
-esac
+data = json.load(sys.stdin)
+prompt = data.get("prompt") or data.get("user_prompt") or ""
 
-args="${prompt#/my-command}"
-args="${args# }"
+if not prompt.startswith("/my-command"):
+    print("{}")
+    sys.exit(0)
+
+args = prompt.removeprefix("/my-command").lstrip()
 
 # do the work here
 
-jq -n --arg reason "$message" '{"decision":"block","reason":$reason}'
+print(json.dumps({"decision": "block", "reason": message}))
 ```
 
 ---
@@ -227,7 +250,7 @@ Continue.
 
 ## Template
 
-!`cat ${CLAUDE_SKILL_DIR}/TEMPLATE.md`
+!`python3 -c "print(open('${CLAUDE_SKILL_DIR}/TEMPLATE.md').read(), end='')"`
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
