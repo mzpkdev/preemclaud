@@ -151,10 +151,11 @@ Omitting explicit parameters causes the Agent tool to fall back to defaults that
 | Pattern | Agents | Coordination | Use when |
 |---|---|---|---|
 | Direct | 0 | — | Skill can do everything inline |
-| Trampoline | 1 | — | Heavy data or multi-turn that shouldn't pollute main context |
+| Trampoline | 1 | — | Heavy data that shouldn't pollute main context |
 | Parallel Agents | N | None (merge after) | Multiple independent viewpoints on same artifact |
 | Team | N | Live (SendMessage) | Agents must coordinate during execution |
 | Prompt Intercept | 0 | — | Pure side effect, no reasoning needed |
+| Interaction Loop | — | User ↔ Agent (SendMessage) | Agent needs multi-turn user input (approval, edits) |
 
 ## Trigger Description
 
@@ -179,10 +180,11 @@ Format: `` > Daemon `plugin:skill` online. Action phrase. `` One line, states wh
 
 ## Trampoline
 
-A skill that exists only to spawn an agent. The main conversation sees the announce line and the agent's final output. Everything in between — gather scripts, diffs, JSON payloads, multi-turn planning — stays in the agent's isolated context.
+A skill that exists only to spawn an agent. The main conversation sees the announce line and the agent's final output. Everything in between — gather scripts, diffs, JSON payloads — stays in the agent's isolated context.
 
-Use when the skill processes heavy data or runs interactive multi-turn flows.
+Use when the skill processes heavy data that shouldn't pollute the main context.
 Don't use for lightweight lookups or reference injections.
+For multi-turn user interaction after the agent returns, compose with the Interaction Loop pattern.
 
 Rules:
 - `allowed-tools: Read, Agent` — that's all a trampoline needs
@@ -256,6 +258,21 @@ Flow:
 **Agent definitions:** Store in `team/` (not `workers/`) to signal the coordination model. Same frontmatter protocol as Co-located Agents.
 
 Reference: `code:write` (lead/builder/test-writer). See `knowledge:teams` for guardrails and cleanup procedures.
+
+## Interaction Loop
+
+Composable pattern that adds multi-turn user interaction to any pattern that spawns agents. The skill relays user input to a named agent via `SendMessage` and shows the agent's response, repeating until the agent signals completion.
+
+Use when the agent needs user approval, edit cycles, or iterative refinement before acting.
+
+Composes with: Trampoline (most common), Parallel Agents (post-merge interaction), Team (post-cleanup interaction).
+
+Requirements:
+- Agent spawned with a `name` (addressable via `SendMessage`)
+- `SendMessage` in `allowed-tools`
+- Agent defines a completion signal so the skill knows when to stop relaying
+
+Flow: spawn named agent → show output → relay user input via `SendMessage` → show response → repeat until completion signal.
 
 ## Preload Command
 
