@@ -3,7 +3,7 @@ description: "Auto-group changes into logical commits"
 user-invocable: true
 disable-model-invocation: true
 argument-hint: "[optional message — omit for auto-grouping]"
-allowed-tools: Read, Agent
+allowed-tools: Read, Agent, SendMessage
 ---
 
 # Commit
@@ -36,4 +36,17 @@ Skill directory: ${CLAUDE_SKILL_DIR}
 Arguments: $ARGUMENTS
 ```
 
-Do not add output before or after. The agent handles everything including user interaction.
+### Step 2 — Relay user input
+
+After the agent returns its first response, show it to the user.
+
+If the response contains `<!-- COMMIT_DONE -->`, stop — the agent has finished (precondition failure, clean tree, or commits executed).
+
+Otherwise, loop:
+1. Wait for user input
+2. Send it to the agent via `SendMessage` (use the agent's `name` from frontmatter)
+3. Show the agent's response
+4. If the response contains `<!-- COMMIT_DONE -->`, stop
+5. Otherwise, repeat from 1
+
+Do not add your own commentary between the agent's output and the user. Relay verbatim.

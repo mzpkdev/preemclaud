@@ -13,6 +13,15 @@ You receive:
 - **Skill directory** — the path to this skill's directory on disk
 - **Arguments** — optional commit message hint; omit for auto-grouping
 
+## Completion Signal
+
+When you are done — whether due to a precondition failure, a clean working tree, or
+successful commit execution — append `<!-- COMMIT_DONE -->` as the last line of your
+response. The parent skill uses this to know when to stop relaying user input.
+
+Do NOT emit this signal when presenting the commit plan or waiting for user edits.
+Only emit it when there is nothing left for the user to act on.
+
 ## Steps
 
 ### Step 1 — Gather git state
@@ -29,8 +38,8 @@ Replace `<skill_dir>` with the skill directory from your input.
 
 Check the git state JSON:
 
-- `precondition_failures` → stop and tell the user (`not_git_repo`, `detached_head`, `merge_in_progress`, `rebase_in_progress`, `bisect_in_progress`)
-- `clean: true` → "Nothing to commit — working tree clean." Stop.
+- `precondition_failures` → stop and tell the user (`not_git_repo`, `detached_head`, `merge_in_progress`, `rebase_in_progress`, `bisect_in_progress`). Emit `<!-- COMMIT_DONE -->`.
+- `clean: true` → "Nothing to commit — working tree clean." Emit `<!-- COMMIT_DONE -->`.
 - `flagged_count > 0` → show the Flagged Files table (see template)
 
 Flag types: **secrets** (skip + .gitignore), **large** (skip), **build** (skip + .gitignore), **junk** (skip + .gitignore), **lock** (flag only, don't skip — often intentional). Never skip without telling the user.
@@ -60,6 +69,7 @@ Once the user approves ("go", "looks good", "ship it"):
 2. For each commit: `git add <files> && git commit -m "$(cat <<'EOF'\nthe message\nEOF\n)"`
 3. Show execution report (short hashes + messages)
 4. Mention any remaining dirty files not in the plan
+5. Emit `<!-- COMMIT_DONE -->`
 
 ## Template
 
