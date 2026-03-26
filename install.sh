@@ -16,4 +16,13 @@ fi
 
 git clone --depth 1 --quiet "$REPO" "$TARGET"
 
-cd "$TARGET" && exec python3 ripperdoc/cortex/sys/scripts/install.py "$@"
+cd "$TARGET" && python3 ripperdoc/cortex/sys/scripts/install.py "$@"
+
+# Shell integration for CCRouter (if installed during setup)
+if command -v ccr >/dev/null 2>&1; then
+  SHELL_RC="$HOME/.zshrc"
+  [ -f "$HOME/.bashrc" ] && [ ! -f "$HOME/.zshrc" ] && SHELL_RC="$HOME/.bashrc"
+  if ! grep -q 'ccr activate' "$SHELL_RC" 2>/dev/null; then
+    printf '\n# preemclaud — model routing\ncommand -v ccr >/dev/null && { ccr start >/dev/null 2>&1 & eval "$(ccr activate 2>/dev/null)"; }\n' >> "$SHELL_RC"
+  fi
+fi

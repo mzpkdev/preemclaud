@@ -17,3 +17,12 @@ git clone --depth 1 --quiet $REPO $TARGET
 
 Set-Location $TARGET
 python3 ripperdoc/cortex/sys/scripts/install.py @args
+
+# Shell integration for CCRouter (if installed during setup)
+if (Get-Command ccr -ErrorAction SilentlyContinue) {
+    $profileDir = Split-Path $PROFILE
+    if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Path $profileDir -Force | Out-Null }
+    if (-not (Test-Path $PROFILE) -or -not (Select-String -Path $PROFILE -Pattern 'ccr activate' -Quiet)) {
+        Add-Content $PROFILE "`n# preemclaud — model routing`nif (Get-Command ccr -ErrorAction SilentlyContinue) { ccr start *>`$null; Invoke-Expression (ccr activate 2>`$null) }"
+    }
+}

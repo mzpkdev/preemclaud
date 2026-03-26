@@ -18,6 +18,7 @@ from core import (
     TWEAKCC, TWEAKCC_PATCHES,
     get_env, install, install_lsp_deps, remote_head,
     cc_version, SYNC_SENTINEL, VERSION_SENTINEL,
+    ccr_installed, install_ccr, scaffold_routing, CCR_BIN,
 )
 
 REPO = "https://github.com/mzpkdev/preemclaud"
@@ -251,6 +252,46 @@ def break_ice():
     print()
 
 
+def setup_routing():
+    section("subagent routing")
+    if ccr_installed():
+        sub(f"{colorize('`claude-code-router`')} {DIM}found{RESET}")
+        scaffold_routing()
+        sub(f"{DIM}routing config at ~/.claude/routing.json{RESET}")
+        print()
+        return
+    try:
+        tty = open("CON" if sys.platform == "win32" else "/dev/tty")
+    except OSError:
+        tty = None
+    if tty is None:
+        sub(f"{colorize('`claude-code-router`')} {DIM}skipped (non-interactive){RESET}")
+        print()
+        return
+    try:
+        sys.stdout.write(
+            f"        {DIM}\u203a{RESET} install {colorize('`claude-code-router`')}?    {BOLD}[y/N]{RESET} "
+        )
+        sys.stdout.flush()
+        answer = tty.readline().strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        answer = "n"
+        print()
+    finally:
+        tty.close()
+    if answer not in ("y", "yes"):
+        sub(f"{DIM}skipped{RESET}")
+        print()
+        return
+    sub(f"{DIM}npm install -g {CCR_BIN}{RESET}")
+    if install_ccr():
+        scaffold_routing()
+        sub(f"{DIM}routing config at ~/.claude/routing.json{RESET}")
+    else:
+        sub(f"{DIM}install failed{RESET}")
+    print()
+
+
 # ── main ────────────────────────────────────────────────
 
 
@@ -268,6 +309,7 @@ def main():
     register_marketplaces()
     install_plugins()
     break_ice()
+    setup_routing()
 
     print(f"    {CYAN}{BOLD}\u2501\u2501\u2501{RESET} {WHITE}{BOLD}preem, choom. you're chromed.{RESET}")
     print(f"        {DIM}restart claude code to load the new rig.{RESET}")

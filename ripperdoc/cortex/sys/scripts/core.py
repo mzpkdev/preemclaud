@@ -11,6 +11,8 @@ CLAUDE_DIR = Path.home() / ".claude"
 SYNC_SENTINEL = CLAUDE_DIR / ".cache" / ".sync"
 VERSION_SENTINEL = CLAUDE_DIR / ".cache" / ".version"
 SETTINGS = CLAUDE_DIR / "settings.json"
+ROUTING_CONFIG = CLAUDE_DIR / "routing.json"
+CCR_BIN = "claude-code-router"
 TWEAKCC = "tweakcc"
 TWEAKCC_PATCHES = [
     "fix-lsp-support",
@@ -233,3 +235,26 @@ def unpatch_cc():
     if result.returncode == 0 and VERSION_SENTINEL.exists():
         VERSION_SENTINEL.unlink()
     return result.returncode
+
+
+# --- CCRouter helpers ---
+
+def ccr_installed():
+    return check_bin(CCR_BIN)
+
+
+def install_ccr():
+    result = subprocess.run(
+        ["npm", "install", "-g", CCR_BIN],
+        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+    )
+    return result.returncode == 0
+
+
+def scaffold_routing():
+    if ROUTING_CONFIG.exists():
+        return
+    ROUTING_CONFIG.write_text(json.dumps({
+        "models": {"opus": "", "sonnet": "", "haiku": ""},
+        "override": {},
+    }, indent=2) + "\n")
