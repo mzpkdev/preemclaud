@@ -38,15 +38,16 @@ Arguments: $ARGUMENTS
 
 ### Step 2 — Relay user input
 
-After the agent returns its first response, show it to the user.
+After the agent returns its first response, show it to the user. Save the `agentId` from the Agent tool result — you need it for resumption.
 
 If the response contains `<!-- COMMIT_DONE -->`, stop — the agent has finished (precondition failure, clean tree, or commits executed).
 
 Otherwise, loop:
 1. Wait for user input
-2. Send it to the agent via `SendMessage` (use the agent's `name` from frontmatter)
-3. Show the agent's response
-4. If the response contains `<!-- COMMIT_DONE -->`, stop
-5. Otherwise, repeat from 1
+2. Send it to the agent via `SendMessage(to: agentId)` — use the agent ID, not the name
+3. The agent resumes in the background — wait for the task notification
+4. Show the agent's response from the notification
+5. If the response contains `<!-- COMMIT_DONE -->`, stop
+6. Otherwise, repeat from 1
 
 Do not add your own commentary between the agent's output and the user. Relay verbatim.

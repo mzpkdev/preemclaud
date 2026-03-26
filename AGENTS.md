@@ -155,7 +155,7 @@ Omitting explicit parameters causes the Agent tool to fall back to defaults that
 | Parallel Agents | N | None (merge after) | Multiple independent viewpoints on same artifact |
 | Team | N | Live (SendMessage) | Agents must coordinate during execution |
 | Prompt Intercept | 0 | — | Pure side effect, no reasoning needed |
-| Interaction Loop | — | User ↔ Agent (SendMessage) | Agent needs multi-turn user input (approval, edits) |
+| Resumable Agent | — | User ↔ Agent (SendMessage) | Agent needs multi-turn user input (approval, edits) |
 
 ## Trigger Description
 
@@ -184,7 +184,7 @@ A skill that exists only to spawn an agent. The main conversation sees the annou
 
 Use when the skill processes heavy data that shouldn't pollute the main context.
 Don't use for lightweight lookups or reference injections.
-For multi-turn user interaction after the agent returns, compose with the Interaction Loop pattern.
+For multi-turn user interaction after the agent returns, compose with the Resumable Agent pattern.
 
 Rules:
 - `allowed-tools: Read, Agent` — that's all a trampoline needs
@@ -259,20 +259,23 @@ Flow:
 
 Reference: `code:write` (lead/builder/test-writer). See `knowledge:teams` for guardrails and cleanup procedures.
 
-## Interaction Loop
+## Resumable Agent
 
-Composable pattern that adds multi-turn user interaction to any pattern that spawns agents. The skill relays user input to a named agent via `SendMessage` and shows the agent's response, repeating until the agent signals completion.
+Composable pattern that adds multi-turn user interaction to any pattern that spawns agents. After the agent returns its first output, the skill relays user input via `SendMessage` using the agent's ID. The agent auto-resumes in the background; the skill waits for the task notification, then shows the response. This repeats until the agent signals completion.
 
 Use when the agent needs user approval, edit cycles, or iterative refinement before acting.
 
 Composes with: Trampoline (most common), Parallel Agents (post-merge interaction), Team (post-cleanup interaction).
 
 Requirements:
-- Agent spawned with a `name` (addressable via `SendMessage`)
 - `SendMessage` in `allowed-tools`
 - Agent defines a completion signal so the skill knows when to stop relaying
 
-Flow: spawn named agent → show output → relay user input via `SendMessage` → show response → repeat until completion signal.
+Flow: spawn agent → show output → wait for user input → `SendMessage(to: agentId)` → wait for background notification → show response → check for completion signal → repeat or stop.
+
+**Agent ID, not name:** The Agent tool returns an `agentId` in its result. Use that ID in `SendMessage`'s `to` field. Name-based addressing is for `TeamCreate` teammates — it won't resume a bare subagent.
+
+**Background resumption:** A stopped subagent that receives a `SendMessage` auto-resumes in the background. The skill is notified when the agent finishes. The notification includes the agent's response, which the skill shows to the user.
 
 ## Preload Command
 
