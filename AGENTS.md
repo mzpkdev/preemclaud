@@ -144,6 +144,42 @@ Supported events: `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `Notifica
 
 Caveat: skill-scoped hooks fire for tool calls in the main context only. They do not fire inside a spawned agent. If the agent needs post-action reporting, build it into the agent's own steps.
 
+## Prompt Intercept
+
+A slash command handled entirely by a `UserPromptSubmit` hook — Claude never receives the prompt, no API turn is consumed. The hook runs code as a side effect and returns `{"decision":"block","reason":"..."}`, where `reason` is what the user sees.
+
+Use when the command is a pure side effect: clipboard copy, file write, toggle a setting, external API call.
+Don't use when the command needs Claude to reason, generate output, or hold a conversation.
+
+Three pieces:
+
+1. **Stub command** (`commands/<name>.md`) — registers the slash command in `/help`. `disable-model-invocation: true` prevents programmatic invocation. The body is a fallback message shown only if the hook fails to intercept.
+2. **Hook config** (`hooks/hooks.json`) — wires `UserPromptSubmit` to the shell script via `${CLAUDE_PLUGIN_ROOT}`.
+3. **Hook script** — matches the command, does the work, outputs the block decision.
+
+Rules:
+- Always `case`-match your command first. Unmatched prompts must pass through with `echo '{}'` — never block commands that aren't yours.
+- Strip the command prefix to parse arguments: `args="${prompt#/my-command}"; args="${args# }"`.
+- `decision: "block"` is the only required output field. `reason` is the user-visible message.
+- Write the stub body as a real error message — it surfaces if the hook environment breaks.
+
+```bash
+input="$(cat)"
+prompt="$(echo "$input" | jq -r '.prompt // .user_prompt // ""')"
+
+case "$prompt" in
+  /my-command*) ;;
+  *) echo '{}'; exit 0 ;;
+esac
+
+args="${prompt#/my-command}"
+args="${args# }"
+
+# do the work here
+
+jq -n --arg reason "$message" '{"decision":"block","reason":$reason}'
+```
+
 ---
 
 # Structure
