@@ -20,6 +20,7 @@ from core import (
     cc_version, SYNC_SENTINEL, VERSION_SENTINEL,
     ccr_installed, install_ccr, scaffold_routing, CCR_BIN,
 )
+from routing import scaffold_ccr_config
 
 REPO = "https://github.com/mzpkdev/preemclaud"
 
@@ -99,7 +100,7 @@ def archive():
 
 
 def sync():
-    section("cloning the shard")
+    section("cloning the rig")
     sub(f"{DIM}git clone --depth 1 {REPO}{RESET}")
     result = subprocess.run(
         ["git", "clone", "--depth", "1", REPO, str(CLAUDE_DIR), "--quiet"],
@@ -118,14 +119,13 @@ CLEANUP = [
 
 
 def scrub():
-    section("scrubbing repo artifacts")
+    section("scrubbing the rig")
     for name in CLEANUP:
         target = CLAUDE_DIR / name
         if target.is_dir():
             shutil.rmtree(target)
         elif target.exists():
             target.unlink()
-        sub(f"{DIM}{name}{RESET}")
     print()
 
 
@@ -253,10 +253,11 @@ def break_ice():
 
 
 def setup_routing():
-    section("subagent routing")
+    section("routing the mesh")
     if ccr_installed():
         sub(f"{colorize('`claude-code-router`')} {DIM}found{RESET}")
         scaffold_routing()
+        scaffold_ccr_config()
         sub(f"{DIM}routing config at ~/.claude/routing.json{RESET}")
         print()
         return
@@ -286,6 +287,7 @@ def setup_routing():
     sub(f"{DIM}npm install -g {CCR_BIN}{RESET}")
     if install_ccr():
         scaffold_routing()
+        scaffold_ccr_config()
         sub(f"{DIM}routing config at ~/.claude/routing.json{RESET}")
     else:
         sub(f"{DIM}install failed{RESET}")
