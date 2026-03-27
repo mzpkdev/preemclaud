@@ -56,7 +56,7 @@ The implants that make you *you*. Slot in clean, announce on activation, answer 
 </td>
 <td width="50%" valign="top">
 
-#### [`RIG`](docs/rig.md)
+#### [`DECK`](docs/deck.md)
 
 Your cyberdeck. Version control that reads your commit style. IDE integration wired through hooks.
 

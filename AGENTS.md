@@ -5,7 +5,7 @@ How skills, agents, and hooks are written in this repository.
 ```
 ripperdoc/
   chrome/                         # high-level skills — write, code, create, knowledge, meta
-  rig/                            # external integrations — git, IDE
+  deck/                           # external integrations — git, IDE
   optics/                         # language servers — typescript, python, scala, java
   cortex/                         # system internals — update daemon
   <marketplace>/
