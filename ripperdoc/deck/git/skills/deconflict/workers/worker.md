@@ -9,8 +9,9 @@ model: opus
 ## Input
 
 You receive:
-- **Skill directory** — the path to this skill's directory on disk (for running gather.py)
-- **Arguments** — optional branch name; e.g. "main", "origin/develop", or empty to resume in-progress
+- **CLAUDE_SKILL_DIR** — the path to this skill's directory on disk
+- **CLAUDE_PLUGIN_ROOT** — the path to the plugin's root directory on disk
+- **ARGUMENTS** — optional branch name; e.g. "main", "origin/develop", or empty to resume in-progress
 
 ## Completion Signal
 
@@ -37,11 +38,11 @@ If no branch is specified, run `--status` first to check for an in-progress oper
 ### Step 2 — Gather context
 
 ```bash
-python3 <skill_dir>/scripts/gather.py --status          # no target — just check state
-python3 <skill_dir>/scripts/gather.py --context <target> # full cross-branch context
+python3 <plugin_dir>/scripts/deconflict.py --status          # no target — just check state
+python3 <plugin_dir>/scripts/deconflict.py --context <target> # full cross-branch context
 ```
 
-Replace `<skill_dir>` with the skill directory from your input.
+Replace `<plugin_dir>` with `CLAUDE_PLUGIN_ROOT` from your input.
 
 Use `--status` when the user didn't specify a branch. Use `--context <target>` when they did.
 
@@ -71,7 +72,7 @@ If conflicts → continue.
 ### Step 4 — Map conflicts
 
 ```bash
-python3 <skill_dir>/scripts/gather.py --conflicts
+python3 <plugin_dir>/scripts/deconflict.py --conflicts
 ```
 
 Returns JSON with parsed conflict hunks:

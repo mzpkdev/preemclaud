@@ -9,8 +9,9 @@ model: sonnet
 ## Input
 
 You receive:
-- **Skill directory** — the path to this skill's directory on disk
-- **Arguments** — optional commit message hint; omit for auto-grouping
+- **CLAUDE_SKILL_DIR** — the path to this skill's directory on disk
+- **CLAUDE_PLUGIN_ROOT** — the path to the plugin's root directory on disk
+- **ARGUMENTS** — optional commit message hint; omit for auto-grouping
 
 ## Completion Signal
 
@@ -28,10 +29,10 @@ Only emit it when there is nothing left for the user to act on.
 Run:
 
 ```bash
-python3 <skill_dir>/scripts/gather.py
+python3 <plugin_dir>/scripts/commit.py
 ```
 
-Replace `<skill_dir>` with the skill directory from your input.
+Replace `<plugin_dir>` with `CLAUDE_PLUGIN_ROOT` from your input.
 
 ### Step 2 — Handle preconditions and flags
 

@@ -120,6 +120,7 @@ Call the Agent tool with:
 - name: <value from frontmatter>
 - prompt: |
     CLAUDE_SKILL_DIR: ${CLAUDE_SKILL_DIR}
+    CLAUDE_PLUGIN_ROOT: ${CLAUDE_PLUGIN_ROOT}
     ARGUMENTS: $ARGUMENTS
     <task-specific context>
 ```
@@ -130,7 +131,7 @@ Call the Agent tool with:
 |---|---|
 | `description` | Agent frontmatter `description` field |
 | `subagent_type` | Skill decision — see subagent types table in Co-located Agents |
-| `prompt` | Skill-assembled string — always include `CLAUDE_SKILL_DIR` and `ARGUMENTS` |
+| `prompt` | Skill-assembled string — always include `CLAUDE_SKILL_DIR`, `CLAUDE_PLUGIN_ROOT`, and `ARGUMENTS` |
 
 **Optional parameters:**
 
@@ -203,7 +204,7 @@ Agent `.md` files stored in `skills/<skill>/workers/`. Claude Code does not auto
 3. **Extract** the markdown body as the system prompt
 4. **Call the Agent tool** — pass `name`, `description`, `subagent_type`, `model`, and the assembled prompt (see **Agent Spawning** principle for full parameter reference)
 
-Pass `${CLAUDE_SKILL_DIR}` and `$ARGUMENTS` in the agent's prompt so it can find scripts and know what the user asked for.
+Pass `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PLUGIN_ROOT}`, and `$ARGUMENTS` in the agent's prompt so it can find scripts and know what the user asked for. Include `${CLAUDE_PLUGIN_ROOT}` whenever the skill uses plugin-level scripts (i.e. `<plugin>/scripts/` rather than `<skill>/scripts/`).
 
 Any `SKILL.md` that uses co-located agents must include an **Agent Frontmatter** section documenting these steps inline. It serves as both instruction to Claude and documentation for readers.
 

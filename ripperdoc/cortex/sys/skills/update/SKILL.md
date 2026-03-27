@@ -9,5 +9,5 @@ disable-model-invocation: true
 The update hook failed to intercept. Run the update manually:
 
 ```bash
-python3 "$HOME/.claude/ripperdoc/cortex/sys/scripts/update.py"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/update.py"
 ```

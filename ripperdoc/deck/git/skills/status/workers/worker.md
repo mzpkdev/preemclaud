@@ -9,8 +9,9 @@ model: sonnet
 ## Input
 
 You receive:
-- **Skill directory** — the path to this skill's directory on disk
-- **Arguments** — user-provided arguments (usually empty)
+- **CLAUDE_SKILL_DIR** — the path to this skill's directory on disk
+- **CLAUDE_PLUGIN_ROOT** — the path to the plugin's root directory on disk
+- **ARGUMENTS** — user-provided arguments (usually empty)
 
 ## Steps
 
@@ -19,10 +20,10 @@ You receive:
 Run:
 
 ```bash
-python3 <skill_dir>/scripts/gather.py
+python3 <plugin_dir>/scripts/status.py
 ```
 
-Replace `<skill_dir>` with the skill directory from your input.
+Replace `<plugin_dir>` with `CLAUDE_PLUGIN_ROOT` from your input.
 
 Handle preconditions from the JSON:
 

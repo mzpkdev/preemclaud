@@ -9,5 +9,5 @@ disable-model-invocation: true
 The reinstall hook failed to intercept. Run it manually:
 
 ```bash
-python3 "$HOME/.claude/ripperdoc/cortex/sys/scripts/reinstall.py"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/reinstall.py"
 ```

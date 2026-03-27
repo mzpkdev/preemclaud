@@ -32,8 +32,9 @@ Read, parse, and spawn following the **Agent Frontmatter** section above.
 Agent prompt:
 
 ```
-Skill directory: ${CLAUDE_SKILL_DIR}
-Arguments: $ARGUMENTS
+CLAUDE_SKILL_DIR: ${CLAUDE_SKILL_DIR}
+CLAUDE_PLUGIN_ROOT: ${CLAUDE_PLUGIN_ROOT}
+ARGUMENTS: $ARGUMENTS
 ```
 
 Do not add output before or after. The agent handles everything.

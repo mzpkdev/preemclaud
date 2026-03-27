@@ -9,5 +9,5 @@ disable-model-invocation: true
 The unpatch hook failed to intercept. Run the restore manually:
 
 ```bash
-python3 "$HOME/.claude/ripperdoc/cortex/sys/scripts/unpatch.py"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/unpatch.py"
 ```
