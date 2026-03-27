@@ -7,7 +7,7 @@ CCR_CONFIG_DIR = Path.home() / ".claude-code-router"
 CCR_CONFIG = CCR_CONFIG_DIR / "config.json"
 
 OPENROUTER_SCAFFOLD = {
-    "PORT": 3456,
+    "PORT": 2077,
     "Providers": [
         {
             "name": "openrouter",

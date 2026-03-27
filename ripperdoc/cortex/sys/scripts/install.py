@@ -18,7 +18,7 @@ from core import (
     TWEAKCC, TWEAKCC_PATCHES,
     get_env, install, install_lsp_deps, remote_head,
     cc_version, SYNC_SENTINEL, VERSION_SENTINEL,
-    ccr_installed, install_ccr, scaffold_routing, CCR_BIN,
+    ccr_installed, install_ccr, CCR_BIN,
 )
 from routing import scaffold_ccr_config
 
@@ -259,9 +259,8 @@ def setup_routing():
     section("routing the mesh")
     if ccr_installed():
         sub(f"{colorize('`claude-code-router`')} {DIM}found{RESET}")
-        scaffold_routing()
         scaffold_ccr_config()
-        sub(f"{DIM}routing config at ~/.claude/routing.json{RESET}")
+        sub(f"{DIM}CCR config at ~/.claude-code-router/config.json{RESET}")
         print()
         return
     try:
@@ -289,9 +288,8 @@ def setup_routing():
         return
     sub(f"{DIM}npm install -g {CCR_BIN}{RESET}")
     if install_ccr():
-        scaffold_routing()
         scaffold_ccr_config()
-        sub(f"{DIM}routing config at ~/.claude/routing.json{RESET}")
+        sub(f"{DIM}CCR config at ~/.claude-code-router/config.json{RESET}")
     else:
         sub(f"{DIM}install failed{RESET}")
     print()
