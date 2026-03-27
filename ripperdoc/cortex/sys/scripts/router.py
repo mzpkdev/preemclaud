@@ -2,7 +2,9 @@
 """sys:router — view and configure CCR model routing."""
 
 import json
+import shutil
 import socket
+import subprocess
 import sys
 from pathlib import Path
 
@@ -24,6 +26,26 @@ ROUTING_SCAFFOLD = {
 
 TIERS = ("opus", "sonnet", "haiku")
 WIDTH = 44
+CCR_BIN = "claude-code-router"
+
+CCR_DAEMON_SCAFFOLD = {
+    "PORT": 2077,
+    "Providers": [
+        {
+            "name": "openrouter",
+            "api_base_url": "https://openrouter.ai/api/v1/chat/completions",
+            "api_key": "$OPENROUTER_API_KEY",
+            "models": [
+                "anthropic/claude-opus-4",
+                "anthropic/claude-sonnet-4-6",
+                "anthropic/claude-haiku-4-5",
+            ],
+            "transformer": {"use": ["openrouter", "tooluse"]},
+        }
+    ],
+    "Router": {"default": "openrouter,anthropic/claude-sonnet-4-6"},
+    "LOG": False,
+}
 
 
 def ccr_running():
@@ -85,6 +107,8 @@ def cmd_status():
 
     print(f"\n    {bar}")
     print(f"\n    {'Router':<10}{dot} {ccr_label}")
+    if not running and not shutil.which(CCR_BIN):
+        print(f"    {DIM}run /sys:router install to set up CCR{RESET}")
     print()
     for tier in TIERS:
         val = models.get(tier)
@@ -158,6 +182,78 @@ def cmd_agent(args):
         print(f"{name} → {value}")
 
 
+def _cc(text):
+    """Colorize `backtick` spans cyan+bold."""
+    return text.replace("`", CYAN + BOLD, 1).replace("`", RESET, 1)
+
+
+def _sub(msg):
+    print(f"        {DIM}›{RESET} {msg}")
+
+
+def cmd_install():
+    bar = f"{DIM}─── Router {'─' * (WIDTH - 11)}{RESET}"
+    print(f"\n    {bar}\n")
+
+    if shutil.which(CCR_BIN):
+        _sub(f"{_cc('`claude-code-router`')} {DIM}found{RESET}")
+        _scaffold_configs()
+        _sub(f"writing {DIM}~/.claude/routing.json{RESET}")
+        rc = _inject_shell_rc()
+        if rc:
+            _sub(f"patching {DIM}{rc}{RESET}")
+        print(f"\n    Restart your shell, then: {CYAN}/sys:router key <your-openrouter-key>{RESET}\n")
+        return
+
+    _sub(f"installing {_cc('`claude-code-router`')}")
+    result = subprocess.run(
+        ["npm", "install", "-g", CCR_BIN],
+        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+    )
+    if result.returncode != 0:
+        print(f"\n    {DIM}{result.stderr.strip()}{RESET}\n")
+        return
+
+    _scaffold_configs()
+    _sub(f"writing {DIM}~/.claude/routing.json{RESET}")
+    rc = _inject_shell_rc()
+    if rc:
+        _sub(f"patching {DIM}{rc}{RESET}")
+
+    print(f"\n    Restart your shell, then: {CYAN}/sys:router key <your-openrouter-key>{RESET}\n")
+
+
+def _inject_shell_rc():
+    """Append shell integration snippet. Returns the rc path if written, None if already present."""
+    marker = "ccr activate"
+    if sys.platform == "win32":
+        rc = Path(subprocess.run(
+            ["powershell", "-NoProfile", "-Command", "echo $PROFILE"],
+            capture_output=True, text=True,
+        ).stdout.strip())
+        snippet = "\n# preemclaud — model routing\nif (Get-Command ccr -ErrorAction SilentlyContinue) { ccr start *>$null; Invoke-Expression (ccr activate 2>$null) }\n"
+    else:
+        zshrc = Path.home() / ".zshrc"
+        bashrc = Path.home() / ".bashrc"
+        rc = zshrc if zshrc.exists() or not bashrc.exists() else bashrc
+        snippet = "\n# preemclaud — model routing\ncommand -v ccr >/dev/null && { ccr start >/dev/null 2>&1 & eval \"$(ccr activate 2>/dev/null)\"; }\n"
+
+    if rc.exists() and marker in rc.read_text():
+        return None
+    rc.parent.mkdir(parents=True, exist_ok=True)
+    with rc.open("a") as f:
+        f.write(snippet)
+    return rc.name
+
+
+def _scaffold_configs():
+    if not ROUTING_CONFIG.exists():
+        save_routing(dict(ROUTING_SCAFFOLD))
+    if not CCR_CONFIG.exists():
+        CCR_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+        CCR_CONFIG.write_text(json.dumps(CCR_DAEMON_SCAFFOLD, indent=2) + "\n")
+
+
 # ── main ────────────────────────────────────────────────
 
 
@@ -171,8 +267,10 @@ def main():
         cmd_default(args[1:])
     elif args[0] == "agent":
         cmd_agent(args[1:])
+    elif args[0] == "install":
+        cmd_install()
     else:
-        print(f"unknown command '{args[0]}' — try: key, default, agent")
+        print(f"unknown command '{args[0]}' — try: install, key, default, agent")
 
 
 if __name__ == "__main__":
