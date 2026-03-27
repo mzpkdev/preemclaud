@@ -156,9 +156,10 @@ def cmd_default(args):
         save_routing(cfg)
         print(f"{tier} cleared")
     else:
-        cfg.setdefault("models", {})[tier] = value
+        normalised = _normalise_model(value)
+        cfg.setdefault("models", {})[tier] = normalised
         save_routing(cfg)
-        print(f"{tier} → {value}")
+        print(f"{tier} → {normalised}")
 
 
 def cmd_agent(args):
@@ -177,9 +178,10 @@ def cmd_agent(args):
         save_routing(cfg)
         print(f"{name} → native")
     else:
-        overrides[name] = value
+        normalised = _normalise_model(value)
+        overrides[name] = normalised
         save_routing(cfg)
-        print(f"{name} → {value}")
+        print(f"{name} → {normalised}")
 
 
 def _cc(text):
@@ -244,6 +246,13 @@ def _inject_shell_rc():
     with rc.open("a") as f:
         f.write(snippet)
     return rc.name
+
+
+def _normalise_model(value):
+    """Ensure value is provider,model — default provider is openrouter."""
+    if "," not in value:
+        return f"openrouter,{value}"
+    return value
 
 
 def _scaffold_configs():
