@@ -11,6 +11,7 @@ CLAUDE_DIR = Path.home() / ".claude"
 SYNC_SENTINEL = CLAUDE_DIR / ".cache" / ".sync"
 VERSION_SENTINEL = CLAUDE_DIR / ".cache" / ".version"
 SETTINGS = CLAUDE_DIR / "settings.json"
+ROUTING_CONFIG = CLAUDE_DIR / "routing.json"
 CCR_BIN = "claude-code-router"
 TWEAKCC = "tweakcc"
 TWEAKCC_PATCHES = [
@@ -248,5 +249,14 @@ def install_ccr():
         stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
     )
     return result.returncode == 0
+
+
+def scaffold_routing():
+    if ROUTING_CONFIG.exists():
+        return
+    ROUTING_CONFIG.write_text(json.dumps({
+        "models": {"opus": "", "sonnet": "", "haiku": ""},
+        "override": {},
+    }, indent=2) + "\n")
 
 
