@@ -115,6 +115,9 @@ CLEANUP = [
     "CLAUDE.md", "AGENTS.md", "README.md",
     "install.sh", "install.ps1",
     "docs", ".github",
+    ".gitignore", ".gitmodules",
+    ".idea",
+    "arasaka",
 ]
 
 
