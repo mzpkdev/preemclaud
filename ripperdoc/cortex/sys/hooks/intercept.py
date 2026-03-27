@@ -42,5 +42,10 @@ elif prompt.startswith(("/reinstall", "/sys:reinstall")):
     output = stdout or stderr
     block(output if output else "plugins reinstalled")
 
+elif prompt.startswith(("/router", "/sys:router")):
+    args = prompt.split()[1:]
+    stdout, stderr, rc = run_script("router.py", args)
+    block(stdout or stderr or "no change")
+
 else:
     print("{}")
