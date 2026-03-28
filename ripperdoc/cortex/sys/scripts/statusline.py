@@ -206,12 +206,12 @@ def _fetch_usage():
 # Display helpers
 # ---------------------------------------------------------------------------
 
-def _colored_bar(pct, low_thresh=50, high_thresh=80):
+def _colored_bar(pct, low_thresh=50, mid_thresh=70, high_thresh=85):
     """Return a colored ━╌ bar string for the given percentage."""
     pct = max(0.0, min(100.0, float(pct)))
     filled = round(pct / 10)
     bar = "━" * filled + "╌" * (10 - filled)
-    color = MAGENTA if pct >= high_thresh else YELLOW if pct >= low_thresh else CYAN
+    color = MAGENTA if pct >= high_thresh else YELLOW if pct >= mid_thresh else CYAN if pct >= low_thresh else ""
     return f"{color}{bar}{RESET}"
 
 
@@ -296,8 +296,8 @@ def context_bar(data):
         if pct is None:
             return ""
         pct = max(0.0, min(100.0, float(pct)))
-        bar = _colored_bar(pct, low_thresh=60, high_thresh=85)
-        bar_str = f"Ctx {bar} {pct:.0f}%"
+        bar = _colored_bar(pct, low_thresh=50, mid_thresh=70, high_thresh=85)
+        bar_str = f"Context {bar} {pct:.0f}%"
         inp = ctx.get("total_input_tokens")
         out = ctx.get("total_output_tokens", 0)
         limit = ctx.get("context_window_size")
