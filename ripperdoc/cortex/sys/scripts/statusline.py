@@ -275,15 +275,22 @@ def fmt_tokens(n):
     return f"{round(n / 1000)}k"
 
 
+EFFORT_COLOR = {"low": CYAN, "high": MAGENTA}
+
 def model_name(data):
     try:
         model = data.get("model", {})
         display = model.get("display_name", "")
         if display:
-            return display.replace("Claude ", "").strip()
-        mid = model.get("id", "")
-        if mid:
-            return MODEL_SHORT.get(mid, mid.split("-")[-1].title())
+            name = display.replace("Claude ", "").strip()
+        else:
+            mid = model.get("id", "")
+            name = MODEL_SHORT.get(mid, mid.split("-")[-1].title()) if mid else ""
+        if not name:
+            return ""
+        effort = os.environ.get("CLAUDE_CODE_EFFORT_LEVEL", "")
+        color = EFFORT_COLOR.get(effort, "")
+        return f"{color}{name}{RESET}" if color else name
     except Exception:
         pass
     return ""
@@ -306,16 +313,6 @@ def context_bar(data):
         return bar_str
     except Exception:
         return ""
-
-
-def effort_level():
-    try:
-        val = os.environ.get("CLAUDE_CODE_EFFORT_LEVEL", "")
-        if val and val != "unset":
-            return {"medium": "med"}.get(val, val)
-    except Exception:
-        pass
-    return ""
 
 
 def pr_info():
@@ -341,12 +338,38 @@ def pr_info():
         return ""
 
 
+def _dirty_suffix():
+    """Return '* [+2~3]' style suffix or '' if clean/error."""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True, text=True, timeout=2,
+        )
+        if result.returncode != 0 or not result.stdout.strip():
+            return ""
+        staged = modified = 0
+        for line in result.stdout.splitlines():
+            if len(line) < 2:
+                continue
+            if line[0] not in (' ', '?'):
+                staged += 1
+            if line[1] != ' ':
+                modified += 1
+        if not staged and not modified:
+            return ""
+        parts = (f"+{staged}" if staged else "") + (f"~{modified}" if modified else "")
+        return f"* {DIM}[{parts}]{RESET}"
+    except Exception:
+        return ""
+
+
 def branch_name(data):
     try:
         wt = data.get("worktree", {})
         name = wt.get("branch") or wt.get("name") or ""
         if name:
-            return name
+            return name + _dirty_suffix()
     except Exception:
         pass
     try:
@@ -358,9 +381,10 @@ def branch_name(data):
         if result.returncode == 0:
             name = result.stdout.strip()
             if name and name != "HEAD":
+                suffix = _dirty_suffix()
                 if os.path.isfile(".git"):
-                    return f"{CYAN}⎇ {name}{RESET}"
-                return name
+                    return f"{CYAN}⎇ {name}{RESET}{suffix}"
+                return name + suffix
     except Exception:
         pass
     return ""
