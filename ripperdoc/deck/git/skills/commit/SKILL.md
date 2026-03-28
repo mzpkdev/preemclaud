@@ -27,15 +27,19 @@ When spawning the agent:
 
 ### Step 1 — Spawn the agent
 
-Read, parse, and spawn following the **Agent Frontmatter** section above.
+Read `${CLAUDE_SKILL_DIR}/workers/worker.md`, parse YAML frontmatter, extract the markdown body, then:
 
-Agent prompt:
+Call the Agent tool with:
+- name: \<from frontmatter\>
+- description: \<from frontmatter\>
+- subagent_type: "general-purpose"
+- model: \<from frontmatter\>
+- prompt: |
+    CLAUDE_SKILL_DIR: ${CLAUDE_SKILL_DIR}
+    CLAUDE_PLUGIN_ROOT: ${CLAUDE_PLUGIN_ROOT}
+    ARGUMENTS: $ARGUMENTS
 
-```
-CLAUDE_SKILL_DIR: ${CLAUDE_SKILL_DIR}
-CLAUDE_PLUGIN_ROOT: ${CLAUDE_PLUGIN_ROOT}
-ARGUMENTS: $ARGUMENTS
-```
+    \<agent body from the .md file\>
 
 ### Step 2 — Relay user input
 

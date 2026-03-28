@@ -38,11 +38,9 @@ If no branch is specified, run `--status` first to check for an in-progress oper
 ### Step 2 — Gather context
 
 ```bash
-python3 <plugin_dir>/scripts/deconflict.py --status          # no target — just check state
-python3 <plugin_dir>/scripts/deconflict.py --context <target> # full cross-branch context
+python3 $CLAUDE_PLUGIN_ROOT/scripts/deconflict.py --status          # no target — just check state
+python3 $CLAUDE_PLUGIN_ROOT/scripts/deconflict.py --context <target> # full cross-branch context
 ```
-
-Replace `<plugin_dir>` with `CLAUDE_PLUGIN_ROOT` from your input.
 
 Use `--status` when the user didn't specify a branch. Use `--context <target>` when they did.
 
@@ -72,7 +70,7 @@ If conflicts → continue.
 ### Step 4 — Map conflicts
 
 ```bash
-python3 <plugin_dir>/scripts/deconflict.py --conflicts
+python3 $CLAUDE_PLUGIN_ROOT/scripts/deconflict.py --conflicts
 ```
 
 Returns JSON with parsed conflict hunks:
@@ -132,54 +130,7 @@ Present using the template. Format rules for the success report:
 
 ## Template
 
-### Success report
-
-```
-Done — {operation}.
-
-  N commits integrated · N conflicts auto-resolved
-  ──────────────────────────────────────────────────────────────────
-
-  Auto-resolved:
-    file.py     short explanation of what was combined
-    file.js     short explanation of what was combined
-
-  a1b2c3d..e4f5g6h
-```
-
-Omit "Auto-resolved" block if zero. Omit "conflicts auto-resolved" count if zero.
-Show "fast-forwarded to `branch`" instead of "merged/rebased" when applicable.
-
-### Conflict view
-
-```
-Auto-resolved N/M conflicts. Need your input on K:
-
-  --> file.py:N-M
-  One sentence explaining what each side was doing.
-   |
-   = ours (branch-name):
-   |
- N |    code
- N |    code
-   |
-   = theirs (branch-name):
-   |
- N |    code
- N |    code
-   |
-
-  ──────────────────────────────────────────────────────────────────
-  ▸ [O]urs     ▸ [T]heirs     ▸ [B]oth     ▸ [E]dit
-
-What would you like to do?
-```
-
-### Abort
-
-```
-Aborted — back to where you started.
-```
+Read `$CLAUDE_SKILL_DIR/templates/report.md` and format using that template.
 
 > [!IMPORTANT]
 > Follow the template exactly — do not improvise the format.
