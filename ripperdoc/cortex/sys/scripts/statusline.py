@@ -15,9 +15,9 @@ from urllib.parse import urlparse
 if sys.platform == "win32":
     os.system("")  # enable VT100 escape processing on Windows 10+
 
-GREEN  = "\033[92m"
-YELLOW = "\033[93m"
-RED    = "\033[91m"
+CYAN    = "\033[96m"
+YELLOW  = "\033[93m"
+MAGENTA = "\033[95m"
 DIM    = "\033[2m"
 RESET  = "\033[0m"
 
@@ -205,11 +205,11 @@ def _fetch_usage():
 # ---------------------------------------------------------------------------
 
 def _colored_bar(pct, low_thresh=50, high_thresh=80):
-    """Return a colored ▰▱ bar string for the given percentage."""
+    """Return a colored ━╌ bar string for the given percentage."""
     pct = max(0.0, min(100.0, float(pct)))
     filled = round(pct / 10)
-    bar = "\u25b0" * filled + "\u25b1" * (10 - filled)
-    color = RED if pct >= high_thresh else YELLOW if pct >= low_thresh else GREEN
+    bar = "━" * filled + "╌" * (10 - filled)
+    color = MAGENTA if pct >= high_thresh else YELLOW if pct >= low_thresh else CYAN
     return f"{color}{bar}{RESET}"
 
 
