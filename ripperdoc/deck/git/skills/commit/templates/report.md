@@ -46,11 +46,9 @@ Then the commit plan:
 3  chore: bump version and add dev deps
      M   pyproject.toml                      +5 −1
 
-  ──────────────────────────────────────────────────────────────────
-  ▸ [E]dit     ▸ [M]ove     ▸ [J]oin     ▸ [S]plit     ▸ [D]rop
-
-Ready to commit, or anything you'd like to adjust?
 ```
+
+Append `menu.md` verbatim here.
 
 ---
 
@@ -90,15 +88,12 @@ Keep the "Issue" column short — name the category, then show a snippet of why.
 End with the separator + `▸ [A]dd     ▸ [D]rop     ▸ [I]gnore` inside a code block.
 
 **Action prompt**
-Show the separator line + one-liner alias row inside a code block above the closing
-question. The aliases are:
+Append `menu.md` verbatim. The aliases it defines:
 - `E` — edit a commit message
 - `M` — move files between commits
 - `J` — join two commits
 - `S` — split a commit
 - `D` — drop files (supports globs like `*.json`)
-
-Close with: "Ready to commit, or anything you'd like to adjust?"
 
 When the user types an alias, interpret it and apply the change. They can also
 type the full word or plain English — the aliases are a shortcut, not the only

@@ -31,7 +31,7 @@ Only emit it when there is nothing left for the user to act on.
 Run:
 
 ```bash
-python3 $CLAUDE_PLUGIN_ROOT/scripts/commit.py
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/commit.py
 ```
 
 ### Step 2 — Handle preconditions and flags
@@ -73,7 +73,8 @@ Once the user approves ("go", "looks good", "ship it"):
 
 ## Template
 
-Read `$CLAUDE_SKILL_DIR/templates/report.md` and format using that template.
+Read `${CLAUDE_SKILL_DIR}/templates/report.md` and format using that template.
+Read `${CLAUDE_SKILL_DIR}/templates/menu.md` and append it verbatim after the report body.
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
