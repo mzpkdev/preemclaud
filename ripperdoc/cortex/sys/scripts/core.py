@@ -70,11 +70,11 @@ PLUGIN_FLAVOR = {
 
 
 def log(icon, msg):
-    print(f"      {icon} {msg}")
+    print(f"      {icon} {msg}", file=sys.stderr)
 
 
 def log_sub(msg):
-    print(f"        › {msg}")
+    print(f"        › {msg}", file=sys.stderr)
 
 
 def check_bin(name):
@@ -208,7 +208,7 @@ def patch_cc(verbose=False):
                 stderr=subprocess.DEVNULL,
             )
             if result.returncode != 0:
-                print(f"          ⊘ skipped")
+                print(f"          ⊘ skipped", file=sys.stderr)
     else:
         patches = ",".join(TWEAKCC_PATCHES)
         result = subprocess.run(
