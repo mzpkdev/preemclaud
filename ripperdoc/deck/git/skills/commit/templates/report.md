@@ -10,10 +10,6 @@ and make changes before anything touches git.
 
 Below is what the user sees. Reproduce this structure — swap in the real data.
 
-```
-> `git:commit` — Reading your changes.
-```
-
 If the safety scan flagged files, show the warnings section first:
 
 ```

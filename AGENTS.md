@@ -760,7 +760,7 @@ Call the Agent tool with:
 
     \<agent body from the .md file\>
 
-Do not add output before or after. The agent handles everything.
+Do not add output after the agent returns. The agent's output is final.
 ```
 
 ## Agent

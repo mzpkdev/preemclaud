@@ -7,8 +7,6 @@ scannable view that answers "what was I working on?" and "what's the state of my
 
 ## Full example
 
-> `git:status` — Scanning your changes.
-
 You were adding JWT-based authentication.
 The login flow was rewritten to validate tokens through a new helper module, and rate limiting was wired into the middleware.
 Tests are half-done — 3 cases staged, but the error-path tests aren't written yet.
@@ -41,9 +39,6 @@ Tests are half-done — 3 cases staged, but the error-path tests aren't written 
 ---
 
 ## Format rules
-
-**Announce line**
-Rendered as a blockquote outside any code block: `> \`git:status\` — Scanning your changes.`
 
 **Narrative recap**
 2-3 sentences outside any code block, each sentence on its own line.
@@ -112,8 +107,6 @@ Flag before the recap (outside code block):
 ```
 
 **Clean tree**
-
-> `git:status` — Scanning your changes.
 
 Working tree clean. Last commit: `a1b2c3d` feat(auth): add JWT validation (3 days ago)
 
