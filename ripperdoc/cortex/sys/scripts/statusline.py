@@ -318,6 +318,29 @@ def effort_level():
     return ""
 
 
+def pr_info():
+    """Return PR label if current branch has an open PR, else empty string."""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["gh", "pr", "view", "--json", "number,state,isDraft"],
+            capture_output=True, text=True, timeout=3,
+        )
+        if result.returncode != 0:
+            return ""
+        pr = json.loads(result.stdout)
+        state = pr.get("state")
+        if state == "MERGED":
+            return f"{MAGENTA}#{pr['number']}{RESET}"
+        if state != "OPEN":
+            return ""
+        if pr.get("isDraft"):
+            return f"{DIM}#{pr['number']}{RESET}"
+        return f"{YELLOW}#{pr['number']}{RESET}"
+    except Exception:
+        return ""
+
+
 def branch_name(data):
     try:
         wt = data.get("worktree", {})
@@ -355,6 +378,7 @@ def main():
         line1 = [s for s in [
             model_name(data),
             branch_name(data),
+            pr_info(),
         ] if s]
         line2 = [s for s in [
             *usage,
