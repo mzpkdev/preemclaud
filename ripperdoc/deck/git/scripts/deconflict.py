@@ -299,9 +299,11 @@ def main():
     elif args.conflicts:
         gather_conflicts()
     else:
-        parser.print_help()
-        sys.exit(1)
+        print(json.dumps({"error": "missing required argument: --status, --context <target>, or --conflicts"}))
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(json.dumps({"error": f"gather failed: {e}"}))
