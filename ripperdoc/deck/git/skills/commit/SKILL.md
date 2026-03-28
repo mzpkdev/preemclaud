@@ -27,7 +27,9 @@ When spawning the agent:
 
 ### Step 1 — Spawn the agent
 
-Read `${CLAUDE_SKILL_DIR}/workers/worker.md`, parse YAML frontmatter, extract the markdown body, then print the announce line and call the Agent tool with:
+Read `${CLAUDE_SKILL_DIR}/workers/worker.md`, parse YAML frontmatter, extract the markdown body, then:
+
+Call the Agent tool with:
 - name: \<from frontmatter\>
 - description: \<from frontmatter\>
 - subagent_type: "general-purpose"
@@ -38,6 +40,8 @@ Read `${CLAUDE_SKILL_DIR}/workers/worker.md`, parse YAML frontmatter, extract th
     ARGUMENTS: $ARGUMENTS
 
     \<agent body from the .md file\>
+
+Print the announce line, then spawn the agent.
 
 ### Step 2 — Relay user input
 

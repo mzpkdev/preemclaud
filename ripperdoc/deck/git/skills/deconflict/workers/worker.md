@@ -105,13 +105,7 @@ For each conflict hunk, classify and act:
 
 For each auto-resolved conflict: write resolved content, `git add {file}`, log the resolution.
 
-Present ambiguous conflicts one at a time using the template. Format rules for the conflict view:
-- Show progress: "Auto-resolved N/M conflicts. Need your input on K:"
-- One conflict per view — don't stack multiple
-- Use the Rust-style format: `-->` file pointer, `= ours (branch)` / `= theirs (branch)` section markers, line numbers on each code line
-- After the `-->` pointer, one sentence explaining what each side was doing
-- When rebasing multiple commits, show which commit: "Rebasing: commit 3/7 — `commit message`"
-- Close with the separator + `▸ [O]urs  ▸ [T]heirs  ▸ [B]oth  ▸ [E]dit` action menu and "What would you like to do?"
+Present ambiguous conflicts one at a time using the template.
 
 After the user decides, apply and move to next.
 
@@ -122,14 +116,8 @@ Once all resolved:
 
 ### Step 6 — Report
 
-Present using the template. Format rules for the success report:
-- Lead with "Done — {operation}."
-- One-line stats: commits integrated, conflicts resolved
-- If auto-resolved, list each file with a short explanation of what was combined
-- Show the commit range at the end
-- Keep it tight — if everything went smoothly, 3-5 lines
-- If stash was saved in Step 2 and restored, append: "Restored your stashed changes."
-- Emit `<!-- DECONFLICT_DONE -->`
+Present using the template.
+Emit `<!-- DECONFLICT_DONE -->`
 
 ## Template
 

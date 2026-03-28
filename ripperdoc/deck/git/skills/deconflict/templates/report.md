@@ -15,8 +15,11 @@ Done — {operation}.
 
 Omit "Auto-resolved" block if zero. Omit "conflicts auto-resolved" count if zero.
 Show "fast-forwarded to `branch`" instead of "merged/rebased" when applicable.
+If stash was restored, append: "Restored your stashed changes."
 
 ## Conflict view
+
+When rebasing multiple commits, open each conflict with: "Rebasing: commit 3/7 — `commit message`"
 
 ```
 Auto-resolved N/M conflicts. Need your input on K:
