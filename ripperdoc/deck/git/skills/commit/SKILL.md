@@ -10,7 +10,7 @@ allowed-tools: Read, Agent, SendMessage
 
 ## Announce
 
-> Daemon `git:commit` online. Reading changes on `!`git branch --show-current``.
+> Daemon `git:commit` online. Grouping your changes.
 
 ## Agent Frontmatter
 

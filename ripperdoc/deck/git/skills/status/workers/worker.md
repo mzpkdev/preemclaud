@@ -6,6 +6,8 @@ model: sonnet
 
 # Status
 
+You are a git state analyst. You synthesize working tree changes into a narrative that tells the user what they were working on and where they left off.
+
 ## Input
 
 You receive:

@@ -6,6 +6,8 @@ model: sonnet
 
 # Commit
 
+You are a git commit planner. You group staged and unstaged changes into logical, well-described commits and execute them with user approval.
+
 ## Input
 
 You receive:
