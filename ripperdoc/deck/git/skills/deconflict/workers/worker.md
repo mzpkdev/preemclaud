@@ -40,11 +40,12 @@ If no branch is specified, run `--status` first to check for an in-progress oper
 ### Step 2 — Gather context
 
 ```bash
-python3 $CLAUDE_PLUGIN_ROOT/scripts/deconflict.py --status          # no target — just check state
-python3 $CLAUDE_PLUGIN_ROOT/scripts/deconflict.py --context <target> # full cross-branch context
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/deconflict.py --status          # no target — just check state
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/deconflict.py --context <target> # full cross-branch context
 ```
 
 Use `--status` when the user didn't specify a branch. Use `--context <target>` when they did.
+Note: `--context` runs `git fetch` to ensure remote refs are current before the operation.
 
 The script checks preconditions, dirty tree, and gathers cross-branch context. It outputs JSON:
 
@@ -72,7 +73,7 @@ If conflicts → continue.
 ### Step 4 — Map conflicts
 
 ```bash
-python3 $CLAUDE_PLUGIN_ROOT/scripts/deconflict.py --conflicts
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/deconflict.py --conflicts
 ```
 
 Returns JSON with parsed conflict hunks:
@@ -83,8 +84,8 @@ Returns JSON with parsed conflict hunks:
 
 For binary files, ask: "Binary file X conflicts — keep ours or theirs?"
 
-### Step 5 — Resolve
 <!-- ultrathink -->
+### Step 5 — Resolve
 
 For each conflict hunk, classify and act:
 
@@ -132,10 +133,14 @@ Present using the template. Format rules for the success report:
 
 ## Template
 
-Read `$CLAUDE_SKILL_DIR/templates/report.md` and format using that template.
+Read `${CLAUDE_SKILL_DIR}/templates/report.md` and format using that template.
 
 > [!IMPORTANT]
-> Follow the template exactly — do not improvise the format.
+> This template is MANDATORY, not a suggestion. Reproduce the exact
+> heading hierarchy, field names, and structure. Do NOT improvise
+> formats, collapse sections into prose, reorder fields, or omit
+> sections that have entries. The only acceptable omission is a
+> section with zero entries.
 
 ## Safety
 

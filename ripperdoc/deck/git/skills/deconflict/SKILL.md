@@ -12,8 +12,6 @@ allowed-tools: Read, Agent, SendMessage
 
 > Daemon `git:deconflict` online. Reading the situation.
 
-Most conflicts aren't hard — one side added a function, the other changed a docstring. This skill reads both sides, understands intent from commit messages and diff context, and resolves automatically. It only stops to ask when both sides changed the same logic in incompatible ways.
-
 ## Agent Frontmatter
 
 This skill delegates to a co-located agent in `${CLAUDE_SKILL_DIR}/workers/`.

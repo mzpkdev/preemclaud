@@ -22,7 +22,7 @@ You receive:
 Run:
 
 ```bash
-python3 $CLAUDE_PLUGIN_ROOT/scripts/status.py
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/status.py
 ```
 
 Handle preconditions from the JSON:
@@ -53,7 +53,7 @@ Format using the template below.
 
 ## Template
 
-Read `$CLAUDE_SKILL_DIR/templates/report.md` and format using that template.
+Read `${CLAUDE_SKILL_DIR}/templates/report.md` and format using that template.
 
 > [!IMPORTANT]
 > This template is MANDATORY, not a suggestion. Reproduce the exact
