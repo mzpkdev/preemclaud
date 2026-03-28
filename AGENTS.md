@@ -137,7 +137,7 @@ Call the Agent tool with:
 
 | Parameter | Values | Notes |
 |---|---|---|
-| `model` | `sonnet`, `opus`, `haiku`, full ID | Overrides frontmatter; see model resolution order in Mechanics |
+| `model` | `sonnet`, `opus`, `haiku` | Overrides frontmatter; see model resolution order in Mechanics |
 | `name` | string | Makes subagent addressable via `SendMessage` for follow-ups |
 | `mode` | `default`, `acceptEdits`, `bypassPermissions`, `plan`, `dontAsk` | Permission mode for the subagent |
 | `run_in_background` | `true` / `false` | `true` = non-blocking; you are notified on completion. No current usage in repo. |
@@ -502,6 +502,10 @@ Used by: `jetbrains-ide` (SessionStart and PostToolUse hooks).
 
 ## Agents
 
+**Model naming standard**
+
+Always use shorthands — `sonnet`, `opus`, or `haiku`. Never use full model IDs. Shorthands resolve to the latest model in that family, so skills stay current without edits when models update.
+
 **Model resolution order**
 
 1. `CLAUDE_CODE_SUBAGENT_MODEL` env var
@@ -631,7 +635,7 @@ user-invocable: true                      # appears as /plugin:skill slash comma
 disable-model-invocation: true            # true = manual only; false = Claude can auto-trigger
 argument-hint: "[optional args]"          # shown in autocomplete
 allowed-tools: Read, Grep, Glob           # restricts tool access during this skill
-model: sonnet                             # sonnet | opus | haiku | full model ID
+model: sonnet                             # sonnet | opus | haiku
 hooks:                                    # optional — skill-scoped lifecycle hooks
   PostToolUse:
     - matcher: "Bash"
@@ -766,7 +770,7 @@ Do not add output before or after. The agent handles everything.
 # --- Frontmatter ---
 name: worker                              # passed to Agent tool name parameter
 description: What this agent does         # passed to Agent tool description parameter
-model: sonnet                             # sonnet | opus | haiku | full model ID
+model: sonnet                             # sonnet | opus | haiku
 ---
 ```
 
