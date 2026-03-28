@@ -12,6 +12,7 @@ ripperdoc/
     <plugin>/
       .claude-plugin/
         plugin.json               # { name, description, version }
+      scripts/                    # shared helper scripts — snake_case.py
       skills/
         <skill>/
           SKILL.md                # skill definition — frontmatter + instructions
@@ -20,7 +21,6 @@ ripperdoc/
             menu.md               # action menu bar (if skill has one)
             action.md             # optional: shared action response format
             action-<name>.md      # optional: per-action response format
-          scripts/                # helper scripts — snake_case.py
           workers/                # co-located agents — kebab-case.md
             <agent-name>.md       # agent definition — frontmatter + system prompt
           references/             # optional: non-executable documentation for the skill
@@ -204,7 +204,7 @@ Agent `.md` files stored in `skills/<skill>/workers/`. Claude Code does not auto
 3. **Extract** the markdown body as the system prompt
 4. **Call the Agent tool** — pass `name`, `description`, `subagent_type`, `model`, and the assembled prompt (see **Agent Spawning** principle for full parameter reference)
 
-Pass `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PLUGIN_ROOT}`, and `$ARGUMENTS` in the agent's prompt so it can find scripts and know what the user asked for. Include `${CLAUDE_PLUGIN_ROOT}` whenever the skill uses plugin-level scripts (i.e. `<plugin>/scripts/` rather than `<skill>/scripts/`).
+Pass `${CLAUDE_SKILL_DIR}`, `${CLAUDE_PLUGIN_ROOT}`, and `$ARGUMENTS` in the agent's prompt so it can find scripts and know what the user asked for. Scripts live at the plugin level (`${CLAUDE_PLUGIN_ROOT}/scripts/`) — always pass `${CLAUDE_PLUGIN_ROOT}` so agents can locate them.
 
 Any `SKILL.md` that uses co-located agents must include an **Agent Frontmatter** section documenting these steps inline. It serves as both instruction to Claude and documentation for readers.
 
@@ -286,7 +286,7 @@ Flow: spawn agent → show output → wait for user input → `SendMessage(to: a
 ## Preload
 
 ### Git state
-!`python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/gather.py`
 ```
 
 Preloads run regardless of `allowed-tools` restrictions. They are not Claude tool calls — they're executed by the plugin loader.
@@ -303,7 +303,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "python3 ${CLAUDE_SKILL_DIR}/scripts/post_bash.py"
+          command: "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/post_bash.py"
 ```
 
 Supported events: `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `Notification`.
@@ -394,7 +394,7 @@ except Exception:
 Then the preload needs no shell-level fallback:
 
 ```
-!`python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/gather.py`
 ```
 
 Check for the `error` key before proceeding. Tell the user and stop. Used by: `code:review`.
@@ -659,7 +659,7 @@ Used by: `code:review` (`python3 *`), `code:write` (`git *`).
 
 ## Preload
 
-!`python3 ${CLAUDE_SKILL_DIR}/scripts/gather.py`
+!`python3 ${CLAUDE_PLUGIN_ROOT}/scripts/gather.py`
 
 ## Steps
 
@@ -790,7 +790,7 @@ ARGUMENTS: <user args>
 
 Run:
 \```bash
-python3 $CLAUDE_SKILL_DIR/scripts/gather.py
+python3 $CLAUDE_PLUGIN_ROOT/scripts/gather.py
 \```
 
 Handle preconditions from the JSON output.
