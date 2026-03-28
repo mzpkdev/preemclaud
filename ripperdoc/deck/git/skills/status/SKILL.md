@@ -40,4 +40,4 @@ Call the Agent tool with:
 
     \<agent body from the .md file\>
 
-Do not add output before or after. The agent handles everything.
+Print the announce line, then spawn the agent. Do not add output after the agent returns — the agent's output is final.
