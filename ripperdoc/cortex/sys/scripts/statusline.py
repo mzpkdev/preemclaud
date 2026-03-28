@@ -39,6 +39,7 @@ MODEL_SHORT = {
 CLAUDE_DIR    = Path.home() / ".claude"
 CREDS_FILE    = CLAUDE_DIR / ".credentials.json"
 CACHE_FILE    = CLAUDE_DIR / ".cache" / "statusline.json"
+SYNC_SENTINEL = CLAUDE_DIR / ".cache" / ".sync"
 USAGE_URL     = "https://api.anthropic.com/api/oauth/usage"
 REFRESH_URL   = "https://platform.claude.com/v1/oauth/token"
 ALLOWED_HOSTS = frozenset({"api.anthropic.com", "platform.claude.com"})
@@ -416,6 +417,35 @@ def branch_name(data):
 
 
 # ---------------------------------------------------------------------------
+# Update check
+# ---------------------------------------------------------------------------
+
+def _update_available():
+    """Return True if origin/main is ahead of the last sync sentinel (no network)."""
+    try:
+        import subprocess
+        if not SYNC_SENTINEL.exists():
+            return False
+        synced = SYNC_SENTINEL.read_text().strip()
+        if not synced:
+            return False
+        r = subprocess.run(
+            ["git", "-C", str(CLAUDE_DIR), "rev-parse", "origin/main"],
+            capture_output=True, text=True, timeout=2,
+        )
+        if r.returncode != 0:
+            return False
+        return r.stdout.strip() != synced
+    except Exception:
+        return False
+
+
+def update_badge():
+    """Return a badge string if a preemclaud update is pending, else empty."""
+    return f"{YELLOW}↑ /sys:update{RESET}" if _update_available() else ""
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -428,6 +458,7 @@ def main():
             model_name(data),
             branch_name(data),
             pr_info(),
+            update_badge(),
         ] if s]
         line2 = [s for s in [
             *usage,
