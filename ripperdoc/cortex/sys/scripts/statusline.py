@@ -380,6 +380,22 @@ def _ahead_behind():
         return 0, 0
 
 
+def _is_linked_worktree():
+    """Return True if CWD is a linked git worktree (not the main working tree)."""
+    try:
+        import subprocess
+        r = subprocess.run(
+            ["git", "rev-parse", "--git-dir", "--git-common-dir"],
+            capture_output=True, text=True, timeout=2,
+        )
+        if r.returncode != 0:
+            return False
+        lines = r.stdout.strip().splitlines()
+        return len(lines) == 2 and lines[0] != lines[1]
+    except Exception:
+        return False
+
+
 def branch_name(data):
     name = ""
     try:
@@ -406,7 +422,7 @@ def branch_name(data):
     staged, modified = _git_status()
     ahead, behind = _ahead_behind()
 
-    parts = [f"⎇ {name}"]
+    parts = [f"{CYAN}⎇ {name}{RESET}" if _is_linked_worktree() else name]
     if staged or modified:
         dirty = (f"+{staged}" if staged else "") + (f"~{modified}" if modified else "")
         parts.append(f"{DIM}{dirty}{RESET}")
@@ -442,7 +458,7 @@ def _update_available():
 
 def update_badge():
     """Return a badge string if a preemclaud update is pending, else empty."""
-    return f"{YELLOW}↑ /sys:update{RESET}" if _update_available() else ""
+    return f"{YELLOW}◈ /sys:update{RESET}" if _update_available() else ""
 
 
 # ---------------------------------------------------------------------------
