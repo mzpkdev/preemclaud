@@ -321,9 +321,26 @@ def effort_level():
 def branch_name(data):
     try:
         wt = data.get("worktree", {})
-        return wt.get("branch") or wt.get("name") or ""
+        name = wt.get("branch") or wt.get("name") or ""
+        if name:
+            return name
     except Exception:
-        return ""
+        pass
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True, text=True, timeout=2,
+        )
+        if result.returncode == 0:
+            name = result.stdout.strip()
+            if name and name != "HEAD":
+                if os.path.isfile(".git"):
+                    return f"{CYAN}⎇ {name}{RESET}"
+                return name
+    except Exception:
+        pass
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -335,14 +352,20 @@ def main():
         raw = json.load(sys.stdin)
         data = raw.get("data", raw)
         usage = _usage_segments()
-        segments = [s for s in [
+        line1 = [s for s in [
             model_name(data),
-            context_bar(data),
-            *usage,
-            effort_level(),
             branch_name(data),
         ] if s]
-        print(SEP.join(segments) if segments else "\u2013")
+        line2 = [s for s in [
+            *usage,
+            context_bar(data),
+        ] if s]
+        lines = []
+        if line1:
+            lines.append(SEP.join(line1))
+        if line2:
+            lines.append(SEP.join(line2))
+        print("\n".join(lines) if lines else "\u2013")
     except Exception:
         print("\u2013")
 
