@@ -18,8 +18,10 @@ if sys.platform == "win32":
 CYAN    = "\033[96m"
 YELLOW  = "\033[93m"
 MAGENTA = "\033[95m"
-DIM    = "\033[2m"
-RESET  = "\033[0m"
+DIM     = "\033[2m"
+RESET   = "\033[0m"
+
+SEP = f"{DIM} · {RESET}"
 
 MODEL_SHORT = {
     "claude-opus-4-6":    "Opus 4.6",
@@ -295,7 +297,7 @@ def context_bar(data):
             return ""
         pct = max(0.0, min(100.0, float(pct)))
         bar = _colored_bar(pct, low_thresh=60, high_thresh=85)
-        bar_str = f"{bar} {pct:.0f}%"
+        bar_str = f"Ctx {bar} {pct:.0f}%"
         inp = ctx.get("total_input_tokens")
         out = ctx.get("total_output_tokens", 0)
         limit = ctx.get("context_window_size")
@@ -333,9 +335,14 @@ def main():
         raw = json.load(sys.stdin)
         data = raw.get("data", raw)
         usage = _usage_segments()
-        existing = [model_name(data), context_bar(data), effort_level(), branch_name(data)]
-        segments = usage + [s for s in existing if s]
-        print(" | ".join(segments) if segments else "\u2013")
+        segments = [s for s in [
+            model_name(data),
+            context_bar(data),
+            *usage,
+            effort_level(),
+            branch_name(data),
+        ] if s]
+        print(SEP.join(segments) if segments else "\u2013")
     except Exception:
         print("\u2013")
 
