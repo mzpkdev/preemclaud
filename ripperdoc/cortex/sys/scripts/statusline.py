@@ -338,8 +338,8 @@ def pr_info():
         return ""
 
 
-def _dirty_suffix():
-    """Return '* [+2~3]' style suffix or '' if clean/error."""
+def _git_status():
+    """Return (staged, modified) counts from git status --porcelain."""
     try:
         import subprocess
         result = subprocess.run(
@@ -347,7 +347,7 @@ def _dirty_suffix():
             capture_output=True, text=True, timeout=2,
         )
         if result.returncode != 0 or not result.stdout.strip():
-            return ""
+            return 0, 0
         staged = modified = 0
         for line in result.stdout.splitlines():
             if len(line) < 2:
@@ -356,38 +356,63 @@ def _dirty_suffix():
                 staged += 1
             if line[1] != ' ':
                 modified += 1
-        if not staged and not modified:
-            return ""
-        parts = (f"+{staged}" if staged else "") + (f"~{modified}" if modified else "")
-        return f"* {DIM}[{parts}]{RESET}"
+        return staged, modified
     except Exception:
-        return ""
+        return 0, 0
 
 
-def branch_name(data):
-    try:
-        wt = data.get("worktree", {})
-        name = wt.get("branch") or wt.get("name") or ""
-        if name:
-            return name + _dirty_suffix()
-    except Exception:
-        pass
+def _ahead_behind():
+    """Return (ahead, behind) counts vs upstream, or (0, 0) on error/no upstream."""
     try:
         import subprocess
         result = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            ["git", "rev-list", "--count", "--left-right", "HEAD...@{u}"],
             capture_output=True, text=True, timeout=2,
         )
-        if result.returncode == 0:
-            name = result.stdout.strip()
-            if name and name != "HEAD":
-                suffix = _dirty_suffix()
-                if os.path.isfile(".git"):
-                    return f"{CYAN}⎇ {name}{RESET}{suffix}"
-                return name + suffix
+        if result.returncode != 0:
+            return 0, 0
+        parts = result.stdout.strip().split()
+        if len(parts) == 2:
+            return int(parts[0]), int(parts[1])
+        return 0, 0
+    except Exception:
+        return 0, 0
+
+
+def branch_name(data):
+    name = ""
+    try:
+        wt = data.get("worktree", {})
+        name = wt.get("branch") or wt.get("name") or ""
     except Exception:
         pass
-    return ""
+    if not name:
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                capture_output=True, text=True, timeout=2,
+            )
+            if result.returncode == 0:
+                n = result.stdout.strip()
+                if n and n != "HEAD":
+                    name = n
+        except Exception:
+            pass
+    if not name:
+        return ""
+
+    staged, modified = _git_status()
+    ahead, behind = _ahead_behind()
+
+    parts = [f"⎇ {name}"]
+    if staged or modified:
+        dirty = (f"+{staged}" if staged else "") + (f"~{modified}" if modified else "")
+        parts.append(f"{DIM}{dirty}{RESET}")
+    if ahead or behind:
+        ab = (f"↑{ahead}" if ahead else "") + (f"↓{behind}" if behind else "")
+        parts.append(f"{DIM}{ab}{RESET}")
+    return " ".join(parts)
 
 
 # ---------------------------------------------------------------------------
