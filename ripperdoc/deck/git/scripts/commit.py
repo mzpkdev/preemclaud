@@ -15,17 +15,21 @@ import sys
 # ---------------------------------------------------------------------------
 # Thresholds
 # ---------------------------------------------------------------------------
-DIFF_LINE_LIMIT = 500        # truncate per-file diffs beyond this
-FILE_READ_LIMIT = 200         # max lines to read for untracked files
-LARGE_THRESHOLD = 1_000_000   # 1 MB
-SECRET_SCAN_LIMIT = 100_000   # only scan content of files under this size
+DIFF_LINE_LIMIT = 500  # truncate per-file diffs beyond this
+FILE_READ_LIMIT = 200  # max lines to read for untracked files
+LARGE_THRESHOLD = 1_000_000  # 1 MB
+SECRET_SCAN_LIMIT = 100_000  # only scan content of files under this size
 
 # ---------------------------------------------------------------------------
 # Safety patterns
 # ---------------------------------------------------------------------------
 SECRET_NAMES = {
-    ".env", ".env.local", ".env.production", ".env.development",
-    ".env.staging", ".env.test",
+    ".env",
+    ".env.local",
+    ".env.production",
+    ".env.development",
+    ".env.staging",
+    ".env.test",
 }
 SECRET_EXTENSIONS = {".pem", ".key", ".p12", ".pfx", ".keystore"}
 SECRET_CONTENT_RE = re.compile(
@@ -35,12 +39,22 @@ SECRET_CONTENT_RE = re.compile(
 JUNK_NAMES = {".DS_Store", "Thumbs.db"}
 JUNK_EXTENSIONS = {".swp", ".swo"}
 BUILD_DIRS = {
-    "node_modules", "__pycache__", "dist", "build",
-    ".next", "target", "vendor",
+    "node_modules",
+    "__pycache__",
+    "dist",
+    "build",
+    ".next",
+    "target",
+    "vendor",
 }
 LOCK_FILES = {
-    "package-lock.json", "yarn.lock", "pnpm-lock.yaml",
-    "Gemfile.lock", "poetry.lock", "Cargo.lock", "composer.lock",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "Gemfile.lock",
+    "poetry.lock",
+    "Cargo.lock",
+    "composer.lock",
 }
 
 
@@ -53,7 +67,7 @@ def run(cmd):
     Uses rstrip to preserve leading whitespace — critical for
     git status --porcelain where column 0 can be a space.
     """
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
     if r.returncode != 0:
         if r.stderr:
             print(f"warning: {' '.join(cmd)}: {r.stderr.strip()}", file=sys.stderr)
@@ -83,10 +97,10 @@ def check_preconditions():
     git_dir = run(["git", "rev-parse", "--git-dir"])
     if git_dir:
         markers = [
-            ("MERGE_HEAD",    "merge_in_progress"),
-            ("rebase-merge",  "rebase_in_progress"),
-            ("rebase-apply",  "rebase_in_progress"),
-            ("BISECT_LOG",    "bisect_in_progress"),
+            ("MERGE_HEAD", "merge_in_progress"),
+            ("rebase-merge", "rebase_in_progress"),
+            ("rebase-apply", "rebase_in_progress"),
+            ("BISECT_LOG", "bisect_in_progress"),
         ]
         for marker, issue in markers:
             if os.path.exists(os.path.join(git_dir, marker)):
@@ -109,7 +123,7 @@ def scan_safety(path):
     if ext in SECRET_EXTENSIONS:
         flags.append({"type": "secrets", "reason": f"Key/cert file: {name}"})
     if "credentials" in name.lower() or "secret" in name.lower():
-        flags.append({"type": "secrets", "reason": f"Name contains credentials/secret"})
+        flags.append({"type": "secrets", "reason": "Name contains credentials/secret"})
 
     if name in JUNK_NAMES or ext in JUNK_EXTENSIONS:
         flags.append({"type": "junk", "reason": f"OS/editor file: {name}"})

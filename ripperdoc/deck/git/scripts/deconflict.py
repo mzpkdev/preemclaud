@@ -14,13 +14,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 MAX_CONTENT_LINES = 500
 
 
 def run(cmd):
     """Run a command, return stdout or '' on failure."""
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
     return r.stdout.rstrip() if r.returncode == 0 else ""
 
 
@@ -202,12 +201,14 @@ def gather_conflicts():
                 is_binary = True
 
         if is_binary or not os.path.isfile(abs_path):
-            files.append({
-                "path": rel_path,
-                "binary": True,
-                "hunks": [],
-                "hunk_count": 0,
-            })
+            files.append(
+                {
+                    "path": rel_path,
+                    "binary": True,
+                    "hunks": [],
+                    "hunk_count": 0,
+                }
+            )
             continue
 
         # Read file and parse conflict markers
@@ -215,12 +216,14 @@ def gather_conflicts():
             with open(abs_path, "r", errors="replace") as f:
                 content = f.read()
         except OSError:
-            files.append({
-                "path": rel_path,
-                "binary": True,
-                "hunks": [],
-                "hunk_count": 0,
-            })
+            files.append(
+                {
+                    "path": rel_path,
+                    "binary": True,
+                    "hunks": [],
+                    "hunk_count": 0,
+                }
+            )
             continue
 
         hunks = []
@@ -250,13 +253,15 @@ def gather_conflicts():
                         ours_lines.append(lines[i].rstrip("\n"))
                     i += 1
 
-                hunks.append({
-                    "start_line": start_line,
-                    "ours_label": ours_label,
-                    "theirs_label": theirs_label,
-                    "ours": ours_lines,
-                    "theirs": theirs_lines,
-                })
+                hunks.append(
+                    {
+                        "start_line": start_line,
+                        "ours_label": ours_label,
+                        "theirs_label": theirs_label,
+                        "ours": ours_lines,
+                        "theirs": theirs_lines,
+                    }
+                )
                 total_hunks += 1
             i += 1
 
@@ -266,20 +271,26 @@ def gather_conflicts():
         if truncated:
             content = "".join(content_lines[:MAX_CONTENT_LINES])
 
-        files.append({
-            "path": rel_path,
-            "binary": False,
-            "hunks": hunks,
-            "hunk_count": len(hunks),
-            "full_content": content,
-            "truncated": truncated,
-        })
+        files.append(
+            {
+                "path": rel_path,
+                "binary": False,
+                "hunks": hunks,
+                "hunk_count": len(hunks),
+                "full_content": content,
+                "truncated": truncated,
+            }
+        )
 
-    json.dump({
-        "conflicted_files": files,
-        "total_conflicts": total_hunks,
-        "total_files": len(files),
-    }, sys.stdout, indent=2)
+    json.dump(
+        {
+            "conflicted_files": files,
+            "total_conflicts": total_hunks,
+            "total_files": len(files),
+        },
+        sys.stdout,
+        indent=2,
+    )
 
 
 # ---------------------------------------------------------------------------

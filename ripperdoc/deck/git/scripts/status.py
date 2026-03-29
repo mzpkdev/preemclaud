@@ -20,7 +20,7 @@ def run(cmd):
     Uses rstrip to preserve leading whitespace — critical for
     git status --porcelain where column 0 can be a space.
     """
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
     return r.stdout.rstrip() if r.returncode == 0 else ""
 
 
@@ -47,10 +47,10 @@ def check_preconditions():
     git_dir = run(["git", "rev-parse", "--git-dir"])
     if git_dir:
         markers = [
-            ("MERGE_HEAD",    "merge_in_progress"),
-            ("rebase-merge",  "rebase_in_progress"),
-            ("rebase-apply",  "rebase_in_progress"),
-            ("BISECT_LOG",    "bisect_in_progress"),
+            ("MERGE_HEAD", "merge_in_progress"),
+            ("rebase-merge", "rebase_in_progress"),
+            ("rebase-apply", "rebase_in_progress"),
+            ("BISECT_LOG", "bisect_in_progress"),
         ]
         for marker, issue in markers:
             if os.path.exists(os.path.join(git_dir, marker)):
