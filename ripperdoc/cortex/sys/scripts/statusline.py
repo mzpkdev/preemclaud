@@ -276,7 +276,7 @@ def fmt_tokens(n):
     return f"{round(n / 1000)}k"
 
 
-EFFORT_COLOR = {"low": CYAN, "high": MAGENTA}
+EFFORT_COLOR = {"low": DIM, "high": YELLOW, "max": MAGENTA}
 
 def model_name(data):
     try:
