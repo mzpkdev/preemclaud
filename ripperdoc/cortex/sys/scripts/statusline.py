@@ -40,6 +40,8 @@ CLAUDE_DIR    = Path.home() / ".claude"
 CREDS_FILE    = CLAUDE_DIR / ".credentials.json"
 CACHE_FILE    = CLAUDE_DIR / ".cache" / "statusline.json"
 SYNC_SENTINEL = CLAUDE_DIR / ".cache" / ".sync"
+FETCH_SENTINEL = CLAUDE_DIR / ".cache" / ".fetch"
+FETCH_TTL     = 1800  # seconds between git fetches
 USAGE_URL     = "https://api.anthropic.com/api/oauth/usage"
 REFRESH_URL   = "https://platform.claude.com/v1/oauth/token"
 ALLOWED_HOSTS = frozenset({"api.anthropic.com", "platform.claude.com"})
@@ -252,7 +254,7 @@ def _usage_segments():
             remaining = _format_remaining(five_hour.get("resets_at", ""))
             seg = f"Session {bar} {pct:.0f}%"
             if remaining:
-                seg += f" {remaining}"
+                seg += f" {DIM}{remaining}{RESET}"
             segments.append(seg)
 
         seven_day = usage.get("seven_day", {})
@@ -310,7 +312,7 @@ def context_bar(data):
         out = ctx.get("total_output_tokens", 0)
         limit = ctx.get("context_window_size")
         if inp is not None and limit:
-            bar_str += f" {fmt_tokens(int(inp) + int(out))}/{fmt_tokens(int(limit))}"
+            bar_str += f" {DIM}{fmt_tokens(int(inp) + int(out))}/{fmt_tokens(int(limit))}{RESET}"
         return bar_str
     except Exception:
         return ""
@@ -437,7 +439,7 @@ def branch_name(data):
 # ---------------------------------------------------------------------------
 
 def _update_available():
-    """Return True if origin/main is ahead of the last sync sentinel (no network)."""
+    """Return True if origin/main is ahead of the last sync sentinel."""
     try:
         import subprocess
         if not SYNC_SENTINEL.exists():
@@ -445,6 +447,24 @@ def _update_available():
         synced = SYNC_SENTINEL.read_text().strip()
         if not synced:
             return False
+
+        # Throttled fetch — blocks once per FETCH_TTL
+        do_fetch = True
+        if FETCH_SENTINEL.exists():
+            try:
+                do_fetch = time.time() - float(FETCH_SENTINEL.read_text().strip()) > FETCH_TTL
+            except Exception:
+                pass
+        if do_fetch:
+            try:
+                subprocess.run(
+                    ["git", "-C", str(CLAUDE_DIR), "fetch", "--quiet"],
+                    capture_output=True, timeout=5,
+                )
+                FETCH_SENTINEL.write_text(str(time.time()))
+            except Exception:
+                pass
+
         r = subprocess.run(
             ["git", "-C", str(CLAUDE_DIR), "rev-parse", "origin/main"],
             capture_output=True, text=True, timeout=2,
@@ -477,8 +497,8 @@ def main():
             update_badge(),
         ] if s]
         line2 = [s for s in [
-            *usage,
             context_bar(data),
+            *usage,
         ] if s]
         lines = []
         if line1:
