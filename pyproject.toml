@@ -1,3 +1,11 @@
+[project]
+name = "preemclaud"
+requires-python = ">=3.12"
+dependencies = [
+    "mdformat>=1.0.0",
+    "mdformat-gfm>=0.3.0",
+]
+
 [tool.ruff]
 line-length = 120
 

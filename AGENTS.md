@@ -49,13 +49,6 @@ standard shell environment variables.
 
 # Principles
 
-## Line Width
-
-All `.md` files in this repository — skills, agents, templates, references — must stay within 120 columns
-(hard ceiling). Most lines should land around 110 characters. Wrap at word boundaries; don't break inline code
-spans or URLs mid-token. Code blocks are exempt when the content itself exceeds 120 characters (e.g., long
-shell commands).
-
 ## Self-Containment
 
 Plugins should wire themselves. If a behavior can be expressed inside the plugin — in `hooks.json`, `SKILL.md`
