@@ -7,28 +7,11 @@ last commit, stash list, and ahead/behind tracking — all in a single call.
 
 import json
 import os
-import subprocess
 import sys
 
-DIFF_LINE_LIMIT = 500
+from _git import get_diff, read_file, run
+
 FILE_READ_LIMIT = 80
-
-
-def run(cmd):
-    """Run a command, return stdout or '' on failure.
-
-    Uses rstrip to preserve leading whitespace — critical for
-    git status --porcelain where column 0 can be a space.
-    """
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
-    return r.stdout.rstrip() if r.returncode == 0 else ""
-
-
-def truncate(text, limit):
-    lines = text.splitlines(True)
-    if len(lines) <= limit:
-        return text
-    return "".join(lines[:limit]) + f"\n... ({len(lines)} lines total, truncated to {limit})"
 
 
 # ---------------------------------------------------------------------------
@@ -57,26 +40,6 @@ def check_preconditions():
                 warnings.append(issue)
 
     return {"warnings": warnings} if warnings else {}
-
-
-# ---------------------------------------------------------------------------
-# Diff collection
-# ---------------------------------------------------------------------------
-def get_diff(path, staged=False):
-    cmd = ["git", "diff"]
-    if staged:
-        cmd.append("--cached")
-    cmd += ["--", path]
-    d = run(cmd)
-    return truncate(d, DIFF_LINE_LIMIT) if d else ""
-
-
-def read_file(path):
-    try:
-        with open(path, "r", errors="ignore") as f:
-            return truncate(f.read(), FILE_READ_LIMIT)
-    except (OSError, UnicodeDecodeError):
-        return "(binary or unreadable)"
 
 
 # ---------------------------------------------------------------------------
@@ -165,7 +128,7 @@ def main():
 
         # Collect diff
         if cat == "untracked":
-            diff = read_file(path)
+            diff = read_file(path, FILE_READ_LIMIT)
         elif cat == "deleted":
             diff = "(deleted)"
         elif cat == "staged":

@@ -9,13 +9,13 @@ recent commit history for convention detection — all in a single call.
 import json
 import os
 import re
-import subprocess
 import sys
+
+from _git import get_diff, read_file, run
 
 # ---------------------------------------------------------------------------
 # Thresholds
 # ---------------------------------------------------------------------------
-DIFF_LINE_LIMIT = 500  # truncate per-file diffs beyond this
 FILE_READ_LIMIT = 200  # max lines to read for untracked files
 LARGE_THRESHOLD = 1_000_000  # 1 MB
 SECRET_SCAN_LIMIT = 100_000  # only scan content of files under this size
@@ -59,42 +59,18 @@ LOCK_FILES = {
 
 
 # ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-def run(cmd):
-    """Run a command, return stdout or '' on failure.
-
-    Uses rstrip to preserve leading whitespace — critical for
-    git status --porcelain where column 0 can be a space.
-    """
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
-    if r.returncode != 0:
-        if r.stderr:
-            print(f"warning: {' '.join(cmd)}: {r.stderr.strip()}", file=sys.stderr)
-        return ""
-    return r.stdout.rstrip()
-
-
-def truncate(text, limit):
-    lines = text.splitlines(True)
-    if len(lines) <= limit:
-        return text
-    return "".join(lines[:limit]) + f"\n... ({len(lines)} lines total, truncated to {limit})"
-
-
-# ---------------------------------------------------------------------------
 # Preconditions
 # ---------------------------------------------------------------------------
 def check_preconditions():
     """Return list of issue strings. Empty means all clear."""
     issues = []
-    if not run(["git", "rev-parse", "--is-inside-work-tree"]):
+    if not run(["git", "rev-parse", "--is-inside-work-tree"], warn=True):
         return ["not_git_repo"]
 
     if not run(["git", "symbolic-ref", "-q", "HEAD"]):
         issues.append("detached_head")
 
-    git_dir = run(["git", "rev-parse", "--git-dir"])
+    git_dir = run(["git", "rev-parse", "--git-dir"], warn=True)
     if git_dir:
         markers = [
             ("MERGE_HEAD", "merge_in_progress"),
@@ -160,26 +136,6 @@ def scan_safety(path):
     return flags
 
 
-# ---------------------------------------------------------------------------
-# Diff collection
-# ---------------------------------------------------------------------------
-def get_diff(path, staged=False):
-    cmd = ["git", "diff"]
-    if staged:
-        cmd.append("--cached")
-    cmd += ["--", path]
-    d = run(cmd)
-    return truncate(d, DIFF_LINE_LIMIT) if d else ""
-
-
-def read_file(path):
-    try:
-        with open(path, "r", errors="ignore") as f:
-            return truncate(f.read(), FILE_READ_LIMIT)
-    except (OSError, UnicodeDecodeError):
-        return "(binary or unreadable)"
-
-
 def parse_numstat(raw):
     """Parse git diff --numstat → {path: {add, del}}."""
     stats = {}
@@ -208,14 +164,14 @@ def main():
         return
 
     # 2. Gather raw git data
-    porcelain = run(["git", "status", "--porcelain"])
+    porcelain = run(["git", "status", "--porcelain"], warn=True)
     if not porcelain:
         json.dump({"clean": True}, sys.stdout, indent=2)
         return
 
-    staged_numstat = parse_numstat(run(["git", "diff", "--cached", "--numstat"]))
-    unstaged_numstat = parse_numstat(run(["git", "diff", "--numstat"]))
-    recent_log = run(["git", "log", "--oneline", "-20"])
+    staged_numstat = parse_numstat(run(["git", "diff", "--cached", "--numstat"], warn=True))
+    unstaged_numstat = parse_numstat(run(["git", "diff", "--numstat"], warn=True))
+    recent_log = run(["git", "log", "--oneline", "-20"], warn=True)
 
     # 3. Process each file
     files = []
@@ -243,7 +199,7 @@ def main():
 
         # Collect diff
         if cat == "untracked":
-            diff = read_file(path)
+            diff = read_file(path, FILE_READ_LIMIT)
         elif cat == "deleted":
             diff = "(deleted)"
         elif cat in ("staged", "staged+modified"):

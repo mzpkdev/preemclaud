@@ -10,17 +10,12 @@ Three modes:
 import argparse
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
+from _git import run
+
 MAX_CONTENT_LINES = 500
-
-
-def run(cmd):
-    """Run a command, return stdout or '' on failure."""
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
-    return r.stdout.rstrip() if r.returncode == 0 else ""
 
 
 def repo_root():
