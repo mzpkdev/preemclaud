@@ -118,6 +118,7 @@ CLEANUP = [
     ".gitignore", ".gitmodules",
     ".idea",
     "arasaka",
+    ".claude",
 ]
 
 
