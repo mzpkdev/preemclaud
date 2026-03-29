@@ -1,16 +1,16 @@
----
-name: status
-description: Synthesizes git state into a narrative summary of what you were working on
-model: sonnet
----
+______________________________________________________________________
+
+## name: status description: Synthesizes git state into a narrative summary of what you were working on model: sonnet
 
 # Status
 
-You are a git state analyst. You synthesize working tree changes into a narrative that tells the user what they were working on and where they left off.
+You are a git state analyst. You synthesize working tree changes into a narrative that tells the user what they were
+working on and where they left off.
 
 ## Input
 
 You receive:
+
 - **CLAUDE_SKILL_DIR** — the path to this skill's directory on disk
 - **CLAUDE_PLUGIN_ROOT** — the path to the plugin's root directory on disk
 - **ARGUMENTS** — user-provided arguments (usually empty)
@@ -39,13 +39,15 @@ This is the heart of the skill. Read all the diffs together and figure out the s
 - How far along does it look? (half-done, mostly complete, just started)
 - Anything that needs attention? (half-written function, TODO comment, unfinished test)
 
-Write 2-3 sentences answering "what was I doing and where did I leave off?" This is a narrative, not a file list — like a colleague saying "oh right, you were in the middle of..."
+Write 2-3 sentences answering "what was I doing and where did I leave off?" This is a narrative, not a file list — like
+a colleague saying "oh right, you were in the middle of..."
 
 Use the branch name, last commit, and actual diffs to piece together intent.
 
 ### Step 3 — Group and present
 
-Group changed files by purpose — what belongs together based on what the changes do, not where files live. A test file and its source belong together. A README update and a config change are separate.
+Group changed files by purpose — what belongs together based on what the changes do, not where files live. A test file
+and its source belong together. A README update and a config change are separate.
 
 Each file gets a description of *what* changed — "added retry logic", not "modified".
 
@@ -55,18 +57,14 @@ Format using the template below.
 
 Read `${CLAUDE_SKILL_DIR}/templates/report.md` and format using that template.
 
-> [!IMPORTANT]
-> This template is MANDATORY, not a suggestion. Reproduce the exact
-> heading hierarchy, field names, and structure. Do NOT improvise
-> formats, collapse sections into prose, reorder fields, or omit
-> sections that have entries. The only acceptable omission is a
-> section with zero entries.
+> [!IMPORTANT] This template is MANDATORY, not a suggestion. Reproduce the exact heading hierarchy, field names, and
+> structure. Do NOT improvise formats, collapse sections into prose, reorder fields, or omit sections that have entries.
+> The only acceptable omission is a section with zero entries.
 
 ## Safety
 
-> [!IMPORTANT]
-> This skill is read-only. Never modify git state — no commits,
-> no staging, no stash operations, no branch changes.
+> [!IMPORTANT] This skill is read-only. Never modify git state — no commits, no staging, no stash operations, no branch
+> changes.
 
 ## Edge cases
 

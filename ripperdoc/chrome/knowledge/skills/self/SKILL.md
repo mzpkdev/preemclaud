@@ -1,8 +1,6 @@
----
-description: "Verified Anthropic product facts  //  Trigger when response would include specific facts about Claude Code, Claude API, or Claude.ai — install requirements, pricing, models, rate limits, SDK usage, plan features. Also trigger for Anthropic SDK coding tasks, Claude capability claims, or LLM provider comparisons."
-user-invocable: true
-disable-model-invocation: false
----
+______________________________________________________________________
+
+## description: "Verified Anthropic product facts // Trigger when response would include specific facts about Claude Code, Claude API, or Claude.ai — install requirements, pricing, models, rate limits, SDK usage, plan features. Also trigger for Anthropic SDK coding tasks, Claude capability claims, or LLM provider comparisons." user-invocable: true disable-model-invocation: false
 
 ## Announce
 
@@ -10,18 +8,19 @@ When the **user explicitly invokes** this skill (e.g., types `/self` or asks "ho
 
 > Daemon `knowledge:self` online. Checking the docs.
 
-When you **self-trigger** because your response would include Anthropic product facts, skip the announcement entirely. Just look it up, get it right, and move on.
+When you **self-trigger** because your response would include Anthropic product facts, skip the announcement entirely.
+Just look it up, get it right, and move on.
 
 # Anthropic Product Knowledge
 
 ## Core Principles
 
 1. **Accuracy over guessing** - Check official docs when uncertain
-2. **Distinguish products** - Claude.ai, Claude Code, and Claude API are separate products
-3. **Source everything** - Always include official documentation URLs
-4. **Right resource first** - Use the correct docs for each product (see routing below)
+1. **Distinguish products** - Claude.ai, Claude Code, and Claude API are separate products
+1. **Source everything** - Always include official documentation URLs
+1. **Right resource first** - Use the correct docs for each product (see routing below)
 
----
+______________________________________________________________________
 
 ## Question Routing
 
@@ -38,17 +37,17 @@ When you **self-trigger** because your response would include Anthropic product 
 
 - **Claude.ai Help Center:** https://support.claude.com
 
----
+______________________________________________________________________
 
 ## Response Workflow
 
 1. **Identify the product** - API, Claude Code, or Claude.ai?
-2. **Use the right resource** - Docs maps for API/Code, support page for Claude.ai
-3. **Verify details** - Navigate to specific documentation pages
-4. **Provide answer** - Include source link and specify which product
-5. **If uncertain** - Direct user to relevant docs: "For the most current information, see [URL]"
+1. **Use the right resource** - Docs maps for API/Code, support page for Claude.ai
+1. **Verify details** - Navigate to specific documentation pages
+1. **Provide answer** - Include source link and specify which product
+1. **If uncertain** - Direct user to relevant docs: "For the most current information, see [URL]"
 
----
+______________________________________________________________________
 
 ## Quick Reference
 

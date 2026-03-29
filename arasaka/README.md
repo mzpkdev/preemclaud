@@ -1,12 +1,19 @@
 # Arasaka
 
-A GitHub Action that wraps [`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action) and exposes `system_prompt` as a first-class input — giving you full control over Claude's behavior without touching upstream code.
+A GitHub Action that wraps [`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action) and
+exposes `system_prompt` as a first-class input — giving you full control over Claude's behavior without touching
+upstream code.
 
 ## Concept
 
-Upstream's action hardcodes a 40KB behavioral preamble that tells Claude how to think, format responses, and structure its work. There's no official way to replace it — only `custom_instructions`, which appends text after the preamble rather than replacing it.
+Upstream's action hardcodes a 40KB behavioral preamble that tells Claude how to think, format responses, and structure
+its work. There's no official way to replace it — only `custom_instructions`, which appends text after the preamble
+rather than replacing it.
 
-Arasaka solves this by keeping the entire GitHub infrastructure layer (GraphQL data fetching, MCP servers, branch management, comment tracking) while swapping out the one thing that matters: the prompt. Our custom prompt builder writes only structured context data — PR body, comments, changed files, branch names — and leaves all behavioral instructions to `system_prompt`.
+Arasaka solves this by keeping the entire GitHub infrastructure layer (GraphQL data fetching, MCP servers, branch
+management, comment tracking) while swapping out the one thing that matters: the prompt. Our custom prompt builder
+writes only structured context data — PR body, comments, changed files, branch names — and leaves all behavioral
+instructions to `system_prompt`.
 
 ```yaml
 - uses: mzpkdev/preemclaud/arasaka@v1
@@ -39,13 +46,14 @@ arasaka/
 
 ### The submodule
 
-`upstream/` is a pinned checkout of `anthropics/claude-code-action`. It provides everything except the prompt and the top-level entrypoint, both of which Arasaka overrides:
+`upstream/` is a pinned checkout of `anthropics/claude-code-action`. It provides everything except the prompt and the
+top-level entrypoint, both of which Arasaka overrides:
 
-| Upstream file | Status | Reason |
-|---|---|---|
-| `src/create-prompt/index.ts` | Replaced by `src/prompt/index.ts` | Contains the 40KB behavioral preamble |
-| `src/entrypoints/run.ts` | Replaced by `src/entrypoints/run.ts` | Calls `createPrompt` — can't be imported around it |
-| Everything else | Used as-is | GitHub API layer, MCP servers, SDK runner |
+| Upstream file                | Status                               | Reason                                             |
+| ---------------------------- | ------------------------------------ | -------------------------------------------------- |
+| `src/create-prompt/index.ts` | Replaced by `src/prompt/index.ts`    | Contains the 40KB behavioral preamble              |
+| `src/entrypoints/run.ts`     | Replaced by `src/entrypoints/run.ts` | Calls `createPrompt` — can't be imported around it |
+| Everything else              | Used as-is                           | GitHub API layer, MCP servers, SDK runner          |
 
 To update the upstream pin:
 
@@ -60,14 +68,16 @@ git commit -m "chore(arasaka): bump upstream to <version>"
 
 ### The v1 branch
 
-`uses: mzpkdev/preemclaud/arasaka@v1` resolves to the `v1` orphan branch, which holds pre-built bundles so consumers pay zero runtime overhead (no `bun install`, no TypeScript compilation).
+`uses: mzpkdev/preemclaud/arasaka@v1` resolves to the `v1` orphan branch, which holds pre-built bundles so consumers pay
+zero runtime overhead (no `bun install`, no TypeScript compilation).
 
-The release workflow (`.github/workflows/release-arasaka.yml`) runs automatically on every push to `main` that touches `arasaka/`. It:
+The release workflow (`.github/workflows/release-arasaka.yml`) runs automatically on every push to `main` that touches
+`arasaka/`. It:
 
 1. Bundles `src/entrypoints/run.ts` → `run.js`
-2. Bundles each MCP server separately (they're spawned as child processes — must be separate files)
-3. Patches `action.yml` to point at the bundled paths and strips the `bun install` step
-4. Force-pushes an orphan commit to the `v1` branch under `arasaka/`
+1. Bundles each MCP server separately (they're spawned as child processes — must be separate files)
+1. Patches `action.yml` to point at the bundled paths and strips the `bun install` step
+1. Force-pushes an orphan commit to the `v1` branch under `arasaka/`
 
 The v1 branch layout mirrors what GitHub expects for `uses: .../arasaka@v1`:
 
@@ -100,11 +110,13 @@ arasaka/
     path_to_claude_code_executable: ${{ env.CLAUDE_BIN }}
 ```
 
-All other inputs (`trigger_phrase`, `base_branch`, `branch_prefix`, `use_commit_signing`, etc.) are pass-throughs to upstream — see `action.yml` for the full list.
+All other inputs (`trigger_phrase`, `base_branch`, `branch_prefix`, `use_commit_signing`, etc.) are pass-throughs to
+upstream — see `action.yml` for the full list.
 
 ### With preemclaud
 
-If the calling repo has preemclaud installed on the runner, pass its binary directly to skip the default Claude Code install step:
+If the calling repo has preemclaud installed on the runner, pass its binary directly to skip the default Claude Code
+install step:
 
 ```yaml
 - name: Install preemclaud
@@ -120,4 +132,5 @@ If the calling repo has preemclaud installed on the runner, pass its binary dire
     system_prompt: ...
 ```
 
-This is required when your settings use preemclaud-specific model names — the stock binary won't recognize them and will exit immediately.
+This is required when your settings use preemclaud-specific model names — the stock binary won't recognize them and will
+exit immediately.

@@ -2,7 +2,7 @@
 
 Quick, scannable view that answers "what was I working on?" and "what's the state of my changes?"
 
----
+______________________________________________________________________
 
 ## Scenarios
 
@@ -10,9 +10,9 @@ Quick, scannable view that answers "what was I working on?" and "what's the stat
 
 Default output when the user invokes git:status.
 
-You were adding JWT-based authentication.
-The login flow was rewritten to validate tokens through a new helper module, and rate limiting was wired into the middleware.
-Tests are half-done — 3 cases staged, but the error-path tests aren't written yet.
+You were adding JWT-based authentication. The login flow was rewritten to validate tokens through a new helper module,
+and rate limiting was wired into the middleware. Tests are half-done — 3 cases staged, but the error-path tests aren't
+written yet.
 
 ```
   Branch: feature/jwt-auth · Last commit: 3 days ago
@@ -39,17 +39,16 @@ Tests are half-done — 3 cases staged, but the error-path tests aren't written 
     stash@{0}: WIP on feature/jwt-auth — quick save before meeting (2 days ago)
 ```
 
----
+______________________________________________________________________
 
 ## Format rules
 
-**Narrative recap**
-2-3 sentences outside any code block, each sentence on its own line.
-Answers "what was I doing?" — the feature/fix in progress, how far along it looks, anything unfinished.
-Keep it conversational — like a colleague catching you up.
+**Narrative recap** 2-3 sentences outside any code block, each sentence on its own line. Answers "what was I doing?" —
+the feature/fix in progress, how far along it looks, anything unfinished. Keep it conversational — like a colleague
+catching you up.
 
-**Dashboard header**
-Open the code block with the context lines + separator:
+**Dashboard header** Open the code block with the context lines + separator:
+
 ```
   Branch: <branch> · Last commit: <time ago>
   <N> areas · <N> files · +<N> −<N> · <N> staged, <N> unstaged, <N> untracked
@@ -57,12 +56,13 @@ Open the code block with the context lines + separator:
 ```
 
 If tracking a remote and ahead/behind:
+
 ```
   Branch: feature/auth · Last commit: 3 days ago · 2 ahead, 1 behind origin
 ```
 
-**Change groups**
-Number them sequentially. No blank line between the group name and its files:
+**Change groups** Number them sequentially. No blank line between the group name and its files:
+
 ```
 1  Auth refactor  (unstaged)
      M   src/auth/login.ts              rewrote token validation to use JWT
@@ -77,14 +77,15 @@ Number them sequentially. No blank line between the group name and its files:
 - Binary files: `(binary)` instead of a description; large files: mention size
 
 **Staging indicators on groups**
+
 - `(staged)` — all files staged
 - `(unstaged)` — none staged
 - `(partially staged)` — mix of staged and unstaged
 - `(untracked)` — all new/untracked
 - Omit if the entire tree has only one staging state
 
-**Stashes**
-Close the code block with a separator + stash list:
+**Stashes** Close the code block with a separator + stash list:
+
 ```
   ──────────────────────────────────────────────────────────────────
   Stashes:
@@ -94,8 +95,8 @@ Close the code block with a separator + stash list:
 
 If no stashes, close with just the separator line.
 
-**50+ files**
-Summarize by directory inside the code block:
+**50+ files** Summarize by directory inside the code block:
+
 ```
 1  API overhaul  (unstaged)
      src/api/          12 files    +340 −89     new REST endpoints
@@ -103,8 +104,8 @@ Summarize by directory inside the code block:
      tests/api/          8 files    +210 −0      endpoint tests
 ```
 
-**In-progress operations**
-Flag before the recap (outside code block):
+**In-progress operations** Flag before the recap (outside code block):
+
 ```
 ⚠ Mid-rebase onto main — 2 of 5 commits applied. Use `git:deconflict` to continue.
 ```
@@ -116,6 +117,7 @@ Working tree clean. Last commit: `a1b2c3d` feat(auth): add JWT validation (3 day
 If stashes exist on a clean tree, still show them.
 
 **Detached HEAD**
+
 ```
   Branch: (detached at a1b2c3d) · Last commit: 2 hours ago
 ```

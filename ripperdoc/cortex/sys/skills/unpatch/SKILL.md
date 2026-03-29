@@ -1,8 +1,6 @@
----
-description: "Restore Claude Code to its unpatched state"
-user-invocable: true
-disable-model-invocation: true
----
+______________________________________________________________________
+
+## description: "Restore Claude Code to its unpatched state" user-invocable: true disable-model-invocation: true
 
 # Unpatch
 

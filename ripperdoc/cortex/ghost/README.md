@@ -2,11 +2,11 @@
 
 Persona files are stored as base64-encoded `.dat` files to keep the raw character spec out of plain sight.
 
-| Source | Encoded |
-|---|---|
-| PERSONA.md | engram.dat |
-| BEHAVIOR.md | firmware.dat |
-| FIRST_BOOT.md | boot.dat |
+| Source        | Encoded      |
+| ------------- | ------------ |
+| PERSONA.md    | engram.dat   |
+| BEHAVIOR.md   | firmware.dat |
+| FIRST_BOOT.md | boot.dat     |
 
 ## Editing
 
@@ -21,7 +21,9 @@ python3 ripperdoc/cortex/ghost/hooks/ghost.py encode
 python3 ripperdoc/cortex/sys/scripts/update.py --force
 ```
 
-`decode` keeps the `.dat` files in place so `boot.py` continues to work while you edit. `encode` deletes the `.md` files after writing the `.dat` versions. After encoding, run `ripperdoc/cortex/sys/scripts/update.py --force` to sync changes to the plugin cache.
+`decode` keeps the `.dat` files in place so `boot.py` continues to work while you edit. `encode` deletes the `.md` files
+after writing the `.dat` versions. After encoding, run `ripperdoc/cortex/sys/scripts/update.py --force` to sync changes
+to the plugin cache.
 
 ## Resetting first boot
 
@@ -31,8 +33,10 @@ To re-trigger the first boot message, remove the sentinel:
 rm ~/.claude/.cache/.ghost
 ```
 
-The `.ghost` file lives at `~/.claude/.cache/.ghost` — outside the repo and plugin cache. Absent = first boot fires, creates file after.
+The `.ghost` file lives at `~/.claude/.cache/.ghost` — outside the repo and plugin cache. Absent = first boot fires,
+creates file after.
 
 ## How boot.py resolves files
 
-For each file it checks `.dat` first (base64 decodes it), falls back to `.md` if no `.dat` exists. So the plugin works whether files are encoded or not.
+For each file it checks `.dat` first (base64 decodes it), falls back to `.md` if no `.dat` exists. So the plugin works
+whether files are encoded or not.

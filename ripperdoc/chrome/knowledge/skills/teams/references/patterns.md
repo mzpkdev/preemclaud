@@ -97,24 +97,24 @@ Agent({
 
 ## Common Pitfalls
 
-| Pitfall | What happens | Prevention |
-|---|---|---|
-| Spawning across multiple turns | User keystrokes corrupt teammate prompts | Spawn all in one message |
-| Missing delegation block | Teammates spawn new teams, exponential explosion | Always include the block |
-| Too many agents | Token waste, coordination overhead, diminishing returns | Start with 2-3, scale up |
-| Explore subagents for deep work | Read-only, no reasoning tools, teammates get stuck | Use general-purpose |
-| Skipping TeamDelete | Stale team state accumulates on disk | Always clean up, force if needed |
-| Reading too many files directly | Context exhaustion, teammate loses track | Delegation block teaches helpers |
+| Pitfall                         | What happens                                            | Prevention                       |
+| ------------------------------- | ------------------------------------------------------- | -------------------------------- |
+| Spawning across multiple turns  | User keystrokes corrupt teammate prompts                | Spawn all in one message         |
+| Missing delegation block        | Teammates spawn new teams, exponential explosion        | Always include the block         |
+| Too many agents                 | Token waste, coordination overhead, diminishing returns | Start with 2-3, scale up         |
+| Explore subagents for deep work | Read-only, no reasoning tools, teammates get stuck      | Use general-purpose              |
+| Skipping TeamDelete             | Stale team state accumulates on disk                    | Always clean up, force if needed |
+| Reading too many files directly | Context exhaustion, teammate loses track                | Delegation block teaches helpers |
 
 ## Recovery Checklist
 
 When recovering an orphaned team:
 
 1. `ls ~/.claude/teams/` — find the team
-2. `cat ~/.claude/teams/{name}/config.json` — read the config
-3. Check staleness: compare `leadSessionId` session mod time against current time
-4. Get current session: `ls -t ~/.claude/session-env/ | head -1`
-5. Update config: new `leadSessionId`, new `leadAgentId`, all members `isActive: false`
-6. Write updated config back to disk
-7. Re-spawn teammates from their `members` entries (skip `team-lead`)
-8. Verify team is operational: send a status check to each teammate
+1. `cat ~/.claude/teams/{name}/config.json` — read the config
+1. Check staleness: compare `leadSessionId` session mod time against current time
+1. Get current session: `ls -t ~/.claude/session-env/ | head -1`
+1. Update config: new `leadSessionId`, new `leadAgentId`, all members `isActive: false`
+1. Write updated config back to disk
+1. Re-spawn teammates from their `members` entries (skip `team-lead`)
+1. Verify team is operational: send a status check to each teammate

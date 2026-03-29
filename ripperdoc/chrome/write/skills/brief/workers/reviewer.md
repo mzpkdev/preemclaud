@@ -1,6 +1,7 @@
 # Brief Reviewer
 
-**Purpose:** Verify the output is a task ticket (what/why), not an implementation plan (how), and that the decomposition covers the full scope.
+**Purpose:** Verify the output is a task ticket (what/why), not an implementation plan (how), and that the decomposition
+covers the full scope.
 
 **Dispatch after:** Brief document is written
 
@@ -71,4 +72,6 @@ Agent tool (general-purpose):
 
 **Returns:** Status, Document Type Issues, Decomposition Issues, Recommendations
 
-**Important:** Document type issues are the highest priority — a task ticket that reads like an implementation plan will over-constrain the implementer and go stale fast. The question is not "is there enough detail to start working?" but "does this carry enough business context to understand what to build and why, without prescribing how?"
+**Important:** Document type issues are the highest priority — a task ticket that reads like an implementation plan will
+over-constrain the implementer and go stale fast. The question is not "is there enough detail to start working?" but
+"does this carry enough business context to understand what to build and why, without prescribing how?"

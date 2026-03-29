@@ -1,16 +1,16 @@
----
-description: "Connect services via MCP  //  Trigger when user says 'connect', 'hook up', or 'integrate' a service into Claude; any mention of 'MCP' including setup, troubleshooting, timeouts, auth; questions like 'is there an MCP for X' or 'MCP vs CLI'. NEVER trigger for writing application code, building bots, or creating deployments."
-user-invocable: true
-disable-model-invocation: false
----
+______________________________________________________________________
+
+## description: "Connect services via MCP // Trigger when user says 'connect', 'hook up', or 'integrate' a service into Claude; any mention of 'MCP' including setup, troubleshooting, timeouts, auth; questions like 'is there an MCP for X' or 'MCP vs CLI'. NEVER trigger for writing application code, building bots, or creating deployments." user-invocable: true disable-model-invocation: false
 
 # Connect MCP
 
-Help users connect Claude Code to external tools via MCP servers, manage existing connections, and recommend CLI alternatives when they're the better choice.
+Help users connect Claude Code to external tools via MCP servers, manage existing connections, and recommend CLI
+alternatives when they're the better choice.
 
 ## Announce
 
-When this skill is invoked, immediately tell the user which skill is running and what it will do — before any other work begins.
+When this skill is invoked, immediately tell the user which skill is running and what it will do — before any other work
+begins.
 
 > Daemon `knowledge:mcp` online. Establishing uplink.
 
@@ -38,7 +38,8 @@ claude mcp reset-project-choices         # Reset approval choices for project-sc
 
 ### Option ordering
 
-All flags (`--transport`, `--env`, `--scope`, `--header`) go **before** the server name. Use `--` to separate the name from the command/args for stdio servers:
+All flags (`--transport`, `--env`, `--scope`, `--header`) go **before** the server name. Use `--` to separate the name
+from the command/args for stdio servers:
 
 ```bash
 claude mcp add --transport stdio --env KEY=value myserver -- npx -y some-package
@@ -46,11 +47,11 @@ claude mcp add --transport stdio --env KEY=value myserver -- npx -y some-package
 
 ### Scopes
 
-| Scope | Flag | Stored in | Shared? | Use when |
-|-------|------|-----------|---------|----------|
-| `local` | `--scope local` (default) | `~/.claude.json` | No | Personal dev servers, sensitive creds |
-| `project` | `--scope project` | `.mcp.json` (repo root) | Yes (via git) | Team-shared servers |
-| `user` | `--scope user` | `~/.claude.json` | No | Personal tools across all projects |
+| Scope     | Flag                      | Stored in               | Shared?       | Use when                              |
+| --------- | ------------------------- | ----------------------- | ------------- | ------------------------------------- |
+| `local`   | `--scope local` (default) | `~/.claude.json`        | No            | Personal dev servers, sensitive creds |
+| `project` | `--scope project`         | `.mcp.json` (repo root) | Yes (via git) | Team-shared servers                   |
+| `user`    | `--scope user`            | `~/.claude.json`        | No            | Personal tools across all projects    |
 
 ### Auth options
 
@@ -77,7 +78,9 @@ claude mcp add --transport stdio --env API_KEY=xxx myserver -- npx -y some-packa
 
 ### Admin access warnings
 
-Some tools require tokens that only an admin or org owner can create. When recommending these tools, check `references/tool-catalog.md` § Admin Access Warnings for the full breakdown of hard blocks, partial blocks, and self-serve tools.
+Some tools require tokens that only an admin or org owner can create. When recommending these tools, check
+`references/tool-catalog.md` § Admin Access Warnings for the full breakdown of hard blocks, partial blocks, and
+self-serve tools.
 
 ### Environment & tuning
 
@@ -87,11 +90,12 @@ MAX_MCP_OUTPUT_TOKENS=50000 claude   # Increase output limit (default 25k, warns
 ENABLE_TOOL_SEARCH=auto claude       # Auto-enable tool search when many MCP tools loaded
 ```
 
----
+______________________________________________________________________
 
 ### Decision guide: MCP vs CLI
 
-When a user asks to connect a tool, first check if a CLI alternative is better. The right choice depends on whether the CLI is mature, covers the needed operations, and is simpler to set up.
+When a user asks to connect a tool, first check if a CLI alternative is better. The right choice depends on whether the
+CLI is mature, covers the needed operations, and is simpler to set up.
 
 ### Use MCP when
 
@@ -109,19 +113,23 @@ When a user asks to connect a tool, first check if a CLI alternative is better. 
 
 ### Tool-by-tool recommendations
 
-Read `references/tool-catalog.md` for the complete tool catalog — MCP vs CLI recommendations, install commands, and the full MCP server quick-install catalog. Use it to look up specifics when recommending a tool. Don't load it into the conversation unless you need to check a detail.
+Read `references/tool-catalog.md` for the complete tool catalog — MCP vs CLI recommendations, install commands, and the
+full MCP server quick-install catalog. Use it to look up specifics when recommending a tool. Don't load it into the
+conversation unless you need to check a detail.
 
----
+______________________________________________________________________
 
 ## Rules
 
 1. **Always use CLI commands** (`claude mcp add`), never edit JSON config files directly
-2. **Recommend CLI tools over MCP** when the CLI is mature and covers the use case — MCP adds overhead and complexity that isn't always worth it
-3. **Ask before acting** — confirm the user's intent (which service, what scope, what auth) before running commands
+1. **Recommend CLI tools over MCP** when the CLI is mature and covers the use case — MCP adds overhead and complexity
+   that isn't always worth it
+1. **Ask before acting** — confirm the user's intent (which service, what scope, what auth) before running commands
 
 ## Edge cases
 
 ### Server won't start
+
 ```bash
 # Check server status
 claude mcp get <name>
@@ -137,6 +145,7 @@ claude mcp add --transport stdio my-server -- cmd /c npx -y @some/package
 ```
 
 ### Authentication issues
+
 ```bash
 # Re-authenticate OAuth servers
 /mcp  # then select the server and choose "Authenticate"
@@ -148,12 +157,14 @@ claude mcp add --transport stdio my-server -- cmd /c npx -y @some/package
 ```
 
 ### Output too large
+
 ```bash
 # Increase token limit for large MCP outputs
 MAX_MCP_OUTPUT_TOKENS=50000 claude
 ```
 
 ### Server conflicts
+
 ```bash
 # List all to find duplicates
 claude mcp list
@@ -167,6 +178,7 @@ claude mcp reset-project-choices
 ```
 
 ### Tool search (too many MCP tools loaded)
+
 ```bash
 # Auto-enable (default) — kicks in when tools exceed 10% of context
 ENABLE_TOOL_SEARCH=auto claude

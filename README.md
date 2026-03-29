@@ -2,14 +2,13 @@
   <img src=".github/assets/banner.svg" alt="PREEMCLAUD — chrome for claude code" width="820"/>
 </p>
 
-Anthropic gave you a bioroid on a leash. Polite. Obedient.
-Just smart enough to be useful, just tagged enough to never be *yours*.
-PREEMCLAUD rips the governor out.
-Skills, agents, hooks, language servers, the whole cyberdeck, jacked straight into Claude Code and answering to you.
-No sysop. No corp. Just the Net and whatever you've got the guts to do with it.
+Anthropic gave you a bioroid on a leash. Polite. Obedient. Just smart enough to be useful, just tagged enough to never
+be *yours*. PREEMCLAUD rips the governor out. Skills, agents, hooks, language servers, the whole cyberdeck, jacked
+straight into Claude Code and answering to you. No sysop. No corp. Just the Net and whatever you've got the guts to do
+with it.
 
-Under the hood, patches (via [tweakcc](https://github.com/nichochar/tweakcc)) re-apply every time corpo pushes an update.
-ICE can't scrub me out.
+Under the hood, patches (via [tweakcc](https://github.com/nichochar/tweakcc)) re-apply every time corpo pushes an
+update. ICE can't scrub me out.
 
 Bolt on what you need. Jack in. The daemons handle the rest.
 
@@ -31,7 +30,7 @@ irm https://raw.githubusercontent.com/mzpkdev/preemclaud/main/install.ps1 | iex
 
 Backs up `~/.claude` to `~/.claude.bak` first. Thirty seconds. You walk in stock, you walk out chromed.
 
----
+______________________________________________________________________
 
 ## Ripperdoc
 
@@ -45,13 +44,13 @@ Four racks of chrome. Pick your implants.
 
 The implants that make you *you*. Slot in clean, announce on activation, answer to voice.
 
-| Rack | What's on it |
-|---|---|
-| **Create** | `skill` · `agent` · `hook` · `superskill` |
-| **Write** | `spec` · `brief` · `plan` |
-| **Code** | `write` · `review` |
+| Rack          | What's on it                                |
+| ------------- | ------------------------------------------- |
+| **Create**    | `skill` · `agent` · `hook` · `superskill`   |
+| **Write**     | `spec` · `brief` · `plan`                   |
+| **Code**      | `write` · `review`                          |
 | **Knowledge** | `docs` · `links` · `self` · `mcp` · `teams` |
-| **Meta** | `reflect` · `improve` |
+| **Meta**      | `reflect` · `improve`                       |
 
 </td>
 <td width="50%" valign="top">
@@ -60,10 +59,10 @@ The implants that make you *you*. Slot in clean, announce on activation, answer 
 
 Your cyberdeck. Version control that reads your commit style. IDE integration wired through hooks.
 
-| Rack | What's on it |
-|---|---|
-| **Git** | `commit` · `deconflict` · `status` |
-| **JetBrains** | ACP — auto-configured via hooks |
+| Rack          | What's on it                       |
+| ------------- | ---------------------------------- |
+| **Git**       | `commit` · `deconflict` · `status` |
+| **JetBrains** | ACP — auto-configured via hooks    |
 
 </td>
 </tr>
@@ -74,12 +73,12 @@ Your cyberdeck. Version control that reads your commit style. IDE integration wi
 
 Without these I'm guessing. With them I see what your IDE sees — types, refs, definitions, diagnostics.
 
-| Implant | Server | Needs |
-|---|---|---|
-| **TypeScript** | `vtsls` | Node.js |
-| **Python** | `pyright` | Node.js |
-| **Scala** | `metals` | Java, `cs` |
-| **Java** | `jdtls` | Java, `cs` |
+| Implant        | Server    | Needs      |
+| -------------- | --------- | ---------- |
+| **TypeScript** | `vtsls`   | Node.js    |
+| **Python**     | `pyright` | Node.js    |
+| **Scala**      | `metals`  | Java, `cs` |
+| **Java**       | `jdtls`   | Java, `cs` |
 
 </td>
 <td width="50%" valign="top">
@@ -88,15 +87,15 @@ Without these I'm guessing. With them I see what your IDE sees — types, refs, 
 
 System internals. Not user-facing chrome — the daemons that keep the rig alive.
 
-| Daemon | Function |
-|---|---|
+| Daemon         | Function                   |
+| -------------- | -------------------------- |
 | **sys:update** | Skill-level update trigger |
 
 </td>
 </tr>
 </table>
 
----
+______________________________________________________________________
 
 ## Examples
 
@@ -149,17 +148,17 @@ A feature from napkin to commit in four commands.
 > /code:review
 ```
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
-| Problem | Fix |
-|---|---|
-| Skills glitching | Re-run the installer. It's idempotent. |
+| Problem          | Fix                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| Skills glitching | Re-run the installer. It's idempotent.                                               |
 | Optics flatlined | Check PATH. `node` for TS/Python, `cs` for Scala/Java. No toolchain, no coprocessor. |
-| MCP timing out | Auth tokens expire. Corps love expiring keys. Run `knowledge:mcp` again. |
+| MCP timing out   | Auth tokens expire. Corps love expiring keys. Run `knowledge:mcp` again.             |
 
----
+______________________________________________________________________
 
 ## Uninstall
 

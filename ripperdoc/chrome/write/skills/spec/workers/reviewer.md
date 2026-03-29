@@ -58,4 +58,5 @@ Agent tool (general-purpose):
 
 **Returns:** Status, Quality Issues, Decision Challenges, Recommendations
 
-**Important:** Decision Challenges should be surfaced to the user for their input. The reviewer is advisory — the user makes the final call on challenged decisions.
+**Important:** Decision Challenges should be surfaced to the user for their input. The reviewer is advisory — the user
+makes the final call on challenged decisions.

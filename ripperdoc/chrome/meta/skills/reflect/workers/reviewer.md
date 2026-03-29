@@ -1,6 +1,7 @@
 # Reflection Reviewer
 
-**Purpose:** Catch apologetic filler, vague root causes, and non-actionable improvements before the reflection reaches the user.
+**Purpose:** Catch apologetic filler, vague root causes, and non-actionable improvements before the reflection reaches
+the user.
 
 **Dispatch after:** The reflection draft is written, before presenting to the user.
 

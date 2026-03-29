@@ -3,70 +3,74 @@
 Quick-reference for all agent configuration options, frontmatter fields, tool access, model selection, and patterns.
 
 ## Table of Contents
-1. [Frontmatter Fields](#frontmatter-fields)
-2. [Available Tools](#available-tools)
-3. [Model Options](#model-options)
-4. [Permission Modes](#permission-modes)
-5. [MCP Server Configuration](#mcp-server-configuration)
-6. [Hooks in Agents](#hooks-in-agents)
-7. [Persistent Memory](#persistent-memory)
-8. [Agent Scopes and Locations](#agent-scopes-and-locations)
-9. [CLI-Defined Agents](#cli-defined-agents)
-10. [Agent Restrictions](#agent-restrictions)
-11. [Naming Conventions](#naming-conventions)
-12. [Example Configurations](#example-configurations)
 
----
+1. [Frontmatter Fields](#frontmatter-fields)
+1. [Available Tools](#available-tools)
+1. [Model Options](#model-options)
+1. [Permission Modes](#permission-modes)
+1. [MCP Server Configuration](#mcp-server-configuration)
+1. [Hooks in Agents](#hooks-in-agents)
+1. [Persistent Memory](#persistent-memory)
+1. [Agent Scopes and Locations](#agent-scopes-and-locations)
+1. [CLI-Defined Agents](#cli-defined-agents)
+1. [Agent Restrictions](#agent-restrictions)
+1. [Naming Conventions](#naming-conventions)
+1. [Example Configurations](#example-configurations)
+
+______________________________________________________________________
 
 ## Frontmatter Fields
 
-| Field             | Required | Type            | Description                                                                |
-|:------------------|:---------|:----------------|:---------------------------------------------------------------------------|
-| `name`            | Yes      | string          | Unique identifier, lowercase letters and hyphens only                      |
-| `description`     | Yes      | string          | When Claude should delegate to this agent — the primary trigger mechanism  |
-| `tools`           | No       | comma-separated | Tools the agent can use. Inherits all if omitted                           |
-| `disallowedTools` | No       | comma-separated | Tools to deny, removed from inherited or specified list                    |
-| `model`           | No       | string          | `sonnet`, `opus`, `haiku`, full model ID, or `inherit` (default)           |
-| `permissionMode`  | No       | string          | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan`           |
-| `maxTurns`        | No       | integer         | Maximum agentic turns before the agent stops                               |
-| `skills`          | No       | list            | Skills to preload into the agent's context at startup                      |
-| `mcpServers`      | No       | list            | MCP servers available to this agent (names or inline definitions)          |
-| `hooks`           | No       | object          | Lifecycle hooks scoped to this agent                                       |
-| `memory`          | No       | string          | Persistent memory scope: `user`, `project`, or `local`                     |
-| `background`      | No       | boolean         | Always run as background task. Default: `false`                            |
-| `isolation`       | No       | string          | Set to `worktree` for isolated git worktree                                |
+| Field             | Required | Type            | Description                                                               |
+| :---------------- | :------- | :-------------- | :------------------------------------------------------------------------ |
+| `name`            | Yes      | string          | Unique identifier, lowercase letters and hyphens only                     |
+| `description`     | Yes      | string          | When Claude should delegate to this agent — the primary trigger mechanism |
+| `tools`           | No       | comma-separated | Tools the agent can use. Inherits all if omitted                          |
+| `disallowedTools` | No       | comma-separated | Tools to deny, removed from inherited or specified list                   |
+| `model`           | No       | string          | `sonnet`, `opus`, `haiku`, full model ID, or `inherit` (default)          |
+| `permissionMode`  | No       | string          | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan`          |
+| `maxTurns`        | No       | integer         | Maximum agentic turns before the agent stops                              |
+| `skills`          | No       | list            | Skills to preload into the agent's context at startup                     |
+| `mcpServers`      | No       | list            | MCP servers available to this agent (names or inline definitions)         |
+| `hooks`           | No       | object          | Lifecycle hooks scoped to this agent                                      |
+| `memory`          | No       | string          | Persistent memory scope: `user`, `project`, or `local`                    |
+| `background`      | No       | boolean         | Always run as background task. Default: `false`                           |
+| `isolation`       | No       | string          | Set to `worktree` for isolated git worktree                               |
 
----
+______________________________________________________________________
 
 ## Available Tools
 
 Agents can use any of Claude Code's internal tools. Common tools:
 
-| Tool        | Purpose                                    |
-|:------------|:-------------------------------------------|
-| `Read`      | Read file contents                         |
-| `Edit`      | Modify existing files                      |
-| `Write`     | Create or overwrite files                  |
-| `Bash`      | Execute shell commands                     |
-| `Grep`      | Search file contents with regex            |
-| `Glob`      | Find files by pattern                      |
-| `WebFetch`  | Fetch and process web content              |
-| `WebSearch` | Search the web                             |
-| `Agent`     | Spawn sub-agents (main thread only)        |
+| Tool        | Purpose                             |
+| :---------- | :---------------------------------- |
+| `Read`      | Read file contents                  |
+| `Edit`      | Modify existing files               |
+| `Write`     | Create or overwrite files           |
+| `Bash`      | Execute shell commands              |
+| `Grep`      | Search file contents with regex     |
+| `Glob`      | Find files by pattern               |
+| `WebFetch`  | Fetch and process web content       |
+| `WebSearch` | Search the web                      |
+| `Agent`     | Spawn sub-agents (main thread only) |
 
 ### Tool restriction patterns
 
 **Allowlist** — only these tools:
+
 ```yaml
 tools: Read, Grep, Glob
 ```
 
 **Denylist** — everything except these:
+
 ```yaml
 disallowedTools: Write, Edit
 ```
 
 **Restrict agent spawning** (main thread `--agent` only):
+
 ```yaml
 tools: Agent(worker, researcher), Read, Bash
 ```
@@ -76,45 +80,46 @@ Bare `Agent` (no parentheses) allows spawning any agent type. Omitting `Agent` e
 ### Common tool sets
 
 | Use case           | Tools                                   |
-|:-------------------|:----------------------------------------|
-| Read-only analysis | `Read, Grep, Glob, Bash`               |
-| Code modification  | `Read, Edit, Write, Bash, Grep, Glob`  |
+| :----------------- | :-------------------------------------- |
+| Read-only analysis | `Read, Grep, Glob, Bash`                |
+| Code modification  | `Read, Edit, Write, Bash, Grep, Glob`   |
 | Research only      | `Read, Grep, Glob, WebFetch, WebSearch` |
 | Full access        | *(omit tools field)*                    |
 
----
+______________________________________________________________________
 
 ## Model Options
 
-| Value            | Behavior                                     |
-|:-----------------|:---------------------------------------------|
-| `haiku`          | Fast, low-cost — simple tasks, exploration   |
-| `sonnet`         | Balanced — most agents                       |
-| `opus`           | Most capable — complex reasoning             |
-| `inherit`        | Same model as main conversation (default)    |
-| Full model ID    | e.g., `claude-opus-4-6`, `claude-sonnet-4-6` |
+| Value         | Behavior                                     |
+| :------------ | :------------------------------------------- |
+| `haiku`       | Fast, low-cost — simple tasks, exploration   |
+| `sonnet`      | Balanced — most agents                       |
+| `opus`        | Most capable — complex reasoning             |
+| `inherit`     | Same model as main conversation (default)    |
+| Full model ID | e.g., `claude-opus-4-6`, `claude-sonnet-4-6` |
 
----
+______________________________________________________________________
 
 ## Permission Modes
 
-| Mode                | Behavior                                                          |
-|:--------------------|:------------------------------------------------------------------|
-| `default`           | Standard permission checking with prompts                         |
-| `acceptEdits`       | Auto-accept file edits (Edit, Write)                              |
-| `dontAsk`           | Auto-deny permission prompts (explicitly allowed tools still work)|
-| `bypassPermissions` | Skip all permission checks — use with caution                     |
-| `plan`              | Plan mode — read-only exploration                                 |
+| Mode                | Behavior                                                           |
+| :------------------ | :----------------------------------------------------------------- |
+| `default`           | Standard permission checking with prompts                          |
+| `acceptEdits`       | Auto-accept file edits (Edit, Write)                               |
+| `dontAsk`           | Auto-deny permission prompts (explicitly allowed tools still work) |
+| `bypassPermissions` | Skip all permission checks — use with caution                      |
+| `plan`              | Plan mode — read-only exploration                                  |
 
 If parent uses `bypassPermissions`, it takes precedence and cannot be overridden.
 
----
+______________________________________________________________________
 
 ## MCP Server Configuration
 
 MCP servers give agents access to external services. Two forms:
 
 ### Reference by name (already configured in session)
+
 ```yaml
 mcpServers:
   - github
@@ -122,6 +127,7 @@ mcpServers:
 ```
 
 ### Inline definition (scoped to this agent only)
+
 ```yaml
 mcpServers:
   - playwright:
@@ -130,11 +136,12 @@ mcpServers:
       args: ["-y", "@playwright/mcp@latest"]
 ```
 
-Inline servers connect when the agent starts and disconnect when it finishes. They don't appear in the main conversation's tool list, which keeps context clean.
+Inline servers connect when the agent starts and disconnect when it finishes. They don't appear in the main
+conversation's tool list, which keeps context clean.
 
 Supports `stdio`, `http`, `sse`, `ws` transport types — same schema as `.mcp.json` server entries.
 
----
+______________________________________________________________________
 
 ## Hooks in Agents
 
@@ -142,15 +149,17 @@ Agents can define hooks in their frontmatter that run only while the agent is ac
 
 ### Supported events in agent frontmatter
 
-| Event         | Matcher input | When it fires                              |
-|:--------------|:--------------|:-------------------------------------------|
-| `PreToolUse`  | Tool name     | Before the agent uses a tool               |
-| `PostToolUse` | Tool name     | After the agent uses a tool                |
-| `Stop`        | (none)        | When the agent finishes (→ SubagentStop)   |
+| Event         | Matcher input | When it fires                            |
+| :------------ | :------------ | :--------------------------------------- |
+| `PreToolUse`  | Tool name     | Before the agent uses a tool             |
+| `PostToolUse` | Tool name     | After the agent uses a tool              |
+| `Stop`        | (none)        | When the agent finishes (→ SubagentStop) |
 
-All standard hook events are supported. `Stop` hooks in frontmatter are automatically converted to `SubagentStop` at runtime.
+All standard hook events are supported. `Stop` hooks in frontmatter are automatically converted to `SubagentStop` at
+runtime.
 
 ### Example: validate bash commands
+
 ```yaml
 hooks:
   PreToolUse:
@@ -182,19 +191,20 @@ In `settings.json`, use `SubagentStart` / `SubagentStop` to hook into agent life
 }
 ```
 
----
+______________________________________________________________________
 
 ## Persistent Memory
 
 The `memory` field gives agents a persistent directory that survives across conversations.
 
-| Scope     | Location                                      | Use when                                      |
-|:----------|:----------------------------------------------|:----------------------------------------------|
-| `user`    | `~/.claude/agent-memory/<name>/`              | Learnings should apply across all projects    |
-| `project` | `.claude/agent-memory/<name>/`                | Knowledge is project-specific and shareable   |
-| `local`   | `.claude/agent-memory-local/<name>/`          | Project-specific but not checked in           |
+| Scope     | Location                             | Use when                                    |
+| :-------- | :----------------------------------- | :------------------------------------------ |
+| `user`    | `~/.claude/agent-memory/<name>/`     | Learnings should apply across all projects  |
+| `project` | `.claude/agent-memory/<name>/`       | Knowledge is project-specific and shareable |
+| `local`   | `.claude/agent-memory-local/<name>/` | Project-specific but not checked in         |
 
 When memory is enabled:
+
 - The agent's system prompt includes instructions for reading and writing to the memory directory
 - The first 200 lines of `MEMORY.md` in the memory directory are loaded automatically
 - Read, Write, Edit tools are auto-enabled so the agent can manage its memory files
@@ -202,6 +212,7 @@ When memory is enabled:
 ### Memory instructions for the system prompt
 
 Include something like this in agents that should learn:
+
 ```markdown
 Update your agent memory as you discover codepaths, patterns, library
 locations, and key architectural decisions. This builds up institutional
@@ -209,26 +220,28 @@ knowledge across conversations. Write concise notes about what you found
 and where.
 ```
 
-**Tip**: `user` scope is the recommended default. Use `project` or `local` when the agent's knowledge only matters for a specific codebase.
+**Tip**: `user` scope is the recommended default. Use `project` or `local` when the agent's knowledge only matters for a
+specific codebase.
 
----
+______________________________________________________________________
 
 ## Agent Scopes and Locations
 
-| Location                     | Scope                   | Priority    |
-|:-----------------------------|:------------------------|:------------|
-| `--agents` CLI flag          | Current session only    | 1 (highest) |
-| `.claude/agents/`            | Current project         | 2           |
-| `~/.claude/agents/`          | All your projects       | 3           |
+| Location                      | Scope                   | Priority    |
+| :---------------------------- | :---------------------- | :---------- |
+| `--agents` CLI flag           | Current session only    | 1 (highest) |
+| `.claude/agents/`             | Current project         | 2           |
+| `~/.claude/agents/`           | All your projects       | 3           |
 | Plugin's `workers/` directory | Where plugin is enabled | 4 (lowest)  |
 
 When multiple agents share the same name, the higher-priority location wins.
 
----
+______________________________________________________________________
 
 ## CLI-Defined Agents
 
-Pass agents as JSON when launching Claude Code. These exist only for the current session — useful for quick testing or automation:
+Pass agents as JSON when launching Claude Code. These exist only for the current session — useful for quick testing or
+automation:
 
 ```bash
 claude --agents '{
@@ -245,11 +258,12 @@ claude --agents '{
 }'
 ```
 
-Accepts all frontmatter fields: `description`, `prompt`, `tools`, `disallowedTools`, `model`, `permissionMode`, `mcpServers`, `hooks`, `maxTurns`, `skills`, `memory`.
+Accepts all frontmatter fields: `description`, `prompt`, `tools`, `disallowedTools`, `model`, `permissionMode`,
+`mcpServers`, `hooks`, `maxTurns`, `skills`, `memory`.
 
 Use `prompt` for the system prompt (equivalent to the markdown body in file-based agents).
 
----
+______________________________________________________________________
 
 ## Agent Restrictions
 
@@ -261,6 +275,7 @@ Use `prompt` for the system prompt (equivalent to the markdown body in file-base
 ### Disabling specific agents
 
 In settings:
+
 ```json
 {
   "permissions": {
@@ -270,11 +285,12 @@ In settings:
 ```
 
 Or via CLI flag:
+
 ```bash
 claude --disallowedTools "Agent(Explore)"
 ```
 
----
+______________________________________________________________________
 
 ## Naming Conventions
 
@@ -283,11 +299,12 @@ claude --disallowedTools "Agent(Explore)"
 - Descriptive and memorable
 - Must be unique within its scope
 
----
+______________________________________________________________________
 
 ## Example Configurations
 
 ### Read-only code reviewer
+
 ```markdown
 ---
 name: code-reviewer
@@ -322,6 +339,7 @@ Include specific examples of how to fix issues.
 ```
 
 ### Debugger with edit access
+
 ```markdown
 ---
 name: debugger
@@ -349,6 +367,7 @@ Focus on fixing the underlying issue, not the symptoms.
 ```
 
 ### Learning agent with persistent memory
+
 ```markdown
 ---
 name: project-expert
@@ -369,6 +388,7 @@ Update your agent memory as you discover codepaths, patterns, library locations,
 ```
 
 ### Agent with scoped MCP server
+
 ```markdown
 ---
 name: browser-tester
@@ -390,6 +410,7 @@ When invoked:
 ```
 
 ### Read-only DB agent with validation hook
+
 ```markdown
 ---
 name: db-reader

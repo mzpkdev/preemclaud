@@ -2,7 +2,7 @@
 
 Clean, scannable view of what goes into each commit — the user can adjust before anything touches git.
 
----
+______________________________________________________________________
 
 ## Scenarios
 
@@ -46,23 +46,21 @@ Then the commit plan:
 
 Append `menu.md` verbatim here.
 
----
+______________________________________________________________________
 
 ## Format rules
 
-**Dashboard header**
-Open with a code block containing the stats line + separator:
+**Dashboard header** Open with a code block containing the stats line + separator:
+
 ```
   3 commits · 5 files · +54 −8
   ──────────────────────────────────────────────────────────────────
 ```
 
-**Commit entries**
-Number them sequentially. The number is the anchor — no heading markup needed:
+**Commit entries** Number them sequentially. The number is the anchor — no heading markup needed:
 `1  type(scope): message`
 
-**File table**
-Each file gets one line inside an indented code-style block:
+**File table** Each file gets one line inside an indented code-style block:
 
 ```
      A   src/auth/validate.ts                +45
@@ -78,25 +76,22 @@ Each file gets one line inside an indented code-style block:
 - Renamed files: `R   old-name → new-name`
 - Binary files: show `(binary)` instead of line counts
 
-**Safety warnings table**
-Use a three-column table: File, Issue, Suggestion.
-Keep the "Issue" column short — name the category, then show a snippet of why.
-End with the separator + `▸ [A]dd     ▸ [D]rop     ▸ [I]gnore` inside a code block.
+**Safety warnings table** Use a three-column table: File, Issue, Suggestion. Keep the "Issue" column short — name the
+category, then show a snippet of why. End with the separator + `▸ [A]dd     ▸ [D]rop     ▸ [I]gnore` inside a code
+block.
 
-**Action prompt**
-Append `menu.md` verbatim. The aliases it defines:
+**Action prompt** Append `menu.md` verbatim. The aliases it defines:
+
 - `E` — edit a commit message
 - `M` — move files between commits
 - `J` — join two commits
 - `S` — split a commit
 - `D` — drop files (supports globs like `*.json`)
 
-When the user types an alias, interpret it and apply the change. They can also
-type the full word or plain English — the aliases are a shortcut, not the only
-way. After any change, re-show the full updated plan.
+When the user types an alias, interpret it and apply the change. They can also type the full word or plain English — the
+aliases are a shortcut, not the only way. After any change, re-show the full updated plan.
 
-**50+ dirty files**
-When there are many files, summarize by directory instead of listing each one:
+**50+ dirty files** When there are many files, summarize by directory instead of listing each one:
 
 ```
 1  refactor: reorganize project structure

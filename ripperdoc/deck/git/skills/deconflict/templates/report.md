@@ -2,7 +2,7 @@
 
 Shows operation progress, conflict resolution UI, and final results during rebase, merge, or cherry-pick.
 
----
+______________________________________________________________________
 
 ## Scenarios
 
@@ -60,17 +60,19 @@ User aborted the operation.
 Aborted — back to where you started.
 ```
 
----
+______________________________________________________________________
 
 ## Format rules
 
 **Success report**
+
 - Omit "Auto-resolved" block if zero auto-resolved conflicts
 - Omit "conflicts auto-resolved" count if zero
 - Show "fast-forwarded to `branch`" instead of "merged/rebased" when applicable
 - If stash was restored, append: "Restored your stashed changes."
 
 **Conflict view**
+
 - Show both sides with line-numbered gutter (`N |`) and branch labels
 - One sentence explaining what each side was doing before the code blocks
 - Action menu always closes the conflict block
