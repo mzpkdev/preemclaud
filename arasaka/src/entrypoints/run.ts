@@ -30,26 +30,19 @@ import {
 } from "../../upstream/src/github/context.ts";
 import type { GitHubContext } from "../../upstream/src/github/context.ts";
 
-// ─── Upstream imports: Mode detection & agent mode ─────────────────
+// ─── Upstream imports: Mode detection & modes ──────────────────────
 import { detectMode } from "../../upstream/src/modes/detector.ts";
 import { prepareAgentMode } from "../../upstream/src/modes/agent/index.ts";
+import { prepareTagMode } from "../../upstream/src/modes/tag/index.ts";
 
-// ─── Upstream imports: Tag mode building blocks ────────────────────
-import { checkHumanActor } from "../../upstream/src/github/validation/actor.ts";
-import { createInitialComment } from "../../upstream/src/github/operations/comments/create-initial.ts";
-import { setupBranch, validateBranchName } from "../../upstream/src/github/operations/branch.ts";
-import {
-  configureGitAuth,
-  setupSshSigning,
-} from "../../upstream/src/github/operations/git-config.ts";
-import { prepareMcpConfig } from "../../upstream/src/mcp/install-mcp-server.ts";
+// ─── Upstream imports: Tag mode data fetching ──────────────────────
+import { validateBranchName } from "../../upstream/src/github/operations/branch.ts";
 import {
   fetchGitHubData,
   extractTriggerTimestamp,
   extractOriginalTitle,
   extractOriginalBody,
 } from "../../upstream/src/github/data/fetcher.ts";
-import { parseAllowedTools } from "../../upstream/src/modes/agent/parse-tools.ts";
 
 // ─── Upstream imports: Validation & trigger ────────────────────────
 import { checkContainsTrigger } from "../../upstream/src/github/validation/trigger.ts";
@@ -71,140 +64,6 @@ import type { ClaudeRunResult } from "../../upstream/base-action/src/run-claude-
 
 // ─── Our custom prompt builder ─────────────────────────────────────
 import { buildPrompt } from "../prompt/index.ts";
-
-// ═══════════════════════════════════════════════════════════════════
-// Custom Tag Mode — replaces upstream's prepareTagMode.
-// Identical flow except calls buildPrompt() instead of createPrompt().
-// ═══════════════════════════════════════════════════════════════════
-
-async function prepareTagModeCustom({
-  context,
-  octokit,
-  githubToken,
-}: {
-  context: GitHubContext;
-  octokit: Octokits;
-  githubToken: string;
-}) {
-  if (!isEntityContext(context)) {
-    throw new Error("Tag mode requires entity context");
-  }
-
-  await checkHumanActor(octokit.rest, context);
-
-  const commentData = await createInitialComment(octokit.rest, context);
-  const commentId = commentData.id;
-
-  const triggerTime = extractTriggerTimestamp(context);
-  const originalTitle = extractOriginalTitle(context);
-  const originalBody = extractOriginalBody(context);
-
-  const githubData = await fetchGitHubData({
-    octokits: octokit,
-    repository: `${context.repository.owner}/${context.repository.repo}`,
-    prNumber: context.entityNumber.toString(),
-    isPR: context.isPR,
-    triggerUsername: context.actor,
-    triggerTime,
-    originalTitle,
-    originalBody,
-    includeCommentsByActor: context.inputs.includeCommentsByActor,
-    excludeCommentsByActor: context.inputs.excludeCommentsByActor,
-  });
-
-  const branchInfo = await setupBranch(octokit, githubData, context);
-
-  // Git auth — identical to upstream
-  const useSshSigning = !!context.inputs.sshSigningKey;
-  const useApiCommitSigning = context.inputs.useCommitSigning && !useSshSigning;
-
-  if (useSshSigning) {
-    await setupSshSigning(context.inputs.sshSigningKey);
-    const user = {
-      login: context.inputs.botName,
-      id: parseInt(context.inputs.botId),
-    };
-    await configureGitAuth(githubToken, context, user);
-  } else if (!useApiCommitSigning) {
-    const user = {
-      login: context.inputs.botName,
-      id: parseInt(context.inputs.botId),
-    };
-    await configureGitAuth(githubToken, context, user);
-  }
-
-  // ── ARASAKA: Custom prompt builder instead of upstream's createPrompt ──
-  await buildPrompt({
-    commentId,
-    baseBranch: branchInfo.baseBranch,
-    claudeBranch: branchInfo.claudeBranch,
-    githubData,
-    context,
-  });
-
-  // Build tool list — same as upstream tag mode
-  const userClaudeArgs = process.env.CLAUDE_ARGS || "";
-  const userAllowedMCPTools = parseAllowedTools(userClaudeArgs).filter(
-    (tool) => tool.startsWith("mcp__github_"),
-  );
-
-  const gitPushWrapper = `${process.env.GITHUB_ACTION_PATH}/scripts/git-push.sh`;
-
-  const tagModeTools = [
-    "Glob",
-    "Grep",
-    "LS",
-    "Read",
-    "mcp__github_comment__update_claude_comment",
-    "mcp__github_ci__get_ci_status",
-    "mcp__github_ci__get_workflow_run_details",
-    "mcp__github_ci__download_job_log",
-    ...userAllowedMCPTools,
-  ];
-
-  if (!useApiCommitSigning) {
-    tagModeTools.push(
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      `Bash(${gitPushWrapper}:*)`,
-      "Bash(git rm:*)",
-      "Bash(gh pr:*)",
-    );
-  } else {
-    tagModeTools.push(
-      "mcp__github_file_ops__commit_files",
-      "mcp__github_file_ops__delete_files",
-    );
-  }
-
-  const ourMcpConfig = await prepareMcpConfig({
-    githubToken,
-    owner: context.repository.owner,
-    repo: context.repository.repo,
-    branch: branchInfo.claudeBranch || branchInfo.currentBranch,
-    baseBranch: branchInfo.baseBranch,
-    claudeCommentId: commentId.toString(),
-    allowedTools: Array.from(new Set(tagModeTools)),
-    mode: "tag",
-    context,
-  });
-
-  let claudeArgs = "";
-  const escapedOurConfig = ourMcpConfig.replace(/'/g, "'\\''");
-  claudeArgs = `--mcp-config '${escapedOurConfig}'`;
-  claudeArgs += ` --permission-mode acceptEdits --allowedTools "${tagModeTools.join(",")}"`;
-
-  if (userClaudeArgs) {
-    claudeArgs += ` ${userClaudeArgs}`;
-  }
-
-  return {
-    commentId,
-    branchInfo,
-    mcpConfig: ourMcpConfig,
-    claudeArgs: claudeArgs.trim(),
-  };
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // installClaudeCode — copied from upstream (self-contained)
@@ -368,12 +227,47 @@ async function run() {
       return;
     }
 
-    // ── KEY DIFFERENCE: Custom tag mode with our prompt builder ──
     console.log(`[arasaka] Preparing mode: ${modeName}`);
     const prepareResult =
       modeName === "tag"
-        ? await prepareTagModeCustom({ context, octokit, githubToken })
+        ? await prepareTagMode({ context, octokit, githubToken })
         : await prepareAgentMode({ context, octokit, githubToken });
+
+    // ── ARASAKA: Overwrite upstream prompt with our data-only prompt ──
+    if (modeName === "tag" && isEntityContext(context)) {
+      const triggerTime = extractTriggerTimestamp(context);
+      const originalTitle = extractOriginalTitle(context);
+      const originalBody = extractOriginalBody(context);
+
+      const githubData = await fetchGitHubData({
+        octokits: octokit,
+        repository: `${context.repository.owner}/${context.repository.repo}`,
+        prNumber: context.entityNumber.toString(),
+        isPR: context.isPR,
+        triggerUsername: context.actor,
+        triggerTime,
+        originalTitle,
+        originalBody,
+        includeCommentsByActor: context.inputs.includeCommentsByActor,
+        excludeCommentsByActor: context.inputs.excludeCommentsByActor,
+      });
+
+      await buildPrompt({
+        commentId: prepareResult.commentId!,
+        baseBranch: prepareResult.branchInfo.baseBranch,
+        claudeBranch: prepareResult.branchInfo.claudeBranch,
+        githubData,
+        context,
+      });
+
+      // Inject Bash(gh pr:*) — upstream's tool list doesn't include it
+      const useSshSigning = !!context.inputs.sshSigningKey;
+      const useApiCommitSigning =
+        context.inputs.useCommitSigning && !useSshSigning;
+      if (!useApiCommitSigning) {
+        prepareResult.claudeArgs += ' --allowedTools "Bash(gh pr:*)"';
+      }
+    }
 
     commentId = prepareResult.commentId;
     claudeBranch = prepareResult.branchInfo.claudeBranch;
