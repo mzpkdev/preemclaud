@@ -1,14 +1,14 @@
 # Commit Plan — Output Template
 
-Follow this format exactly when presenting a commit plan. The goal is a clean,
-scannable view where the user can see at a glance what goes into each commit
-and make changes before anything touches git.
+Clean, scannable view of what goes into each commit — the user can adjust before anything touches git.
 
 ---
 
-## Full example
+## Scenarios
 
-Below is what the user sees. Reproduce this structure — swap in the real data.
+### Commit plan
+
+Default output after analyzing the working tree.
 
 If the safety scan flagged files, show the warnings section first:
 

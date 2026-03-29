@@ -1,11 +1,14 @@
 # Status — Output Template
 
-Follow this format exactly when presenting a status summary. The goal is a quick,
-scannable view that answers "what was I working on?" and "what's the state of my changes?"
+Quick, scannable view that answers "what was I working on?" and "what's the state of my changes?"
 
 ---
 
-## Full example
+## Scenarios
+
+### Status report
+
+Default output when the user invokes git:status.
 
 You were adding JWT-based authentication.
 The login flow was rewritten to validate tokens through a new helper module, and rate limiting was wired into the middleware.

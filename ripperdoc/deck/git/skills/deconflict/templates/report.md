@@ -1,4 +1,14 @@
-## Success report
+# Deconflict — Output Template
+
+Shows operation progress, conflict resolution UI, and final results during rebase, merge, or cherry-pick.
+
+---
+
+## Scenarios
+
+### Success
+
+Operation completed with no remaining conflicts.
 
 ```
 Done — {operation}.
@@ -13,11 +23,9 @@ Done — {operation}.
   a1b2c3d..e4f5g6h
 ```
 
-Omit "Auto-resolved" block if zero. Omit "conflicts auto-resolved" count if zero.
-Show "fast-forwarded to `branch`" instead of "merged/rebased" when applicable.
-If stash was restored, append: "Restored your stashed changes."
+### Conflict
 
-## Conflict view
+Conflicts need user input to resolve.
 
 When rebasing multiple commits, open each conflict with: "Rebasing: commit 3/7 — `commit message`"
 
@@ -44,8 +52,25 @@ Auto-resolved N/M conflicts. Need your input on K:
 What would you like to do?
 ```
 
-## Abort
+### Abort
+
+User aborted the operation.
 
 ```
 Aborted — back to where you started.
 ```
+
+---
+
+## Format rules
+
+**Success report**
+- Omit "Auto-resolved" block if zero auto-resolved conflicts
+- Omit "conflicts auto-resolved" count if zero
+- Show "fast-forwarded to `branch`" instead of "merged/rebased" when applicable
+- If stash was restored, append: "Restored your stashed changes."
+
+**Conflict view**
+- Show both sides with line-numbered gutter (`N |`) and branch labels
+- One sentence explaining what each side was doing before the code blocks
+- Action menu always closes the conflict block

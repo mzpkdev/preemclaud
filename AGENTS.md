@@ -561,6 +561,45 @@ Output formats live in `templates/` co-located with `SKILL.md`. See **Action Dis
 
 Use the `python3 -c` form to load — it works on all platforms. Always follow a template load with an `[!IMPORTANT]` callout. Without it, Claude treats the format as a suggestion.
 
+## Report Structure
+
+Every `templates/report.md` follows a three-part layout:
+
+````markdown
+# <Skill Name> — Output Template
+
+<One-line goal — what the user should get at a glance.>
+
+---
+
+## Scenarios
+
+### <Scenario name>
+
+<One sentence: when this output appears.>
+
+<output skeleton — the exact shape with placeholders>
+
+### <Another scenario>  ← repeat for multi-state skills
+
+---
+
+## Format rules
+
+**<Rule name>**
+<Disambiguation, conditional logic, or edge case handling.>
+````
+
+| Section | Required | Purpose |
+|---|---|---|
+| Title + preamble | Yes | Boundary signal when injected into SKILL.md — marks where the template starts |
+| `## Scenarios` | Yes | One `### <Name>` per distinct output state. The skeleton is the primary signal — Claude pattern-matches against it |
+| `## Format rules` | No | Additive rules for things the skeleton can't express: conditional sections, edge cases (50+ files), formatting specifics |
+
+**Skeletal-first:** The skeleton under each scenario IS the output — Claude reproduces it with real data. Format rules exist only when the skeleton is ambiguous or has conditional logic. Templates with a fixed output shape and no conditionals omit `## Format rules` entirely.
+
+**Single vs multi-state:** Skills with one output shape use a single named scenario (e.g. `### Commit plan`). Skills with multiple output states use one scenario per state (e.g. `### Success`, `### Conflict`, `### Abort`).
+
 ## Code Snippets
 
 When referencing source code in output, use the Rust diagnostic style — line number gutter, pipe separator, and caret annotation:
