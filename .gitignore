@@ -32,5 +32,8 @@ __pycache__/
 node_modules/
 
 # IDE
-/.claude/
+/.claude/*
+!/.claude/skills/
+!/.claude/hooks/
+!/.claude/rules/
 /.idea/
