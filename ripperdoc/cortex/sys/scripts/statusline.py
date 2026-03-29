@@ -292,6 +292,11 @@ def model_name(data):
         if not name:
             return ""
         effort = os.environ.get("CLAUDE_CODE_EFFORT_LEVEL", "")
+        if not effort:
+            try:
+                effort = json.loads((CLAUDE_DIR / "settings.json").read_text()).get("effortLevel", "")
+            except Exception:
+                pass
         color = EFFORT_COLOR.get(effort, "")
         return f"{color}{name}{RESET}" if color else name
     except Exception:
