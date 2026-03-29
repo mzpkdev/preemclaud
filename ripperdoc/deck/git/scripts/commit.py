@@ -13,16 +13,12 @@ import sys
 
 from _git import get_diff, read_file, run
 
-# ---------------------------------------------------------------------------
-# Thresholds
-# ---------------------------------------------------------------------------
+# -- Thresholds --
 FILE_READ_LIMIT = 200  # max lines to read for untracked files
 LARGE_THRESHOLD = 1_000_000  # 1 MB
 SECRET_SCAN_LIMIT = 100_000  # only scan content of files under this size
 
-# ---------------------------------------------------------------------------
-# Safety patterns
-# ---------------------------------------------------------------------------
+# -- Safety patterns --
 SECRET_NAMES = {
     ".env",
     ".env.local",
@@ -58,10 +54,8 @@ LOCK_FILES = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Preconditions
-# ---------------------------------------------------------------------------
-def check_preconditions():
+# -- Preconditions --
+def check_preconditions() -> list[str]:
     """Return list of issue strings. Empty means all clear."""
     issues = []
     if not run(["git", "rev-parse", "--is-inside-work-tree"], warn=True):
@@ -84,10 +78,8 @@ def check_preconditions():
     return issues
 
 
-# ---------------------------------------------------------------------------
-# Safety scanning
-# ---------------------------------------------------------------------------
-def scan_safety(path):
+# -- Safety scanning --
+def scan_safety(path: str) -> list[dict[str, str]]:
     """Return list of {type, reason} flags for a file path."""
     flags = []
     name = os.path.basename(path)
@@ -136,7 +128,7 @@ def scan_safety(path):
     return flags
 
 
-def parse_numstat(raw):
+def parse_numstat(raw: str) -> dict[str, dict[str, int]]:
     """Parse git diff --numstat → {path: {add, del}}."""
     stats = {}
     for line in raw.splitlines():
@@ -153,10 +145,8 @@ def parse_numstat(raw):
     return stats
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-def main():
+# -- Main --
+def main() -> None:
     # 1. Preconditions
     issues = check_preconditions()
     if issues:
@@ -179,30 +169,30 @@ def main():
         if len(line) < 4:
             continue
 
-        idx, wt, path = line[0], line[1], line[3:]
+        index_status, worktree_status, path = line[0], line[1], line[3:]
         renamed_from = None
         if " -> " in path:
             renamed_from, path = path.split(" -> ", 1)
 
         # Categorize — check staged before deleted so staged
         # deletions (D ) are grouped with other pre-staged files.
-        if idx == "?" and wt == "?":
-            cat = "untracked"
-        elif idx in "AMDRC" and wt == " ":
-            cat = "staged"
-        elif idx in "AMDRC" and wt != " ":
-            cat = "staged+modified"
-        elif wt == "D" or idx == "D":
-            cat = "deleted"
+        if index_status == "?" and worktree_status == "?":
+            category = "untracked"
+        elif index_status in "AMDRC" and worktree_status == " ":
+            category = "staged"
+        elif index_status in "AMDRC" and worktree_status != " ":
+            category = "staged+modified"
+        elif worktree_status == "D" or index_status == "D":
+            category = "deleted"
         else:
-            cat = "modified"
+            category = "modified"
 
         # Collect diff
-        if cat == "untracked":
+        if category == "untracked":
             diff = read_file(path, FILE_READ_LIMIT)
-        elif cat == "deleted":
+        elif category == "deleted":
             diff = "(deleted)"
-        elif cat in ("staged", "staged+modified"):
+        elif category in ("staged", "staged+modified"):
             diff = get_diff(path, staged=True)
         else:
             diff = get_diff(path, staged=False)
@@ -213,12 +203,12 @@ def main():
         entry = {
             "path": path,
             "status": line[:2].rstrip(),
-            "category": cat,
+            "category": category,
             "stat": stat,
             "diff": diff,
             "flags": scan_safety(path),
         }
-        if cat == "staged+modified":
+        if category == "staged+modified":
             entry["unstaged_diff"] = get_diff(path, staged=False)
         if renamed_from:
             entry["renamed_from"] = renamed_from

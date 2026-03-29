@@ -13,6 +13,17 @@ When editing or creating Python files, run the following before considering the 
 
 Fix any issues ruff or mypy report. Configuration is in `pyproject.toml` at the repo root.
 
+### Type Hints
+
+All functions and methods must have type annotations on parameters and return types. `mypy` is the
+enforcement mechanism — fix all errors it reports. Do not use `Any` unless there is no alternative,
+and document why if you do.
+
+```python
+def run(cmd: list[str], timeout: int = 5) -> str:  # correct
+def run(cmd, timeout=5):                            # WRONG — unannotated
+```
+
 ## Best Practices
 
 These conventions are not enforceable by ruff or mypy but are required for correctness and

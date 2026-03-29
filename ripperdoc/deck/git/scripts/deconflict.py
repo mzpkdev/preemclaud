@@ -18,15 +18,12 @@ from _git import run
 MAX_CONTENT_LINES = 500
 
 
-def repo_root():
-    """Return the absolute path to the repo root."""
+def repo_root() -> str:
     return run(["git", "rev-parse", "--show-toplevel"])
 
 
-# ---------------------------------------------------------------------------
-# Shared helpers
-# ---------------------------------------------------------------------------
-def check_preconditions():
+# -- Shared helpers --
+def check_preconditions() -> tuple[dict[str, object], str] | None:
     """Check basic git preconditions. Returns (result_dict, git_dir) or dumps fatal JSON and returns None."""
     if not run(["git", "rev-parse", "--is-inside-work-tree"]):
         json.dump({"fatal": "not_git_repo"}, sys.stdout, indent=2)
@@ -36,12 +33,12 @@ def check_preconditions():
         json.dump({"fatal": "detached_head"}, sys.stdout, indent=2)
         return None
 
-    result = {"current_branch": run(["git", "branch", "--show-current"])}
+    result: dict[str, object] = {"current_branch": run(["git", "branch", "--show-current"])}
     git_dir = run(["git", "rev-parse", "--git-dir"])
     return result, git_dir
 
 
-def detect_in_progress(git_dir):
+def detect_in_progress(git_dir: str) -> tuple[str | None, str | None]:
     """Detect in-progress operation and its target branch."""
     if not git_dir:
         return None, None
@@ -73,9 +70,9 @@ def detect_in_progress(git_dir):
             in_progress_target = name if name else sha[:10]
     elif in_progress == "rebase":
         for onto_path in ["rebase-merge/onto", "rebase-apply/onto"]:
-            full = os.path.join(git_dir, onto_path)
-            if os.path.isfile(full):
-                sha = Path(full).read_text().strip()
+            full_path = os.path.join(git_dir, onto_path)
+            if os.path.isfile(full_path):
+                sha = Path(full_path).read_text().strip()
                 name = run(["git", "name-rev", "--name-only", "--no-undefined", sha])
                 in_progress_target = name if name else sha[:10]
                 break
@@ -88,8 +85,7 @@ def detect_in_progress(git_dir):
     return in_progress, in_progress_target
 
 
-def gather_dirty_state():
-    """Check for dirty working tree."""
+def gather_dirty_state() -> dict[str, list[str] | bool]:
     porcelain = run(["git", "status", "--porcelain"])
     return {
         "dirty_files": porcelain.splitlines() if porcelain else [],
@@ -97,15 +93,13 @@ def gather_dirty_state():
     }
 
 
-# ---------------------------------------------------------------------------
-# Status mode: lightweight state check (no target required)
-# ---------------------------------------------------------------------------
-def gather_status():
+# -- Status mode: lightweight state check (no target required) --
+def gather_status() -> None:
     """Check preconditions, dirty tree, and in-progress state without a target."""
-    pre = check_preconditions()
-    if pre is None:
+    precond = check_preconditions()
+    if precond is None:
         return
-    result, git_dir = pre
+    result, git_dir = precond
 
     in_progress, in_progress_target = detect_in_progress(git_dir)
     result["in_progress"] = in_progress
@@ -115,15 +109,13 @@ def gather_status():
     json.dump(result, sys.stdout, indent=2)
 
 
-# ---------------------------------------------------------------------------
-# Context mode: preconditions + cross-branch analysis
-# ---------------------------------------------------------------------------
-def gather_context(target):
+# -- Context mode: preconditions + cross-branch analysis --
+def gather_context(target: str) -> None:
     """Gather pre-operation state and cross-branch context."""
-    pre = check_preconditions()
-    if pre is None:
+    precond = check_preconditions()
+    if precond is None:
         return
-    result, git_dir = pre
+    result, git_dir = precond
 
     in_progress, in_progress_target = detect_in_progress(git_dir)
     result["in_progress"] = in_progress
@@ -146,14 +138,16 @@ def gather_context(target):
     result["target"] = target
 
     # Cross-branch context
-    result["incoming_commits"] = run(["git", "log", "--oneline", f"HEAD..{target}"])
-    result["our_commits"] = run(["git", "log", "--oneline", f"{target}..HEAD"])
+    incoming_commits = run(["git", "log", "--oneline", f"HEAD..{target}"])
+    our_commits = run(["git", "log", "--oneline", f"{target}..HEAD"])
+    result["incoming_commits"] = incoming_commits
+    result["our_commits"] = our_commits
     result["incoming_stat"] = run(["git", "diff", "--stat", f"HEAD...{target}"])
     result["our_stat"] = run(["git", "diff", "--stat", f"{target}...HEAD"])
 
     # Count commits
-    incoming_lines = result["incoming_commits"].splitlines() if result["incoming_commits"] else []
-    our_lines = result["our_commits"].splitlines() if result["our_commits"] else []
+    incoming_lines = incoming_commits.splitlines() if incoming_commits else []
+    our_lines = our_commits.splitlines() if our_commits else []
     result["incoming_count"] = len(incoming_lines)
     result["our_count"] = len(our_lines)
 
@@ -163,11 +157,10 @@ def gather_context(target):
     json.dump(result, sys.stdout, indent=2)
 
 
-# ---------------------------------------------------------------------------
-# Conflicts mode: parse conflicted files
-# ---------------------------------------------------------------------------
-def gather_conflicts():
+# -- Conflicts mode: parse conflicted files --
+def gather_conflicts() -> None:
     """List conflicted files and parse their conflict hunks."""
+    # 1. Get list of conflicted files
     root = repo_root()
     conflicted = run(["git", "diff", "--name-only", "--diff-filter=U"])
 
@@ -175,6 +168,7 @@ def gather_conflicts():
         json.dump({"conflicted_files": [], "total_conflicts": 0}, sys.stdout, indent=2)
         return
 
+    # 2. Parse each file
     files = []
     total_hunks = 0
 
@@ -277,6 +271,7 @@ def gather_conflicts():
             }
         )
 
+    # 3. Output
     json.dump(
         {
             "conflicted_files": files,
@@ -288,10 +283,8 @@ def gather_conflicts():
     )
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-def main():
+# -- Main --
+def main() -> None:
     parser = argparse.ArgumentParser(description="Gather git state for deconflict operations.")
     parser.add_argument("--status", action="store_true", help="Lightweight state check (no target required)")
     parser.add_argument("--context", metavar="TARGET", help="Pre-operation: gather context against target branch")

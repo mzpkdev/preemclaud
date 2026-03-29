@@ -6,7 +6,7 @@ import sys
 DIFF_LINE_LIMIT = 500
 
 
-def run(cmd, *, warn=False):
+def run(cmd: list[str], *, warn: bool = False) -> str:
     """Run a command, return stdout or '' on failure.
 
     Uses rstrip to preserve leading whitespace — critical for
@@ -20,26 +20,23 @@ def run(cmd, *, warn=False):
     return r.stdout.rstrip()
 
 
-def truncate(text, limit):
-    """Truncate text to a given number of lines, appending a summary."""
+def truncate(text: str, limit: int) -> str:
     lines = text.splitlines(True)
     if len(lines) <= limit:
         return text
     return "".join(lines[:limit]) + f"\n... ({len(lines)} lines total, truncated to {limit})"
 
 
-def get_diff(path, staged=False):
-    """Return truncated git diff for a file."""
+def get_diff(path: str, staged: bool = False) -> str:
     cmd = ["git", "diff"]
     if staged:
         cmd.append("--cached")
     cmd += ["--", path]
-    d = run(cmd)
-    return truncate(d, DIFF_LINE_LIMIT) if d else ""
+    diff = run(cmd)
+    return truncate(diff, DIFF_LINE_LIMIT) if diff else ""
 
 
-def read_file(path, limit):
-    """Read a file's text content, truncated to limit lines."""
+def read_file(path: str, limit: int) -> str:
     try:
         with open(path, "r", errors="ignore") as f:
             return truncate(f.read(), limit)

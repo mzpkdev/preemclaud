@@ -14,10 +14,8 @@ from _git import get_diff, read_file, run
 FILE_READ_LIMIT = 80
 
 
-# ---------------------------------------------------------------------------
-# Preconditions
-# ---------------------------------------------------------------------------
-def check_preconditions():
+
+def check_preconditions() -> dict[str, str | list[str]]:
     """Return dict with warnings (not fatal for status — it's read-only)."""
     warnings = []
 
@@ -42,10 +40,8 @@ def check_preconditions():
     return {"warnings": warnings} if warnings else {}
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-def main():
+
+def main() -> None:
     # 1. Preconditions
     precond = check_preconditions()
     if "fatal" in precond:
@@ -100,40 +96,40 @@ def main():
         if len(line) < 4:
             continue
 
-        idx, wt, path = line[0], line[1], line[3:]
+        index_status, worktree_status, path = line[0], line[1], line[3:]
         renamed_from = None
         if " -> " in path:
             renamed_from, path = path.split(" -> ", 1)
 
         # Categorize
-        if idx == "?" and wt == "?":
-            cat = "untracked"
+        if index_status == "?" and worktree_status == "?":
+            category = "untracked"
             untracked_count += 1
-        elif wt == "D" or idx == "D":
-            cat = "deleted"
-            if idx == "D" and wt == " ":
+        elif worktree_status == "D" or index_status == "D":
+            category = "deleted"
+            if index_status == "D" and worktree_status == " ":
                 staged_count += 1
             else:
                 unstaged_count += 1
-        elif idx in "AMDR" and wt == " ":
-            cat = "staged"
+        elif index_status in "AMDR" and worktree_status == " ":
+            category = "staged"
             staged_count += 1
-        elif idx in "AMDR" and wt != " ":
-            cat = "staged+modified"
+        elif index_status in "AMDR" and worktree_status != " ":
+            category = "staged+modified"
             staged_count += 1
             unstaged_count += 1
         else:
-            cat = "modified"
+            category = "modified"
             unstaged_count += 1
 
         # Collect diff
-        if cat == "untracked":
+        if category == "untracked":
             diff = read_file(path, FILE_READ_LIMIT)
-        elif cat == "deleted":
+        elif category == "deleted":
             diff = "(deleted)"
-        elif cat == "staged":
+        elif category == "staged":
             diff = get_diff(path, staged=True)
-        elif cat == "staged+modified":
+        elif category == "staged+modified":
             diff = get_diff(path, staged=True)
             unstaged_diff = get_diff(path, staged=False)
             if unstaged_diff:
@@ -144,7 +140,7 @@ def main():
         entry = {
             "path": path,
             "status": line[:2].rstrip(),
-            "category": cat,
+            "category": category,
             "diff": diff,
         }
         if renamed_from:
