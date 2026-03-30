@@ -74,6 +74,7 @@ If tracking a remote and ahead/behind:
 
 - `A` = new, `M` = modified, `D` = deleted, `R` = renamed, `?` = untracked
 - The description says *what* changed, not just that it changed
+- **Descriptions must be ≤ 40 characters** — trim to fit, no wrapping
 - Binary files: `(binary)` instead of a description; large files: mention size
 
 **Staging indicators on groups**
