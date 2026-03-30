@@ -177,8 +177,8 @@ def _api_get(url, token):
 def _fetch_usage():
     """Return (usage_dict, plan) or None. Handles caching and token refresh."""
     usage, plan, is_fresh = _load_cache()
-    if is_fresh and usage is not None:
-        return usage, plan
+    if is_fresh:
+        return (usage, plan) if usage is not None else None
 
     creds = _read_credentials()
     if creds is None:
@@ -197,6 +197,9 @@ def _fetch_usage():
     if status == 200 and data:
         _save_cache(data, detected_plan)
         return data, detected_plan
+
+    # Cache the failure so we back off for CACHE_TTL before retrying
+    _save_cache(usage, effective_plan)
 
     # Fallback to stale cache on any failure
     if usage is not None:
