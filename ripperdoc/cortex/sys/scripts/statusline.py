@@ -45,8 +45,9 @@ FETCH_TTL     = 1800  # seconds between git fetches
 USAGE_URL     = "https://api.anthropic.com/api/oauth/usage"
 REFRESH_URL   = "https://platform.claude.com/v1/oauth/token"
 ALLOWED_HOSTS = frozenset({"api.anthropic.com", "platform.claude.com"})
-CACHE_TTL     = 60  # seconds
-HTTP_TIMEOUT  = 4   # seconds
+CACHE_TTL     = 60    # seconds — how long good data stays fresh
+MAX_BACKOFF   = 600   # seconds — cap on Retry-After backoff (10 min)
+HTTP_TIMEOUT  = 4     # seconds
 
 PLAN_NAMES = {
     "default_claude_ai":      "Pro",
@@ -128,19 +129,35 @@ def _refresh_token(refresh_token):
 # ---------------------------------------------------------------------------
 
 def _load_cache():
-    """Return (usage_dict, plan, is_fresh). All values may be None/False on miss."""
+    """Return (usage_dict, plan, is_fresh, backoff_active).
+
+    is_fresh   — True when valid usage data is still within CACHE_TTL.
+    backoff_active — True when we're inside a retry-after window (don't call API).
+    """
     try:
         data = json.loads(CACHE_FILE.read_text())
-        is_fresh = time.time() - data.get("timestamp", 0) < CACHE_TTL
-        return data.get("usage"), data.get("plan", ""), is_fresh
+        now = time.time()
+        age = now - data.get("timestamp", 0)
+        usage = data.get("usage")
+        plan = data.get("plan", "")
+        is_fresh = usage is not None and age < CACHE_TTL
+        retry_at = data.get("retry_at", 0)
+        backoff_active = now < retry_at
+        return usage, plan, is_fresh, backoff_active
     except Exception:
-        return None, None, False
+        return None, None, False, False
 
 
-def _save_cache(usage, plan):
+def _save_cache(usage, plan, retry_after=0):
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        payload = json.dumps({"timestamp": time.time(), "usage": usage, "plan": plan})
+        retry_at = time.time() + min(retry_after, MAX_BACKOFF) if retry_after else 0
+        payload = json.dumps({
+            "timestamp": time.time(),
+            "usage": usage,
+            "plan": plan,
+            "retry_at": retry_at,
+        })
         CACHE_FILE.write_text(payload)
         if sys.platform != "win32":
             CACHE_FILE.chmod(0o600)
@@ -153,10 +170,10 @@ def _save_cache(usage, plan):
 # ---------------------------------------------------------------------------
 
 def _api_get(url, token):
-    """Make a domain-locked GET request. Returns (status_code, parsed_json | None)."""
+    """Make a domain-locked GET request. Returns (status_code, parsed_json | None, retry_after | None)."""
     host = urlparse(url).hostname
     if host not in ALLOWED_HOSTS:
-        return None, None
+        return None, None, None
     req = urllib.request.Request(
         url,
         headers={
@@ -167,17 +184,26 @@ def _api_get(url, token):
     )
     try:
         with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
-            return resp.status, json.loads(resp.read())
+            return resp.status, json.loads(resp.read()), None
     except urllib.error.HTTPError as e:
-        return e.code, None
+        retry_after = None
+        try:
+            retry_after = int(e.headers.get("Retry-After", ""))
+        except (TypeError, ValueError):
+            pass
+        return e.code, None, retry_after
     except Exception:
-        return None, None
+        return None, None, None
 
 
 def _fetch_usage():
     """Return (usage_dict, plan) or None. Handles caching and token refresh."""
-    usage, plan, is_fresh = _load_cache()
+    usage, plan, is_fresh, backoff_active = _load_cache()
     if is_fresh:
+        return usage, plan
+
+    # During backoff, return stale data if we have it, otherwise None
+    if backoff_active:
         return (usage, plan) if usage is not None else None
 
     creds = _read_credentials()
@@ -187,19 +213,20 @@ def _fetch_usage():
     token, refresh, detected_plan = creds
     effective_plan = plan or detected_plan
 
-    status, data = _api_get(USAGE_URL, token)
+    status, data, retry_after = _api_get(USAGE_URL, token)
 
     if status == 401 and refresh:
         new_token = _refresh_token(refresh)
         if new_token:
-            status, data = _api_get(USAGE_URL, new_token)
+            status, data, retry_after = _api_get(USAGE_URL, new_token)
 
     if status == 200 and data:
         _save_cache(data, detected_plan)
         return data, detected_plan
 
-    # Cache the failure so we back off for CACHE_TTL before retrying
-    _save_cache(usage, effective_plan)
+    # On 429, respect Retry-After (capped at MAX_BACKOFF); otherwise back off for CACHE_TTL
+    backoff = retry_after if status == 429 and retry_after else CACHE_TTL
+    _save_cache(usage, effective_plan, retry_after=backoff)
 
     # Fallback to stale cache on any failure
     if usage is not None:
@@ -401,7 +428,7 @@ def _is_linked_worktree():
         if r.returncode != 0:
             return False
         lines = r.stdout.strip().splitlines()
-        return len(lines) == 2 and lines[0] != lines[1]
+        return len(lines) == 2 and os.path.realpath(lines[0]) != os.path.realpath(lines[1])
     except Exception:
         return False
 
