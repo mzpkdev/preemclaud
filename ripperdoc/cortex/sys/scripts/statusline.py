@@ -9,49 +9,51 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlparse
 
 if sys.platform == "win32":
     os.system("")  # enable VT100 escape processing on Windows 10+
 
-CYAN    = "\033[96m"
-YELLOW  = "\033[93m"
+CYAN = "\033[96m"
+YELLOW = "\033[93m"
 MAGENTA = "\033[95m"
-DIM     = "\033[2m"
-RESET   = "\033[0m"
+DIM = "\033[2m"
+RESET = "\033[0m"
 
 SEP = f"{DIM} · {RESET}"
 
 MODEL_SHORT = {
-    "claude-opus-4-6":    "Opus 4.6",
-    "claude-opus-4":      "Opus 4",
-    "claude-sonnet-4-6":  "Sonnet 4.6",
-    "claude-sonnet-4-5":  "Sonnet 4.5",
-    "claude-sonnet-4":    "Sonnet 4",
-    "claude-haiku-4-5":   "Haiku 4.5",
-    "claude-haiku-4":     "Haiku 4",
-    "claude-3-5-sonnet":  "Sonnet 3.5",
-    "claude-3-5-haiku":   "Haiku 3.5",
-    "claude-3-opus":      "Opus 3",
+    "claude-opus-4-6": "Opus 4.6",
+    "claude-opus-4": "Opus 4",
+    "claude-sonnet-4-6": "Sonnet 4.6",
+    "claude-sonnet-4-5": "Sonnet 4.5",
+    "claude-sonnet-4": "Sonnet 4",
+    "claude-haiku-4-5": "Haiku 4.5",
+    "claude-haiku-4": "Haiku 4",
+    "claude-3-5-sonnet": "Sonnet 3.5",
+    "claude-3-5-haiku": "Haiku 3.5",
+    "claude-3-opus": "Opus 3",
 }
 
-CLAUDE_DIR    = Path.home() / ".claude"
-CREDS_FILE    = CLAUDE_DIR / ".credentials.json"
-CACHE_FILE    = CLAUDE_DIR / ".cache" / "statusline.json"
+CLAUDE_DIR = Path.home() / ".claude"
+CREDS_FILE = CLAUDE_DIR / ".credentials.json"
+CACHE_FILE = CLAUDE_DIR / ".cache" / "statusline.json"
 SYNC_SENTINEL = CLAUDE_DIR / ".cache" / ".sync"
 FETCH_SENTINEL = CLAUDE_DIR / ".cache" / ".fetch"
-FETCH_TTL     = 1800  # seconds between git fetches
-USAGE_URL     = "https://api.anthropic.com/api/oauth/usage"
-REFRESH_URL   = "https://platform.claude.com/v1/oauth/token"
+FETCH_TTL = 1800  # seconds between git fetches
+USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
+REFRESH_URL = "https://platform.claude.com/v1/oauth/token"
 ALLOWED_HOSTS = frozenset({"api.anthropic.com", "platform.claude.com"})
-CACHE_TTL     = 60    # seconds — how long good data stays fresh
-MAX_BACKOFF   = 600   # seconds — cap on Retry-After backoff (10 min)
-HTTP_TIMEOUT  = 4     # seconds
+CACHE_TTL = 60  # seconds — how long good data stays fresh
+PR_CACHE_TTL = 300  # seconds — how long PR info stays fresh (5 min)
+MAX_BACKOFF = 600  # seconds — cap on Retry-After backoff (10 min)
+HTTP_TIMEOUT = 4  # seconds
 
 PLAN_NAMES = {
-    "default_claude_ai":      "Pro",
-    "default_claude_max_5x":  "Max 5x",
+    "default_claude_ai": "Pro",
+    "default_claude_max_5x": "Max 5x",
     "default_claude_max_20x": "Max 20x",
 }
 
@@ -59,6 +61,7 @@ PLAN_NAMES = {
 # ---------------------------------------------------------------------------
 # Credential layer
 # ---------------------------------------------------------------------------
+
 
 def _read_credentials():
     """Return (access_token, refresh_token, plan) or None."""
@@ -79,9 +82,12 @@ def _read_credentials():
     if sys.platform == "darwin":
         try:
             import subprocess
+
             result = subprocess.run(
                 ["/usr/bin/security", "find-generic-password", "-s", "Claude Code-credentials", "-w"],
-                capture_output=True, text=True, timeout=2,
+                capture_output=True,
+                text=True,
+                timeout=2,
             )
             if result.returncode == 0:
                 data = json.loads(result.stdout.strip())
@@ -128,11 +134,14 @@ def _refresh_token(refresh_token):
 # Cache layer
 # ---------------------------------------------------------------------------
 
-def _load_cache():
-    """Return (usage_dict, plan, is_fresh, backoff_active).
 
-    is_fresh   — True when valid usage data is still within CACHE_TTL.
+def _load_cache():
+    """Return (usage_dict, plan, is_fresh, backoff_active, cached_pr, pr_fresh).
+
+    is_fresh      — True when valid usage data is still within CACHE_TTL.
     backoff_active — True when we're inside a retry-after window (don't call API).
+    cached_pr     — Previously cached pr_info() string, or None.
+    pr_fresh      — True when cached_pr is still within PR_CACHE_TTL.
     """
     try:
         data = json.loads(CACHE_FILE.read_text())
@@ -143,22 +152,43 @@ def _load_cache():
         is_fresh = usage is not None and age < CACHE_TTL
         retry_at = data.get("retry_at", 0)
         backoff_active = now < retry_at
-        return usage, plan, is_fresh, backoff_active
+        cached_pr = data.get("pr_cache")
+        pr_age = now - data.get("pr_timestamp", 0)
+        pr_fresh = cached_pr is not None and pr_age < PR_CACHE_TTL
+        return usage, plan, is_fresh, backoff_active, cached_pr, pr_fresh
     except Exception:
-        return None, None, False, False
+        return None, None, False, False, None, False
 
 
-def _save_cache(usage, plan, retry_after=0):
+_UNSET: object = object()  # sentinel — means "don't update this field"
+
+
+def _save_cache(
+    usage: object = _UNSET,
+    plan: object = _UNSET,
+    retry_after: int = 0,
+    pr: str | None = None,
+) -> None:
     try:
         CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        retry_at = time.time() + min(retry_after, MAX_BACKOFF) if retry_after else 0
-        payload = json.dumps({
-            "timestamp": time.time(),
-            "usage": usage,
-            "plan": plan,
+        # Read existing data so we don't clobber fields we're not updating
+        try:
+            existing: dict[str, object] = json.loads(CACHE_FILE.read_text())
+        except Exception:
+            existing = {}
+        now = time.time()
+        retry_at = now + min(retry_after, MAX_BACKOFF) if retry_after else existing.get("retry_at", 0)
+        payload: dict[str, object] = {
+            **existing,
+            "timestamp": now,
+            "usage": existing.get("usage") if usage is _UNSET else usage,
+            "plan": existing.get("plan", "") if plan is _UNSET else plan,
             "retry_at": retry_at,
-        })
-        CACHE_FILE.write_text(payload)
+        }
+        if pr is not None:
+            payload["pr_cache"] = pr
+            payload["pr_timestamp"] = now
+        CACHE_FILE.write_text(json.dumps(payload))
         if sys.platform != "win32":
             CACHE_FILE.chmod(0o600)
     except Exception:
@@ -168,6 +198,7 @@ def _save_cache(usage, plan, retry_after=0):
 # ---------------------------------------------------------------------------
 # API layer
 # ---------------------------------------------------------------------------
+
 
 def _api_get(url, token):
     """Make a domain-locked GET request. Returns (status_code, parsed_json | None, retry_after | None)."""
@@ -198,7 +229,7 @@ def _api_get(url, token):
 
 def _fetch_usage():
     """Return (usage_dict, plan) or None. Handles caching and token refresh."""
-    usage, plan, is_fresh, backoff_active = _load_cache()
+    usage, plan, is_fresh, backoff_active, *_ = _load_cache()
     if is_fresh:
         return usage, plan
 
@@ -238,6 +269,7 @@ def _fetch_usage():
 # ---------------------------------------------------------------------------
 # Display helpers
 # ---------------------------------------------------------------------------
+
 
 def _colored_bar(pct, low_thresh=50, mid_thresh=70, high_thresh=85):
     """Return a colored ━╌ bar string for the given percentage."""
@@ -302,6 +334,7 @@ def _usage_segments():
 # Existing session-data helpers (from stdin)
 # ---------------------------------------------------------------------------
 
+
 def fmt_tokens(n):
     if n >= 1_000_000:
         return f"{n / 1_000_000:.1f}M"
@@ -309,6 +342,7 @@ def fmt_tokens(n):
 
 
 EFFORT_COLOR = {"low": DIM, "high": YELLOW}
+
 
 def model_name(data):
     try:
@@ -353,36 +387,52 @@ def context_bar(data):
         return ""
 
 
-def pr_info():
+def pr_info() -> str:
     """Return PR label if current branch has an open PR, else empty string."""
+    # Fast path: return cached value if still fresh
+    try:
+        _, _, _, _, cached_pr, pr_fresh = _load_cache()
+        if pr_fresh and cached_pr is not None:
+            return cached_pr
+    except Exception:
+        pass
+
+    label = ""
     try:
         import subprocess
+
         result = subprocess.run(
             ["gh", "pr", "view", "--json", "number,state,isDraft"],
-            capture_output=True, text=True, timeout=3,
+            capture_output=True,
+            text=True,
+            timeout=3,
         )
-        if result.returncode != 0:
-            return ""
-        pr = json.loads(result.stdout)
-        state = pr.get("state")
-        if state == "MERGED":
-            return f"{MAGENTA}#{pr['number']}{RESET}"
-        if state != "OPEN":
-            return ""
-        if pr.get("isDraft"):
-            return f"{DIM}#{pr['number']}{RESET}"
-        return f"{YELLOW}#{pr['number']}{RESET}"
+        if result.returncode == 0:
+            pr = json.loads(result.stdout)
+            state = pr.get("state")
+            if state == "MERGED":
+                label = f"{MAGENTA}#{pr['number']}{RESET}"
+            elif state == "OPEN":
+                label = f"{DIM}#{pr['number']}{RESET}" if pr.get("isDraft") else f"{YELLOW}#{pr['number']}{RESET}"
     except Exception:
-        return ""
+        pass
+
+    # Persist label (empty string = "no PR") so we skip gh on next call
+    _save_cache(pr=label)
+
+    return label
 
 
 def _git_status():
     """Return (staged, modified) counts from git status --porcelain."""
     try:
         import subprocess
+
         result = subprocess.run(
             ["git", "status", "--porcelain"],
-            capture_output=True, text=True, timeout=2,
+            capture_output=True,
+            text=True,
+            timeout=2,
         )
         if result.returncode != 0 or not result.stdout.strip():
             return 0, 0
@@ -390,9 +440,9 @@ def _git_status():
         for line in result.stdout.splitlines():
             if len(line) < 2:
                 continue
-            if line[0] not in (' ', '?'):
+            if line[0] not in (" ", "?"):
                 staged += 1
-            if line[1] != ' ':
+            if line[1] != " ":
                 modified += 1
         return staged, modified
     except Exception:
@@ -403,9 +453,12 @@ def _ahead_behind():
     """Return (ahead, behind) counts vs upstream, or (0, 0) on error/no upstream."""
     try:
         import subprocess
+
         result = subprocess.run(
             ["git", "rev-list", "--count", "--left-right", "HEAD...@{u}"],
-            capture_output=True, text=True, timeout=2,
+            capture_output=True,
+            text=True,
+            timeout=2,
         )
         if result.returncode != 0:
             return 0, 0
@@ -421,9 +474,12 @@ def _is_linked_worktree():
     """Return True if CWD is a linked git worktree (not the main working tree)."""
     try:
         import subprocess
+
         r = subprocess.run(
             ["git", "rev-parse", "--git-dir", "--git-common-dir"],
-            capture_output=True, text=True, timeout=2,
+            capture_output=True,
+            text=True,
+            timeout=2,
         )
         if r.returncode != 0:
             return False
@@ -443,9 +499,12 @@ def branch_name(data):
     if not name:
         try:
             import subprocess
+
             result = subprocess.run(
                 ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                capture_output=True, text=True, timeout=2,
+                capture_output=True,
+                text=True,
+                timeout=2,
             )
             if result.returncode == 0:
                 n = result.stdout.strip()
@@ -456,10 +515,15 @@ def branch_name(data):
     if not name:
         return ""
 
-    staged, modified = _git_status()
-    ahead, behind = _ahead_behind()
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        f_status = ex.submit(_git_status)
+        f_ab = ex.submit(_ahead_behind)
+        f_linked = ex.submit(_is_linked_worktree)
+        staged, modified = f_status.result()
+        ahead, behind = f_ab.result()
+        is_linked = f_linked.result()
 
-    parts = [f"{CYAN}⎇ {name}{RESET}" if _is_linked_worktree() else name]
+    parts = [f"{CYAN}⎇ {name}{RESET}" if is_linked else name]
     if staged or modified:
         dirty = (f"+{staged}" if staged else "") + (f"~{modified}" if modified else "")
         parts.append(f"{DIM}{dirty}{RESET}")
@@ -473,10 +537,12 @@ def branch_name(data):
 # Update check
 # ---------------------------------------------------------------------------
 
+
 def _update_available():
     """Return True if origin/main is ahead of the last sync sentinel."""
     try:
         import subprocess
+
         if not SYNC_SENTINEL.exists():
             return False
         synced = SYNC_SENTINEL.read_text().strip()
@@ -494,7 +560,8 @@ def _update_available():
             try:
                 subprocess.run(
                     ["git", "-C", str(CLAUDE_DIR), "fetch", "--quiet"],
-                    capture_output=True, timeout=5,
+                    capture_output=True,
+                    timeout=5,
                 )
                 FETCH_SENTINEL.write_text(str(time.time()))
             except Exception:
@@ -502,7 +569,9 @@ def _update_available():
 
         r = subprocess.run(
             ["git", "-C", str(CLAUDE_DIR), "rev-parse", "origin/main"],
-            capture_output=True, text=True, timeout=2,
+            capture_output=True,
+            text=True,
+            timeout=2,
         )
         if r.returncode != 0:
             return False
@@ -520,21 +589,25 @@ def update_badge():
 # Entry point
 # ---------------------------------------------------------------------------
 
+
 def main():
     try:
         raw = json.load(sys.stdin)
         data = raw.get("data", raw)
-        usage = _usage_segments()
-        line1 = [s for s in [
-            model_name(data),
-            branch_name(data),
-            pr_info(),
-            update_badge(),
-        ] if s]
-        line2 = [s for s in [
-            context_bar(data),
-            *usage,
-        ] if s]
+        # Pure functions run inline; subprocess/network functions run in parallel
+        mn = model_name(data)
+        ctx = context_bar(data)
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            f_branch = ex.submit(branch_name, data)
+            f_pr = ex.submit(pr_info)
+            f_update = ex.submit(update_badge)
+            f_usage = ex.submit(_usage_segments)
+            bn = f_branch.result()
+            pr = f_pr.result()
+            upd = f_update.result()
+            usage = f_usage.result()
+        line1 = [s for s in [mn, bn, pr, upd] if s]
+        line2 = [s for s in [ctx, *usage] if s]
         lines = []
         if line1:
             lines.append(SEP.join(line1))
