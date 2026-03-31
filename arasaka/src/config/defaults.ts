@@ -160,7 +160,7 @@ export const HEADER_ERROR_TEMPLATE = `**Claude encountered an error after {durat
 //   {job_url}   — GitHub Actions job URL
 //   {branch}    — claude branch name (empty if not set)
 export const COMMENT_TEMPLATE = `\
-{header}{links}{error}
+WOOT{header}HELLO{links}{error}
 
 ---
-{content}`;
+SAD{content}`;

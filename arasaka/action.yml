@@ -48,6 +48,10 @@ inputs:
     description: "Direct instructions for Claude (agent mode)"
     required: false
     default: ""
+  system_prompt:
+    description: "Full system prompt override (replaces defaults.ts SYSTEM_PROMPT)"
+    required: false
+    default: ""
   settings:
     description: "Claude Code settings as JSON string or path"
     required: false
@@ -177,6 +181,7 @@ runs:
       env:
         # Standard inputs
         PROMPT: ${{ inputs.prompt }}
+        SYSTEM_PROMPT: ${{ inputs.system_prompt }}
         TRIGGER_PHRASE: ${{ inputs.trigger_phrase }}
         ASSIGNEE_TRIGGER: ${{ inputs.assignee_trigger }}
         LABEL_TRIGGER: ${{ inputs.label_trigger }}

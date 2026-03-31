@@ -322,7 +322,9 @@ async function run() {
     // ── KEY DIFFERENCE: Always pass systemPrompt to bypass claude_code preset ──
     // "\n" is truthy so it enters the `if (options.systemPrompt)` branch
     // in parseSdkOptions, preventing the preset default.
-    const systemPromptValue = SYSTEM_PROMPT || "\n";
+    // system_prompt action input overrides the hardcoded default in defaults.ts.
+    const systemPromptValue =
+      process.env.SYSTEM_PROMPT || SYSTEM_PROMPT || "\n";
 
     const claudeResult: ClaudeRunResult = await runClaude(promptConfig.path, {
       claudeArgs: prepareResult.claudeArgs,
