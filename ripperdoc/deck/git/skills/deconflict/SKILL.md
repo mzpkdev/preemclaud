@@ -1,6 +1,10 @@
-______________________________________________________________________
-
-## description: "Merge or rebase that resolves conflicts for you" user-invocable: true disable-model-invocation: true argument-hint: "[branch]" allowed-tools: Read, Agent, SendMessage
+---
+description: Merge or rebase that resolves conflicts for you
+user-invocable: true
+disable-model-invocation: true
+argument-hint: '[branch]'
+allowed-tools: Read, Agent, SendMessage
+---
 
 # Deconflict
 

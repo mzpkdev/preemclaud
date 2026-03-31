@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Connect services via MCP // Trigger when user says 'connect', 'hook up', or 'integrate' a service into Claude; any mention of 'MCP' including setup, troubleshooting, timeouts, auth; questions like 'is there an MCP for X' or 'MCP vs CLI'. NEVER trigger for writing application code, building bots, or creating deployments." user-invocable: true disable-model-invocation: false
+---
+description: Connect services via MCP  //  Trigger when user says 'connect', 'hook up', or 'integrate' a service into Claude; any mention of 'MCP' including setup, troubleshooting, timeouts, auth; questions like 'is there an MCP for X' or 'MCP vs CLI'. NEVER trigger for writing application code, building bots, or creating deployments.
+user-invocable: true
+disable-model-invocation: false
+---
 
 # Connect MCP
 

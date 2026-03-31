@@ -1,6 +1,11 @@
-______________________________________________________________________
-
-## description: "Write the code for a feature // Trigger whenever a user asks to implement, build, or add functionality that touches more than a single function: 'implement X', 'build X', 'add X feature', 'write the code for X'. Use for any non-trivial feature spanning multiple files, ambiguous scope, or larger functionality. Do NOT trigger for bug fixes, quick one-line changes, or config-only changes." model: opus user-invocable: true disable-model-invocation: false allowed-tools: Read, Grep, Glob, Agent, AskUserQuestion, TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskUpdate, Bash(git \*) argument-hint: "<feature description>"
+---
+description: "Write the code for a feature  //  Trigger whenever a user asks to implement, build, or add functionality that touches more than a single function: 'implement X', 'build X', 'add X feature', 'write the code for X'. Use for any non-trivial feature spanning multiple files, ambiguous scope, or larger functionality. Do NOT trigger for bug fixes, quick one-line changes, or config-only changes."
+model: opus
+user-invocable: true
+disable-model-invocation: false
+allowed-tools: Read, Grep, Glob, Agent, AskUserQuestion, TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskUpdate, Bash(git *)
+argument-hint: <feature description>
+---
 
 # Write
 

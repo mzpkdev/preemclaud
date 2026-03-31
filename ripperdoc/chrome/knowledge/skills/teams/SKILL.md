@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Guardrails and recipes for agent teams // ALWAYS trigger before any team action — create, manage, recover, or clean up agent teams. Trigger on: TeamCreate, TeamDelete, SendMessage to teammate, orphaned teams, delegation blocks, 'spin up agents', 'build a swarm', 'split work across agents'. Must fire before spawning any team — contains safety rules that prevent runaway agent explosion." user-invocable: true disable-model-invocation: false
+---
+description: "Guardrails and recipes for agent teams  //  ALWAYS trigger before any team action — create, manage, recover, or clean up agent teams. Trigger on: TeamCreate, TeamDelete, SendMessage to teammate, orphaned teams, delegation blocks, 'spin up agents', 'build a swarm', 'split work across agents'. Must fire before spawning any team — contains safety rules that prevent runaway agent explosion."
+user-invocable: true
+disable-model-invocation: false
+---
 
 # Agent Teams
 

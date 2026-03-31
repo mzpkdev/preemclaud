@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Split a feature into assignable work packages" user-invocable: true disable-model-invocation: false
+---
+description: Split a feature into assignable work packages
+user-invocable: true
+disable-model-invocation: false
+---
 
 # Write Brief
 

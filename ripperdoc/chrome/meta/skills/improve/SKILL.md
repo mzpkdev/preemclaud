@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Refine an artifact in a loop until it passes // Trigger on 'improve X until Y', 'keep refining until', 'iterate on this until it's good', 'polish this', 'make this better and test it', or any improve/refine/iterate paired with quality criteria. Even a bare 'improve this' should trigger." user-invocable: true disable-model-invocation: false
+---
+description: Refine an artifact in a loop until it passes  //  Trigger on 'improve X until Y', 'keep refining until', 'iterate on this until it's good', 'polish this', 'make this better and test it', or any improve/refine/iterate paired with quality criteria. Even a bare 'improve this' should trigger.
+user-invocable: true
+disable-model-invocation: false
+---
 
 # Improve
 

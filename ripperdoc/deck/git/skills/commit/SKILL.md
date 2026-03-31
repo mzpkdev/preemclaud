@@ -1,6 +1,10 @@
-______________________________________________________________________
-
-## description: "Auto-group changes into logical commits" user-invocable: true disable-model-invocation: true argument-hint: "[optional message — omit for auto-grouping]" allowed-tools: Read, Agent, SendMessage
+---
+description: Auto-group changes into logical commits
+user-invocable: true
+disable-model-invocation: true
+argument-hint: '[optional message — omit for auto-grouping]'
+allowed-tools: Read, Agent, SendMessage
+---
 
 # Commit
 

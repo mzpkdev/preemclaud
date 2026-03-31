@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Create a lifecycle hook" user-invocable: true disable-model-invocation: true
+---
+description: Create a lifecycle hook
+user-invocable: true
+disable-model-invocation: true
+---
 
 # Create Hooks
 

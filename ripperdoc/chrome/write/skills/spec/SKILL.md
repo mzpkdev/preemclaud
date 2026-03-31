@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Think through an idea before building it" user-invocable: true disable-model-invocation: false
+---
+description: Think through an idea before building it
+user-invocable: true
+disable-model-invocation: false
+---
 
 # Write Spec
 

@@ -26,10 +26,13 @@ Most lines should land around 110 characters. Code blocks are exempt when the co
 ### GitHub Flavored Markdown
 
 This repository uses GFM — tables, task lists, and strikethrough. The `mdformat-gfm` plugin handles these correctly.
-Install both packages together:
+`SKILL.md` files use YAML frontmatter (`---` delimiters) — the `mdformat-frontmatter` plugin preserves them. Without it,
+mdformat treats the `---` as thematic breaks and mangles the frontmatter into headings.
+
+Install all three packages together:
 
 ```bash
-pip install mdformat mdformat-gfm
+pip install mdformat mdformat-gfm mdformat-frontmatter
 ```
 
 ### Semantic Line Breaks

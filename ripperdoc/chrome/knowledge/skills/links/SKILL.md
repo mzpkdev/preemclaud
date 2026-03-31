@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Read URLs without hitting login walls // Trigger whenever an https:// URL appears in the user's message — even bare links with no surrounding context. This skill is the designated handler for reading external content: GitHub PRs, issues, CI runs, and commits; Jira tickets; Confluence pages; Slack threads; Bugsnag errors; Datadog, Grafana, Sentry, New Relic dashboards; Linear issues; Notion pages; Figma designs. A URL in the message means the user wants you to read it — no explicit 'open this' or 'read this' required." user-invocable: true disable-model-invocation: false
+---
+description: "Read URLs without hitting login walls  //  Trigger whenever an https:// URL appears in the user's message — even bare links with no surrounding context. This skill is the designated handler for reading external content: GitHub PRs, issues, CI runs, and commits; Jira tickets; Confluence pages; Slack threads; Bugsnag errors; Datadog, Grafana, Sentry, New Relic dashboards; Linear issues; Notion pages; Figma designs. A URL in the message means the user wants you to read it — no explicit 'open this' or 'read this' required."
+user-invocable: true
+disable-model-invocation: false
+---
 
 # Link Handling
 

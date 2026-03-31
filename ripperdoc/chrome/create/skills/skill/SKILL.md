@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Create or improve a skill" user-invocable: true disable-model-invocation: true
+---
+description: Create or improve a skill
+user-invocable: true
+disable-model-invocation: true
+---
 
 # Create Skill
 

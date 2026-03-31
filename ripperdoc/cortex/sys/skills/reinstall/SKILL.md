@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Reinstall all plugins without fetching or patching" user-invocable: true disable-model-invocation: true
+---
+description: Reinstall all plugins without fetching or patching
+user-invocable: true
+disable-model-invocation: true
+---
 
 # Reinstall
 

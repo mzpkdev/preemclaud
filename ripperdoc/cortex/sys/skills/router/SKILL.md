@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Configure CCR model routing" user-invocable: true disable-model-invocation: true
+---
+description: Configure CCR model routing
+user-invocable: true
+disable-model-invocation: true
+---
 
 # Router
 

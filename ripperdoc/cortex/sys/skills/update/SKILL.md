@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Update preemclaud to the latest version" user-invocable: true disable-model-invocation: true
+---
+description: Update preemclaud to the latest version
+user-invocable: true
+disable-model-invocation: true
+---
 
 # Update
 

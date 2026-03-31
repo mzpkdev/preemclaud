@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Create a custom subagent" user-invocable: true disable-model-invocation: true
+---
+description: Create a custom subagent
+user-invocable: true
+disable-model-invocation: true
+---
 
 # Create Agent
 

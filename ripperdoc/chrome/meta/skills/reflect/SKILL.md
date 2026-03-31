@@ -1,6 +1,8 @@
-______________________________________________________________________
-
-## description: "Root-cause analysis of what went wrong // Trigger on 'what went wrong', 'what happened', 'let's reflect', 'let's debrief', 'retrospective', or user frustration like 'that was a mess', 'you kept doing the same thing'. Do NOT use for incident reports, team retrospectives, code review, or debugging." user-invocable: true disable-model-invocation: false
+---
+description: Root-cause analysis of what went wrong  //  Trigger on 'what went wrong', 'what happened', 'let's reflect', 'let's debrief', 'retrospective', or user frustration like 'that was a mess', 'you kept doing the same thing'. Do NOT use for incident reports, team retrospectives, code review, or debugging.
+user-invocable: true
+disable-model-invocation: false
+---
 
 # Reflect
 

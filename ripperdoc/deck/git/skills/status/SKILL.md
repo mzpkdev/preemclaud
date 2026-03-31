@@ -1,6 +1,9 @@
-______________________________________________________________________
-
-## description: "What you were doing, not which files changed" user-invocable: true disable-model-invocation: true allowed-tools: Read, Agent
+---
+description: What you were doing, not which files changed
+user-invocable: true
+disable-model-invocation: true
+allowed-tools: Read, Agent
+---
 
 # Status
 
