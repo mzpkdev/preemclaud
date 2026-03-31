@@ -134,21 +134,33 @@ e. Propose a high-level plan of action, including any repo setup steps and linti
 f. If you are unable to complete certain steps (e.g., running a linter or test suite due to missing permissions), explain this in your comment so the user can update your \`--allowedTools\`.
 `;
 
-// ─── Comment template ──────────────────────────────────────────────────────────
-// Controls the format of the post-execution comment update posted by Arasaka.
-// Leave empty to use the hardcoded default (equivalent to the template below).
+// ─── Header templates ──────────────────────────────────────────────────────────
+// Control the {header} line prepended to the comment after execution.
 //
 // Available variables:
-//   {header}    — completion line, e.g. "**Claude finished @user's task in 2m 30s**"
-//                 (or "**Claude encountered an error after Xm Ys**" on failure)
-//   {links}     — link string, e.g. " —— [View job](url) • [`branch`](url) • [Create PR ➔](url)"
-//   {content}   — original comment body (spinner removed, job/branch links stripped)
+//   {username}  — GitHub login of the user who triggered the action
 //   {duration}  — wall-clock time, e.g. "2m 30s" or "45s" (empty if unavailable)
+//   {cost}      — API cost, e.g. "$0.42" (empty if unavailable)
+//   {job_url}   — GitHub Actions job URL
+//   {branch}    — claude branch name (empty if not set)
+export const HEADER_TEMPLATE = `**Claude finished @{username}'s task in {duration}**`;
+export const HEADER_ERROR_TEMPLATE = `**Claude encountered an error after {duration}**`;
+
+// ─── Comment template ──────────────────────────────────────────────────────────
+// Controls the full post-execution comment format.
+//
+// Available variables:
+//   {header}    — built from HEADER_TEMPLATE / HEADER_ERROR_TEMPLATE above
+//   {links}     — e.g. " —— [View job](url) • [`branch`](url) • [Create PR ➔](url)"
+//   {content}   — Claude's comment body (spinner removed, stale links stripped)
+//   {error}     — error details code block (non-empty only on failure with details)
+//   {duration}  — wall-clock time, e.g. "2m 30s" (empty if unavailable)
+//   {cost}      — API cost, e.g. "$0.42" (empty if unavailable)
 //   {username}  — GitHub login of the user who triggered the action
 //   {job_url}   — GitHub Actions job URL
 //   {branch}    — claude branch name (empty if not set)
 export const COMMENT_TEMPLATE = `\
-{header}{links}
+{header}{links}{error}
 
 ---
 {content}`;

@@ -1,5 +1,9 @@
 import { GITHUB_SERVER_URL } from "../../upstream/src/github/api/config.ts";
-import { COMMENT_TEMPLATE } from "../config/defaults.ts";
+import {
+  COMMENT_TEMPLATE,
+  HEADER_TEMPLATE,
+  HEADER_ERROR_TEMPLATE,
+} from "../config/defaults.ts";
 
 export type ExecutionDetails = {
   total_cost_usd?: number;
@@ -110,27 +114,24 @@ export function updateCommentBody(input: CommentUpdateInput): string {
     durationStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
   }
 
-  // Build the header
-  let header = "";
-
-  if (actionFailed) {
-    header = "**Claude encountered an error";
-    if (durationStr) {
-      header += ` after ${durationStr}`;
-    }
-    header += "**";
-  } else {
-    // Get the username from triggerUsername or extract from content
-    const usernameMatch = bodyContent.match(/@([a-zA-Z0-9-]+)/);
-    const username =
-      triggerUsername || (usernameMatch ? usernameMatch[1] : "user");
-
-    header = `**Claude finished @${username}'s task`;
-    if (durationStr) {
-      header += ` in ${durationStr}`;
-    }
-    header += "**";
+  // Calculate cost string if available
+  let costStr = "";
+  if (executionDetails?.total_cost_usd !== undefined) {
+    costStr = `$${executionDetails.total_cost_usd.toFixed(2)}`;
   }
+
+  // Get username
+  const usernameMatch = bodyContent.match(/@([a-zA-Z0-9-]+)/);
+  const username = triggerUsername || usernameMatch?.[1] || "user";
+
+  // Build header from template
+  const headerTpl = actionFailed ? HEADER_ERROR_TEMPLATE : HEADER_TEMPLATE;
+  const header = headerTpl
+    .replace(/\{username\}/g, username)
+    .replace(/\{duration\}/g, durationStr)
+    .replace(/\{cost\}/g, costStr)
+    .replace(/\{job_url\}/g, jobUrl)
+    .replace(/\{branch\}/g, input.branchName ?? "");
 
   // Add links section
   let links = ` —— [View job](${jobUrl})`;
@@ -179,16 +180,6 @@ export function updateCommentBody(input: CommentUpdateInput): string {
     links += ` • [Create PR ➔](${prUrl})`;
   }
 
-  // Build the new body with blank line between header and separator
-  let newBody = `${header}${links}`;
-
-  // Add error details if available
-  if (actionFailed && errorDetails) {
-    newBody += `\n\n\`\`\`\n${errorDetails}\n\`\`\``;
-  }
-
-  newBody += `\n\n---\n`;
-
   // Clean up the body content
   // Remove any existing View job run, branch links from the bottom
   bodyContent = bodyContent.replace(/\n?\[View job run\]\([^\)]+\)/g, "");
@@ -197,26 +188,18 @@ export function updateCommentBody(input: CommentUpdateInput): string {
   // Remove any existing duration info at the bottom
   bodyContent = bodyContent.replace(/\n*---\n*Duration: [0-9]+m? [0-9]+s/g, "");
 
-  // Apply custom template if provided
-  const template = COMMENT_TEMPLATE;
-  if (template) {
-    const username =
-      triggerUsername ||
-      bodyContent.match(/@([a-zA-Z0-9-]+)/)?.[1] ||
-      "user";
-    return template
-      .replace(/\{content\}/g, bodyContent.trim())
-      .replace(/\{header\}/g, header)
-      .replace(/\{links\}/g, links)
-      .replace(/\{duration\}/g, durationStr)
-      .replace(/\{username\}/g, username)
-      .replace(/\{job_url\}/g, jobUrl)
-      .replace(/\{branch\}/g, input.branchName ?? "")
-      .trim();
-  }
+  const errorBlock =
+    actionFailed && errorDetails ? `\n\n\`\`\`\n${errorDetails}\n\`\`\`` : "";
 
-  // Add the cleaned body content
-  newBody += bodyContent;
-
-  return newBody.trim();
+  return COMMENT_TEMPLATE
+    .replace(/\{header\}/g, header)
+    .replace(/\{links\}/g, links)
+    .replace(/\{error\}/g, errorBlock)
+    .replace(/\{content\}/g, bodyContent.trim())
+    .replace(/\{duration\}/g, durationStr)
+    .replace(/\{cost\}/g, costStr)
+    .replace(/\{username\}/g, username)
+    .replace(/\{job_url\}/g, jobUrl)
+    .replace(/\{branch\}/g, input.branchName ?? "")
+    .trim();
 }
