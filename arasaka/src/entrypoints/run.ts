@@ -50,7 +50,7 @@ import { restoreConfigFromBase } from "../../upstream/src/github/operations/rest
 
 // ─── Upstream imports: Entrypoint helpers ──────────────────────────
 import { collectActionInputsPresence } from "../../upstream/src/entrypoints/collect-inputs.ts";
-import { updateCommentLink } from "../../upstream/src/entrypoints/update-comment-link.ts";
+import { updateCommentLink } from "./update-comment-link.ts";
 import { formatTurnsFromData } from "../../upstream/src/entrypoints/format-turns.ts";
 import type { Turn } from "../../upstream/src/entrypoints/format-turns.ts";
 
@@ -64,6 +64,9 @@ import type { ClaudeRunResult } from "../../upstream/base-action/src/run-claude-
 
 // ─── Our custom prompt builder ─────────────────────────────────────
 import { buildPrompt } from "../prompt/index.ts";
+
+// ─── Arasaka hardcoded defaults ────────────────────────────────────
+import { SYSTEM_PROMPT } from "../config/defaults.ts";
 
 // ═══════════════════════════════════════════════════════════════════
 // installClaudeCode — copied from upstream (self-contained)
@@ -319,7 +322,7 @@ async function run() {
     // ── KEY DIFFERENCE: Always pass systemPrompt to bypass claude_code preset ──
     // "\n" is truthy so it enters the `if (options.systemPrompt)` branch
     // in parseSdkOptions, preventing the preset default.
-    const systemPromptValue = process.env.SYSTEM_PROMPT || "\n";
+    const systemPromptValue = SYSTEM_PROMPT || "\n";
 
     const claudeResult: ClaudeRunResult = await runClaude(promptConfig.path, {
       claudeArgs: prepareResult.claudeArgs,

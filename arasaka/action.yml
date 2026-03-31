@@ -5,12 +5,6 @@ branding:
   color: "purple"
 
 inputs:
-  # First-class: system prompt control
-  system_prompt:
-    description: "Complete system prompt for Claude. Controls all behavioral instructions. If empty, no preset is applied."
-    required: false
-    default: ""
-
   # Standard inputs
   trigger_phrase:
     description: "Trigger phrase in comments"
@@ -181,9 +175,6 @@ runs:
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/run.ts
       env:
-        # Arasaka-specific
-        SYSTEM_PROMPT: ${{ inputs.system_prompt }}
-
         # Standard inputs
         PROMPT: ${{ inputs.prompt }}
         TRIGGER_PHRASE: ${{ inputs.trigger_phrase }}
