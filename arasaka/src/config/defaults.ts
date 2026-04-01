@@ -160,7 +160,9 @@ export const HEADER_ERROR_TEMPLATE = `**Claude encountered an error after {durat
 //   {job_url}   — GitHub Actions job URL
 //   {branch}    — claude branch name (empty if not set)
 export const COMMENT_TEMPLATE = `\
-WOOT{header}HELLO{links}{error}
+<img src="https://raw.githubusercontent.com/mzpkdev/preemclaud/main/.github/assets/banner.svg" alt="Arasaka" height="48" />
+
+{header}{links}{error}
 
 ---
-SAD{content}`;
+{content}`;
