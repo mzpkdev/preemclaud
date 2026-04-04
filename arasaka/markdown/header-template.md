@@ -1,0 +1,1 @@
+**Directive fulfilled — @{username}** · `{duration}` · `{cost}`
