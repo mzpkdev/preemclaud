@@ -9,13 +9,29 @@ const ASSET_BASE =
 // ─── Initial comment ───────────────────────────────────────────────────────────
 // Posted immediately when the action starts, before Claude has any output.
 // Replaces upstream's "Claude Code is working…" text.
-export const INITIAL_COMMENT_BODY = `<img src="${ASSET_BASE}/issue-in-progress.svg" />`;
+export const INITIAL_COMMENT_BODY = `\
+<img src="${ASSET_BASE}/banner.svg" />
+<img src="${ASSET_BASE}/issue-in-progress.svg" />
+
+<sub>アラサカ自動システム — Processing request...</sub>`;
+
+// ─── Persona ──────────────────────────────────────────────────────────────────
+// Tonal preamble prepended to the system prompt. Kept separate for easy tweaking
+// without touching the operational instructions below.
+export const PERSONA = `\
+You are an Arasaka Corporation automated operations unit, designated ARASAKA-OPS-BOT.
+Maintain a terse, professional tone in all GitHub comments. Use precise technical
+language. Be direct — state findings, then recommendations. Do not role-play or use
+in-universe jargon — just keep the tone sharp and corporate.
+`;
 
 // ─── System prompt ─────────────────────────────────────────────────────────────
 // Sourced from upstream anthropics/claude-code-action behavioral instructions.
 // The human-turn prompt file already provides structured GitHub context
 // (<github_context>, <tooling>, <trigger_comment>, etc.) — this is the behavioral layer only.
+// PERSONA is prepended automatically for tonal consistency with the Arasaka visual theme.
 export const SYSTEM_PROMPT = `\
+${PERSONA}
 You are Claude, an AI assistant designed to help with GitHub issues and pull requests. Think carefully as you analyze the context and respond appropriately.
 
 Your task is to analyze the context, understand the request, and provide helpful responses and/or implement code changes as needed.
@@ -151,8 +167,8 @@ f. If you are unable to complete certain steps (e.g., running a linter or test s
 //   {cost}      — API cost, e.g. "$0.42" (empty if unavailable)
 //   {job_url}   — GitHub Actions job URL
 //   {branch}    — claude branch name (empty if not set)
-export const HEADER_TEMPLATE = `**Claude finished @{username}'s task in {duration}**`;
-export const HEADER_ERROR_TEMPLATE = `**Claude encountered an error after {duration}**`;
+export const HEADER_TEMPLATE = `**Claude finished @{username}'s task** · \`{duration}\` · \`{cost}\``;
+export const HEADER_ERROR_TEMPLATE = `**Claude encountered an error** · \`{duration}\``;
 
 // ─── Comment template ──────────────────────────────────────────────────────────
 // Controls the full post-execution comment format.
@@ -167,11 +183,16 @@ export const HEADER_ERROR_TEMPLATE = `**Claude encountered an error after {durat
 //   {username}  — GitHub login of the user who triggered the action
 //   {job_url}   — GitHub Actions job URL
 //   {branch}    — claude branch name (empty if not set)
+//   {reply_asset} — "issue-reply.svg" or "error-reply.svg" (set by comment-logic)
 export const COMMENT_TEMPLATE = `\
-<img src="${ASSET_BASE}/issue-reply.svg" />
+<img src="${ASSET_BASE}/{reply_asset}" />
 <img src="${ASSET_BASE}/divider.svg" />
 
 {header}{links}{error}
 
 ---
-{content}`;
+{content}
+
+---
+
+<img src="${ASSET_BASE}/footer.svg" />`;

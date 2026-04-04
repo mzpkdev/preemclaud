@@ -89,7 +89,9 @@ export function updateCommentBody(input: CommentUpdateInput): string {
   const workingPattern = /Claude Code is working[…\.]{1,3}(?:\s*<img[^>]*>)?/i;
   let bodyContent = originalBody.replace(workingPattern, "").trim();
   // Strip our Arasaka in-progress initial comment (defensive, for crash-before-update cases)
+  bodyContent = bodyContent.replace(/<img[^>]+banner\.svg[^>]*>/i, "").trim();
   bodyContent = bodyContent.replace(/<img[^>]+issue-in-progress\.svg[^>]*>/i, "").trim();
+  bodyContent = bodyContent.replace(/<sub>[^<]*<\/sub>/i, "").trim();
 
   // Check if there's a PR link in the content
   let prLinkFromContent = "";
@@ -193,7 +195,10 @@ export function updateCommentBody(input: CommentUpdateInput): string {
   const errorBlock =
     actionFailed && errorDetails ? `\n\n\`\`\`\n${errorDetails}\n\`\`\`` : "";
 
+  const replyAsset = actionFailed ? "error-reply.svg" : "issue-reply.svg";
+
   return COMMENT_TEMPLATE
+    .replace(/\{reply_asset\}/g, replyAsset)
     .replace(/\{header\}/g, header)
     .replace(/\{links\}/g, links)
     .replace(/\{error\}/g, errorBlock)
