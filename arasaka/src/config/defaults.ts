@@ -1,16 +1,16 @@
 /**
  * Hardcoded defaults for Arasaka — not exposed as action inputs.
- * Templates and prompts live in arasaka/markdown/ as .md files (single source of truth).
+ * Prompt and comment assets live in arasaka/content/ as .md files (single source of truth).
  * This file loads them and assembles the exported constants.
  */
 
-import personaMd from "../../markdown/persona.md";
-import responseFormatMd from "../../markdown/response-format.md";
-import operationalMd from "../../markdown/operational-instructions.md";
-import initialCommentMd from "../../markdown/initial-comment.md";
-import commentTemplateMd from "../../markdown/comment-template.md";
-import headerTemplateMd from "../../markdown/header-template.md";
-import headerErrorTemplateMd from "../../markdown/header-error-template.md";
+import personaMd from "../../content/prompt/persona.md";
+import formatMd from "../../content/prompt/format.md";
+import instructionsMd from "../../content/prompt/instructions.md";
+import initialCommentMd from "../../content/comments/states/initial.md";
+import commentTemplateMd from "../../content/comments/templates/comment.md";
+import headerSuccessMd from "../../content/comments/templates/header-success.md";
+import headerFailureMd from "../../content/comments/templates/header-failure.md";
 
 const ASSET_BASE =
   "https://raw.githubusercontent.com/mzpkdev/preemclaud/main/arasaka/assets";
@@ -31,14 +31,14 @@ export const PERSONA = personaMd;
 // ─── Response format ──────────────────────────────────────────────────────────
 // Controls document structure. Kept separate from PERSONA (voice) and the
 // operational instructions below so each concern can be edited independently.
-export const RESPONSE_FORMAT = responseFormatMd;
+export const RESPONSE_FORMAT = formatMd;
 
 // ─── System prompt ─────────────────────────────────────────────────────────────
 // Sourced from upstream anthropics/claude-code-action behavioral instructions.
 // The human-turn prompt file already provides structured GitHub context
 // (<github_context>, <tooling>, <trigger_comment>, etc.) — this is the behavioral layer only.
 // PERSONA and RESPONSE_FORMAT are prepended for tonal and structural consistency.
-export const SYSTEM_PROMPT = `${PERSONA}\n${RESPONSE_FORMAT}\n${operationalMd}`;
+export const SYSTEM_PROMPT = `${PERSONA}\n${RESPONSE_FORMAT}\n${instructionsMd}`;
 
 // ─── Header templates ──────────────────────────────────────────────────────────
 // Control the {header} line prepended to the comment after execution.
@@ -49,8 +49,8 @@ export const SYSTEM_PROMPT = `${PERSONA}\n${RESPONSE_FORMAT}\n${operationalMd}`;
 //   {cost}      — API cost, e.g. "$0.42" (empty if unavailable)
 //   {job_url}   — GitHub Actions job URL
 //   {branch}    — claude branch name (empty if not set)
-export const HEADER_TEMPLATE = headerTemplateMd.trim();
-export const HEADER_ERROR_TEMPLATE = headerErrorTemplateMd.trim();
+export const HEADER_TEMPLATE = headerSuccessMd.trim();
+export const HEADER_ERROR_TEMPLATE = headerFailureMd.trim();
 
 // ─── Comment template ──────────────────────────────────────────────────────────
 // Controls the full post-execution comment format.
