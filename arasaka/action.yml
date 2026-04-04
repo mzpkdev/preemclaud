@@ -150,6 +150,45 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Get cache week
+      if: inputs.path_to_claude_code_executable == ''
+      id: cache-date
+      shell: bash
+      run: echo "week=$(date +%Y-%U)" >> $GITHUB_OUTPUT
+
+    - name: Cache Claude Code
+      if: inputs.path_to_claude_code_executable == ''
+      id: cache-claude
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/claude-npm
+        key: ${{ runner.os }}-claude-code-2-${{ steps.cache-date.outputs.week }}
+
+    - name: Install Claude Code
+      if: inputs.path_to_claude_code_executable == '' && steps.cache-claude.outputs.cache-hit != 'true'
+      shell: bash
+      run: npm install --prefix "$HOME/.cache/claude-npm" @anthropic-ai/claude-code@2
+
+    - name: Add Claude to PATH
+      if: inputs.path_to_claude_code_executable == ''
+      shell: bash
+      run: echo "$HOME/.cache/claude-npm/bin" >> $GITHUB_PATH
+
+    - name: Cache preemclaud
+      if: inputs.path_to_claude_code_executable == ''
+      id: cache-preemclaud
+      uses: actions/cache@v4
+      with:
+        path: ~/.claude
+        key: ${{ runner.os }}-preemclaud-${{ steps.cache-date.outputs.week }}
+
+    - name: Install preemclaud
+      if: inputs.path_to_claude_code_executable == '' && steps.cache-preemclaud.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        git clone --depth 1 --quiet https://github.com/mzpkdev/preemclaud "$HOME/.claude"
+        cd "$HOME/.claude" && python3 ripperdoc/cortex/sys/scripts/install.py
+
     - name: Install Bun
       if: inputs.path_to_bun_executable == ''
       uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3
