@@ -1,1 +1,3 @@
-**Directive could not be completed — @{username}** · `{duration}`
+> **STATUS: FAILED** · @{username}
+
+`{duration}`

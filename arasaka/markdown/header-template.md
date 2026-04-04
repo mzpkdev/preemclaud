@@ -1,1 +1,3 @@
-**Directive fulfilled — @{username}** · `{duration}` · `{cost}`
+> **STATUS: FULFILLED** · @{username}
+
+`{duration}` · `{cost}`
