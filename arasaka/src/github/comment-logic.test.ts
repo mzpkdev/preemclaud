@@ -131,7 +131,7 @@ describe("updateCommentBody — Arasaka-specific", () => {
       const result = updateCommentBody(input);
       expect(result).toContain("`30s`");
       // Empty cost produces `` which is an empty code span — acceptable
-      expect(result).toContain("**Claude finished @testuser's task**");
+      expect(result).toContain("**Directive fulfilled — @testuser**");
     });
 
     it("handles missing duration gracefully", () => {
@@ -143,12 +143,12 @@ describe("updateCommentBody — Arasaka-specific", () => {
 
       const result = updateCommentBody(input);
       expect(result).toContain("`$0.25`");
-      expect(result).toContain("**Claude finished @testuser's task**");
+      expect(result).toContain("**Directive fulfilled — @testuser**");
     });
   });
 
   describe("structural compatibility", () => {
-    it("preserves header → links → separator → content order", () => {
+    it("preserves header → links → divider → content → divider → footer order", () => {
       const input: CommentUpdateInput = {
         ...baseInput,
         currentBody: "### Todo List:\n- [x] Done",
@@ -160,16 +160,40 @@ describe("updateCommentBody — Arasaka-specific", () => {
 
       const result = updateCommentBody(input);
 
-      const headerIdx = result.indexOf("**Claude finished");
+      const headerIdx = result.indexOf("**Directive fulfilled");
       const linksIdx = result.indexOf("—— [View job]");
-      const separatorIdx = result.indexOf("---");
+      // Find the second divider (after the reply header divider)
+      const firstDividerIdx = result.indexOf("divider.svg");
+      const secondDividerIdx = result.indexOf("divider.svg", firstDividerIdx + 1);
       const contentIdx = result.indexOf("### Todo List:");
+      const thirdDividerIdx = result.indexOf("divider.svg", secondDividerIdx + 1);
       const footerIdx = result.indexOf("footer.svg");
 
       expect(headerIdx).toBeLessThan(linksIdx);
-      expect(linksIdx).toBeLessThan(separatorIdx);
-      expect(separatorIdx).toBeLessThan(contentIdx);
-      expect(contentIdx).toBeLessThan(footerIdx);
+      expect(linksIdx).toBeLessThan(secondDividerIdx);
+      expect(secondDividerIdx).toBeLessThan(contentIdx);
+      expect(contentIdx).toBeLessThan(thirdDividerIdx);
+      expect(thirdDividerIdx).toBeLessThan(footerIdx);
+    });
+
+    it("includes corporate tagline after footer", () => {
+      const result = updateCommentBody({ ...baseInput, triggerUsername: "u" });
+      const footerIdx = result.indexOf("footer.svg");
+      const taglineIdx = result.indexOf("Your future, our property.");
+      expect(taglineIdx).toBeGreaterThan(footerIdx);
+    });
+
+    it("uses error header on failure", () => {
+      const input: CommentUpdateInput = {
+        ...baseInput,
+        actionFailed: true,
+        executionDetails: { duration_ms: 45000 },
+        triggerUsername: "testuser",
+      };
+
+      const result = updateCommentBody(input);
+      expect(result).toContain("**Directive could not be completed — @testuser**");
+      expect(result).toContain("`45s`");
     });
 
     it("includes View job link", () => {
