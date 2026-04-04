@@ -1,6 +1,7 @@
 import { GITHUB_SERVER_URL } from "../../upstream/src/github/api/config.ts";
 import {
   COMMENT_TEMPLATE,
+  CLOSING_LINES,
   HEADER_TEMPLATE,
   HEADER_ERROR_TEMPLATE,
 } from "../config/defaults.ts";
@@ -69,6 +70,18 @@ export function ensureProperlyEncodedUrl(url: string): string | null {
       return null;
     }
   }
+}
+
+function selectClosingLine(seed: string): string {
+  // Stable per workflow run so repeated comment rewrites do not churn.
+  let hash = 2166136261;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  const lineIndex = (hash >>> 0) % CLOSING_LINES.length;
+  return CLOSING_LINES[lineIndex] ?? CLOSING_LINES[0];
 }
 
 export function updateCommentBody(input: CommentUpdateInput): string {
@@ -204,6 +217,7 @@ export function updateCommentBody(input: CommentUpdateInput): string {
     actionFailed && errorDetails ? `\n\n\`\`\`\n${errorDetails}\n\`\`\`` : "";
 
   const replyAsset = actionFailed ? "error-reply.svg" : "issue-reply.svg";
+  const closingLine = selectClosingLine(jobUrl);
 
   return COMMENT_TEMPLATE
     .replace(/\{reply_asset\}/g, replyAsset)
@@ -211,6 +225,7 @@ export function updateCommentBody(input: CommentUpdateInput): string {
     .replace(/\{links\}/g, links)
     .replace(/\{error\}/g, errorBlock)
     .replace(/\{content\}/g, bodyContent.trim())
+    .replace(/\{closing_line\}/g, closingLine)
     .replace(/\{duration\}/g, durationStr)
     .replace(/\{cost\}/g, costStr)
     .replace(/\{username\}/g, username)

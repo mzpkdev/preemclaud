@@ -7,6 +7,6 @@
 
 {content}
 
-<sub>Arasaka Corporation. Your future, our property.</sub>
+<sub>Arasaka Corporation. {closing_line}</sub>
 
 <img src="{{ASSET_BASE}}/footer.svg" />

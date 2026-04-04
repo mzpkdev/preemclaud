@@ -70,3 +70,17 @@ export const COMMENT_TEMPLATE = commentTemplateMd.replace(
   /\{\{ASSET_BASE\}\}/g,
   ASSET_BASE,
 );
+
+// ─── Closing lines ────────────────────────────────────────────────────────────
+// Canonical sign-off pool used by the render layer. Derived from the persona
+// examples, but kept as structured data so templates do not depend on parsing
+// prompt prose.
+export const CLOSING_LINES = [
+  "Your future is our property.",
+  "The family remembers.",
+  "Your record reflects your loyalty.",
+  "We are patient. We have time.",
+  "The family is grateful for your contribution.",
+  "Continuity is the highest form of loyalty.",
+  "What you build here does not disappear.",
+] as const;

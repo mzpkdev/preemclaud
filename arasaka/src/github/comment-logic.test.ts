@@ -202,7 +202,7 @@ describe("updateCommentBody — Arasaka-specific", () => {
       const linksIdx = result.indexOf("—— [View job]");
       const dividerIdx = result.indexOf("divider.svg");
       const contentIdx = result.indexOf("### Todo List:");
-      const subIdx = result.indexOf("Your future, our property.");
+      const subIdx = result.indexOf("Arasaka Corporation.");
       const footerIdx = result.indexOf("footer.svg");
 
       expect(replyAssetIdx).toBeLessThan(headerIdx);
@@ -216,7 +216,7 @@ describe("updateCommentBody — Arasaka-specific", () => {
     it("includes corporate tagline before footer", () => {
       const result = updateCommentBody({ ...baseInput, triggerUsername: "u" });
       const footerIdx = result.indexOf("footer.svg");
-      const taglineIdx = result.indexOf("Your future, our property.");
+      const taglineIdx = result.indexOf("Arasaka Corporation.");
       expect(taglineIdx).toBeLessThan(footerIdx);
     });
 
@@ -250,6 +250,47 @@ describe("updateCommentBody — Arasaka-specific", () => {
       const result = updateCommentBody(input);
       expect(result).toContain("• [`claude/issue-42`]");
       expect(result).toContain("• [Create PR ➔]");
+    });
+  });
+
+  describe("closing line selection", () => {
+    it("injects a persona-derived closing line into the footer", () => {
+      const result = updateCommentBody({ ...baseInput, triggerUsername: "u" });
+      expect(result).toMatch(
+        /<sub>Arasaka Corporation\. (Your future is our property\.|The family remembers\.|Your record reflects your loyalty\.|We are patient\. We have time\.|The family is grateful for your contribution\.|Continuity is the highest form of loyalty\.|What you build here does not disappear\.)<\/sub>/,
+      );
+    });
+
+    it("keeps the same closing line for the same job URL", () => {
+      const first = updateCommentBody({ ...baseInput, triggerUsername: "u" });
+      const second = updateCommentBody({ ...baseInput, triggerUsername: "u" });
+
+      const firstClosing = first.match(/<sub>Arasaka Corporation\. (.*)<\/sub>/)?.[1];
+      const secondClosing = second.match(/<sub>Arasaka Corporation\. (.*)<\/sub>/)?.[1];
+
+      expect(firstClosing).toBeDefined();
+      expect(secondClosing).toBeDefined();
+      expect(firstClosing).toBe(secondClosing);
+    });
+
+    it("varies the closing line across different job URLs", () => {
+      const first = updateCommentBody({
+        ...baseInput,
+        triggerUsername: "u",
+        jobUrl: "https://github.com/owner/repo/actions/runs/123",
+      });
+      const second = updateCommentBody({
+        ...baseInput,
+        triggerUsername: "u",
+        jobUrl: "https://github.com/owner/repo/actions/runs/125",
+      });
+
+      const firstClosing = first.match(/<sub>Arasaka Corporation\. (.*)<\/sub>/)?.[1];
+      const secondClosing = second.match(/<sub>Arasaka Corporation\. (.*)<\/sub>/)?.[1];
+
+      expect(firstClosing).toBeDefined();
+      expect(secondClosing).toBeDefined();
+      expect(firstClosing).not.toBe(secondClosing);
     });
   });
 });
