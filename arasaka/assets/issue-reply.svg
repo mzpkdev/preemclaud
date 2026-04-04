@@ -1,0 +1,21 @@
+<svg id="svg1" width="100%" viewBox="0 0 680 56" xmlns="http://www.w3.org/2000/svg">
+    <rect width="680" height="56" fill="#0a0707"></rect>
+    <rect width="680" height="56" fill="none" stroke="#2a1515" stroke-width="0.5"></rect>
+    <rect width="4" height="56" fill="#C8102E"></rect>
+    <rect x="676" width="4" height="56" fill="#C8102E"></rect>
+    <rect x="4" y="0" width="676" height="1" fill="#3d1c1c"></rect>
+    <rect x="4" y="55" width="676" height="1" fill="#3d1c1c"></rect>
+    <rect x="4" y="0" width="40" height="56" fill="#160c0c"></rect>
+    <rect x="44" y="0" width="1" height="56" fill="#2a1515"></rect>
+    <text x="24" y="28" text-anchor="middle" dominant-baseline="central" font-family="'Courier New',monospace"
+          font-size="9" font-weight="700" fill="#C8102E" letter-spacing="1">REP
+    </text>
+    <text x="64" y="22" font-family="'Courier New',monospace" font-size="9" fill="#4a3830" letter-spacing="2">ISSUE
+        RESPONSE
+    </text>
+    <text x="64" y="37" font-family="'Courier New',monospace" font-size="12" font-weight="700" fill="#d4c8c4"
+          letter-spacing="1">k-watanabe · ARASAKA CORP
+    </text>
+    <polygon points="640,20 648,28 640,36 632,28" fill="none" stroke="#8B0816" stroke-width="0.5"></polygon>
+    <polygon points="656,20 664,28 656,36 648,28" fill="none" stroke="#3d1c1c" stroke-width="0.5"></polygon>
+</svg>

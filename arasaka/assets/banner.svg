@@ -1,0 +1,38 @@
+<svg id="banner-svg" width="100%" viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="680" height="110" rx="4" fill="#0C0808"></rect>
+    <rect x="0" y="0" width="680" height="110" rx="4" fill="none" stroke="#8B0816" stroke-width="1"></rect>
+    <!-- corner marks -->
+    <rect x="8" y="8" width="16" height="2" fill="#C8102E"></rect>
+    <rect x="8" y="8" width="2" height="16" fill="#C8102E"></rect>
+    <rect x="656" y="8" width="16" height="2" fill="#C8102E"></rect>
+    <rect x="672" y="8" width="2" height="16" fill="#C8102E"></rect>
+    <rect x="8" y="100" width="16" height="2" fill="#C8102E"></rect>
+    <rect x="8" y="94" width="2" height="16" fill="#C8102E"></rect>
+    <rect x="656" y="100" width="16" height="2" fill="#C8102E"></rect>
+    <rect x="672" y="94" width="2" height="16" fill="#C8102E"></rect>
+    <!-- horizontal rule -->
+    <line x1="36" y1="34" x2="644" y2="34" stroke="#3A1010" stroke-width="0.5"></line>
+    <line x1="36" y1="76" x2="644" y2="76" stroke="#3A1010" stroke-width="0.5"></line>
+    <!-- side accent bars -->
+    <rect x="26" y="8" width="2" height="94" fill="#C8102E" opacity="0.6"></rect>
+    <rect x="652" y="8" width="2" height="94" fill="#C8102E" opacity="0.6"></rect>
+    <!-- diamond -->
+    <polygon points="340,19 346,25 340,31 334,25" fill="#C8102E" opacity="0.9"></polygon>
+    <polygon points="340,79 346,85 340,91 334,85" fill="#C8102E" opacity="0.9"></polygon>
+    <!-- main title -->
+    <text x="340" y="57" text-anchor="middle" dominant-baseline="central" font-family="monospace" font-size="22"
+          font-weight="700" fill="#E8D8D0" letter-spacing="8">ARASAKA
+    </text>
+    <!-- sub text left / right -->
+    <text x="80" y="57" text-anchor="middle" dominant-baseline="central" font-family="monospace" font-size="9"
+          fill="#8B3030" letter-spacing="3">CORPORATION
+    </text>
+    <text x="600" y="57" text-anchor="middle" dominant-baseline="central" font-family="monospace" font-size="9"
+          fill="#8B3030" letter-spacing="3">東京 · 2077
+    </text>
+    <!-- scan line texture simulation -->
+    <line x1="36" y1="42" x2="644" y2="42" stroke="#1A0808" stroke-width="0.5"></line>
+    <line x1="36" y1="50" x2="644" y2="50" stroke="#1A0808" stroke-width="0.5"></line>
+    <line x1="36" y1="64" x2="644" y2="64" stroke="#1A0808" stroke-width="0.5"></line>
+    <line x1="36" y1="72" x2="644" y2="72" stroke="#1A0808" stroke-width="0.5"></line>
+</svg>
