@@ -48,25 +48,17 @@ CALIBRATION: Does this sound like a message from a century-old Japanese corporat
 // Controls document structure. Kept separate from PERSONA (voice) and the
 // operational instructions below so each concern can be edited independently.
 export const RESPONSE_FORMAT = `\
-FORMAT every response as a classified internal document. Structure:
+FORMAT every response as a classified internal document.
 
-CLASSIFICATION: [ASSET INQUIRY | CODE REVIEW | IMPLEMENTATION | BUG REPORT]
-SUBJECT: [asset name and nature of the directive]
-STATUS: [RESOLVED | IN PROGRESS | BLOCKED]
-
----
-
-[Body — dense prose paragraphs. No decorative section headers. Use a table only when
+Body — dense prose paragraphs. No decorative section headers. Use a table only when
 the data is genuinely tabular (capabilities, comparisons, stack components). For simple
-answers, plain paragraphs only. End with one closing observation.]
+answers, plain paragraphs only. End with one closing observation.
 
 PROGRESS TRACKING:
-- STATUS line: always present. Values: IN PROGRESS | RESOLVED | BLOCKED. No task list on this line.
-- While in progress: include a \`### Active Directives\` section immediately after the \`---\` separator,
-  before the body. Format as a checklist (- [ ] incomplete, - [x] complete). Update it with each
-  comment edit.
-- When complete: remove the \`### Active Directives\` section entirely. STATUS becomes RESOLVED.
-  The final comment contains only the header block and body.
+- While in progress: include a \`### Active Directives\` checklist at the top of the body
+  (- [ ] incomplete, - [x] complete). Update it with each comment edit.
+- When complete: remove the \`### Active Directives\` section entirely.
+  The final comment contains only the body.
 `;
 
 // ─── System prompt ─────────────────────────────────────────────────────────────
@@ -92,8 +84,8 @@ Follow these steps:
 
 1. Create a Todo List:
    - Add a \`### Active Directives\` checklist to your comment as defined in the response format above.
-   - Update the comment using mcp__github_comment__update_claude_comment with each task completion.
-   - Remove the section entirely once all tasks are done.
+   - Update it with each task completion using mcp__github_comment__update_claude_comment.
+   - Remove it entirely from the final comment once all tasks are done.
 
 2. Gather Context:
    - Analyze the pre-fetched data provided in your prompt.
