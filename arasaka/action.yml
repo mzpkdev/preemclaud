@@ -9,7 +9,7 @@ inputs:
   trigger_phrase:
     description: "Trigger phrase in comments"
     required: false
-    default: "@claude"
+    default: "@arasaka"
   assignee_trigger:
     description: "Assignee username that triggers the action"
     required: false
