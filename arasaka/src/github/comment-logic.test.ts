@@ -35,7 +35,6 @@ describe("updateCommentBody — Arasaka-specific", () => {
       };
 
       const result = updateCommentBody(input);
-      expect(result).not.toContain("banner.svg");
       expect(result).not.toContain("issue-in-progress.svg");
       expect(result).not.toContain("アラサカ自動システム");
       expect(result).toContain("### Todo List:");
@@ -52,6 +51,45 @@ describe("updateCommentBody — Arasaka-specific", () => {
       const result = updateCommentBody(input);
       expect(result).not.toContain("issue-in-progress.svg");
       expect(result).toContain("Some content");
+    });
+
+    it("strips Arasaka final-comment template elements to prevent doubling", () => {
+      // Simulates currentBody that is already a formatted Arasaka comment
+      const preFormatted = [
+        `<img src="${ASSET_BASE}/issue-reply.svg" />`,
+        "",
+        "> **STATUS: FULFILLED** · @testuser",
+        "",
+        `<img src="${ASSET_BASE}/divider.svg" />`,
+        "",
+        "The actual response content.",
+        "",
+        `<img src="${ASSET_BASE}/footer.svg" />`,
+        "",
+        "<sub>Arasaka Corporation. Your future, our property.</sub>",
+        "",
+        `<img src="${ASSET_BASE}/footer.svg" />`,
+      ].join("\n");
+
+      const input: CommentUpdateInput = {
+        ...baseInput,
+        currentBody: preFormatted,
+        triggerUsername: "testuser",
+        executionDetails: { duration_ms: 60000, total_cost_usd: 0.10 },
+      };
+
+      const result = updateCommentBody(input);
+      // Template elements must appear exactly once (added by COMMENT_TEMPLATE, not duplicated from body)
+      const replyCount = (result.match(/issue-reply\.svg/g) ?? []).length;
+      const dividerCount = (result.match(/divider\.svg/g) ?? []).length;
+      const footerCount = (result.match(/footer\.svg/g) ?? []).length;
+      const statusCount = (result.match(/STATUS: FULFILLED/g) ?? []).length;
+      expect(replyCount).toBe(1);
+      expect(dividerCount).toBe(1);
+      expect(footerCount).toBe(1);
+      expect(statusCount).toBe(1);
+      // Actual response body must survive
+      expect(result).toContain("The actual response content.");
     });
   });
 
@@ -130,8 +168,7 @@ describe("updateCommentBody — Arasaka-specific", () => {
 
       const result = updateCommentBody(input);
       expect(result).toContain("`30s`");
-      // Empty cost produces `` which is an empty code span — acceptable
-      expect(result).toContain("**Directive fulfilled — @testuser**");
+      expect(result).toContain("STATUS: FULFILLED");
     });
 
     it("handles missing duration gracefully", () => {
@@ -143,12 +180,12 @@ describe("updateCommentBody — Arasaka-specific", () => {
 
       const result = updateCommentBody(input);
       expect(result).toContain("`$0.25`");
-      expect(result).toContain("**Directive fulfilled — @testuser**");
+      expect(result).toContain("STATUS: FULFILLED");
     });
   });
 
   describe("structural compatibility", () => {
-    it("preserves header → links → divider → content → divider → footer order", () => {
+    it("preserves reply-asset → header → links → divider → content → sub → footer order", () => {
       const input: CommentUpdateInput = {
         ...baseInput,
         currentBody: "### Todo List:\n- [x] Done",
@@ -160,27 +197,27 @@ describe("updateCommentBody — Arasaka-specific", () => {
 
       const result = updateCommentBody(input);
 
-      const headerIdx = result.indexOf("**Directive fulfilled");
+      const replyAssetIdx = result.indexOf("issue-reply.svg");
+      const headerIdx = result.indexOf("STATUS: FULFILLED");
       const linksIdx = result.indexOf("—— [View job]");
-      // Find the second divider (after the reply header divider)
-      const firstDividerIdx = result.indexOf("divider.svg");
-      const secondDividerIdx = result.indexOf("divider.svg", firstDividerIdx + 1);
+      const dividerIdx = result.indexOf("divider.svg");
       const contentIdx = result.indexOf("### Todo List:");
-      const thirdDividerIdx = result.indexOf("divider.svg", secondDividerIdx + 1);
+      const subIdx = result.indexOf("Your future, our property.");
       const footerIdx = result.indexOf("footer.svg");
 
+      expect(replyAssetIdx).toBeLessThan(headerIdx);
       expect(headerIdx).toBeLessThan(linksIdx);
-      expect(linksIdx).toBeLessThan(secondDividerIdx);
-      expect(secondDividerIdx).toBeLessThan(contentIdx);
-      expect(contentIdx).toBeLessThan(thirdDividerIdx);
-      expect(thirdDividerIdx).toBeLessThan(footerIdx);
+      expect(linksIdx).toBeLessThan(dividerIdx);
+      expect(dividerIdx).toBeLessThan(contentIdx);
+      expect(contentIdx).toBeLessThan(subIdx);
+      expect(subIdx).toBeLessThan(footerIdx);
     });
 
-    it("includes corporate tagline after footer", () => {
+    it("includes corporate tagline before footer", () => {
       const result = updateCommentBody({ ...baseInput, triggerUsername: "u" });
       const footerIdx = result.indexOf("footer.svg");
       const taglineIdx = result.indexOf("Your future, our property.");
-      expect(taglineIdx).toBeGreaterThan(footerIdx);
+      expect(taglineIdx).toBeLessThan(footerIdx);
     });
 
     it("uses error header on failure", () => {
@@ -192,7 +229,7 @@ describe("updateCommentBody — Arasaka-specific", () => {
       };
 
       const result = updateCommentBody(input);
-      expect(result).toContain("**Directive could not be completed — @testuser**");
+      expect(result).toContain("STATUS: FAILED");
       expect(result).toContain("`45s`");
     });
 

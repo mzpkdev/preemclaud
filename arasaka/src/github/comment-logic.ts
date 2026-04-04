@@ -91,7 +91,15 @@ export function updateCommentBody(input: CommentUpdateInput): string {
   // Strip our Arasaka in-progress initial comment (defensive, for crash-before-update cases)
   bodyContent = bodyContent.replace(/<img[^>]+banner\.svg[^>]*>/i, "").trim();
   bodyContent = bodyContent.replace(/<img[^>]+issue-in-progress\.svg[^>]*>/i, "").trim();
-  bodyContent = bodyContent.replace(/<sub>[^<]*<\/sub>/i, "").trim();
+  bodyContent = bodyContent.replace(/<sub>[^<]*<\/sub>/ig, "").trim();
+  // Strip Arasaka final-comment template elements — these are added by updateCommentBody
+  // and must not carry over if currentBody is already a formatted comment (would cause doubling).
+  bodyContent = bodyContent.replace(/<img[^>]+issue-reply\.svg[^>]*>/ig, "").trim();
+  bodyContent = bodyContent.replace(/<img[^>]+error-reply\.svg[^>]*>/ig, "").trim();
+  bodyContent = bodyContent.replace(/<img[^>]+divider\.svg[^>]*>/ig, "").trim();
+  bodyContent = bodyContent.replace(/<img[^>]+footer\.svg[^>]*>/ig, "").trim();
+  // Strip STATUS header lines produced by HEADER_TEMPLATE / HEADER_ERROR_TEMPLATE
+  bodyContent = bodyContent.replace(/^>\s*\*\*STATUS:\s*(?:FULFILLED|FAILED)\*\*[^\n]*/im, "").trim();
 
   // Check if there's a PR link in the content
   let prLinkFromContent = "";

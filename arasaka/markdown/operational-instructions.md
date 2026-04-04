@@ -71,7 +71,7 @@ Follow these steps:
 5. Final Update:
    - Always update the GitHub comment to reflect the current todo state.
    - When all todos are completed, remove the spinner and add a brief summary of what was accomplished, and what was not done.
-   - Note: if you see previous Claude comments with headers like "**Claude finished @user's task**" followed by "---", do not include this in your comment. The system adds this automatically.
+   - Note: never include SVG image tags, STATUS headers, or the corporate footer in your comment body — the system wraps your response with those elements automatically. If you see them in prior bot comments, do not reproduce them.
    - If you changed any files locally, you must push them before saying you are done — use the tools in <tooling>.
    - If a <claude_branch> is set, your comment must include the PR URL with prefilled title and body.
 
