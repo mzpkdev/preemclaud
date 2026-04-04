@@ -189,6 +189,11 @@ runs:
         git clone --depth 1 --quiet https://github.com/mzpkdev/preemclaud "$HOME/.claude"
         cd "$HOME/.claude" && python3 ripperdoc/cortex/sys/scripts/install.py
 
+    - name: Set Claude executable path
+      if: inputs.path_to_claude_code_executable == ''
+      shell: bash
+      run: echo "ARASAKA_CLAUDE_EXEC=$HOME/.cache/claude-npm/node_modules/.bin/claude" >> $GITHUB_ENV
+
     - name: Install Bun
       if: inputs.path_to_bun_executable == ''
       uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3
@@ -247,10 +252,10 @@ runs:
         # Base-action inputs
         INPUT_PROMPT_FILE: ${{ runner.temp }}/claude-prompts/claude-prompt.txt
         INPUT_SETTINGS: ${{ inputs.settings }}
-        INPUT_PATH_TO_CLAUDE_CODE_EXECUTABLE: ${{ inputs.path_to_claude_code_executable }}
+        INPUT_PATH_TO_CLAUDE_CODE_EXECUTABLE: ${{ inputs.path_to_claude_code_executable || env.ARASAKA_CLAUDE_EXEC }}
         INPUT_SHOW_FULL_OUTPUT: ${{ inputs.show_full_output }}
         DISPLAY_REPORT: ${{ inputs.display_report }}
-        PATH_TO_CLAUDE_CODE_EXECUTABLE: ${{ inputs.path_to_claude_code_executable }}
+        PATH_TO_CLAUDE_CODE_EXECUTABLE: ${{ inputs.path_to_claude_code_executable || env.ARASAKA_CLAUDE_EXEC }}
 
         # Provider config
         ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
