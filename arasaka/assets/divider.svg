@@ -1,17 +1,32 @@
-<svg id="divider-svg" width="100%" viewBox="0 0 680 28" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0" y="10" width="680" height="8" fill="#0C0808"></rect>
-    <line x1="0" y1="10" x2="680" y2="10" stroke="#8B0816" stroke-width="0.5"></line>
-    <line x1="0" y1="18" x2="680" y2="18" stroke="#8B0816" stroke-width="0.5"></line>
+<svg id="arasaka-divider" width="100%" viewBox="0 0 680 28" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    <rect x="0" y="10" width="680" height="8" fill="#0C0808"/>
+    <line x1="0" y1="10" x2="680" y2="10" stroke="#8B0816" stroke-width="0.5"/>
+    <line x1="0" y1="18" x2="680" y2="18" stroke="#8B0816" stroke-width="0.5"/>
     <!-- left group -->
-    <rect x="0" y="10" width="60" height="8" fill="#C8102E"></rect>
-    <polygon points="60,10 80,10 70,18 60,18" fill="#8B0816"></polygon>
+    <g filter="url(#glow-red)">
+        <rect x="0" y="10" width="60" height="8" fill="#C8102E"/>
+    </g>
+    <polygon points="60,10 80,10 70,18 60,18" fill="#8B0816"/>
     <!-- right group -->
-    <rect x="620" y="10" width="60" height="8" fill="#C8102E"></rect>
-    <polygon points="620,10 610,18 620,18" fill="#8B0816"></polygon>
+    <g filter="url(#glow-red)">
+        <rect x="620" y="10" width="60" height="8" fill="#C8102E"/>
+    </g>
+    <polygon points="620,10 610,18 620,18" fill="#8B0816"/>
     <!-- center diamond row -->
-    <polygon points="340,10 346,14 340,18 334,14" fill="#C8102E"></polygon>
-    <polygon points="320,10 326,14 320,18 314,14" fill="#8B0816" opacity="0.6"></polygon>
-    <polygon points="360,10 366,14 360,18 354,14" fill="#8B0816" opacity="0.6"></polygon>
-    <line x1="90" y1="14" x2="304" y2="14" stroke="#3A1010" stroke-width="1"></line>
-    <line x1="376" y1="14" x2="608" y2="14" stroke="#3A1010" stroke-width="1"></line>
+    <g filter="url(#glow-red)">
+        <polygon points="340,10 346,14 340,18 334,14" fill="#C8102E"/>
+    </g>
+    <polygon points="320,10 326,14 320,18 314,14" fill="#8B0816" opacity="0.6"/>
+    <polygon points="360,10 366,14 360,18 354,14" fill="#8B0816" opacity="0.6"/>
+    <line x1="90" y1="14" x2="304" y2="14" stroke="#3A1010" stroke-width="1"/>
+    <line x1="376" y1="14" x2="608" y2="14" stroke="#3A1010" stroke-width="1"/>
 </svg>

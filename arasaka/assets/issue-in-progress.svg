@@ -1,22 +1,46 @@
-<svg id="svg2" width="100%" viewBox="0 0 680 56" xmlns="http://www.w3.org/2000/svg">
-    <rect width="680" height="56" fill="#0a0707"></rect>
-    <rect width="680" height="56" fill="none" stroke="#2a1515" stroke-width="0.5"></rect>
-    <rect width="4" height="56" fill="#c8a040"></rect>
-    <rect x="676" width="4" height="56" fill="#c8a040"></rect>
-    <rect x="4" y="0" width="676" height="1" fill="#3d1c1c"></rect>
-    <rect x="4" y="55" width="676" height="1" fill="#3d1c1c"></rect>
-    <rect x="4" y="0" width="40" height="56" fill="#0f0d08"></rect>
-    <rect x="44" y="0" width="1" height="56" fill="#2a1515"></rect>
-    <circle cx="24" cy="28" r="5" fill="none" stroke="#c8a040" stroke-width="1.2"></circle>
-    <circle cx="24" cy="28" r="2" fill="#c8a040"></circle>
+<svg id="arasaka-status-in-progress" width="100%" viewBox="0 0 680 56" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="20" y2="0" stroke="#c8a040" stroke-width="0.3" opacity="0.04"/>
+            <line x1="0" y1="0" x2="0" y2="20" stroke="#c8a040" stroke-width="0.3" opacity="0.04"/>
+        </pattern>
+    </defs>
+    <rect width="680" height="56" fill="#0a0707"/>
+    <rect width="680" height="56" fill="none" stroke="#2a1515" stroke-width="0.5"/>
+    <!-- background grid -->
+    <rect x="44" y="0" width="632" height="56" fill="url(#grid)"/>
+    <!-- side accent bars -->
+    <g filter="url(#glow-gold)">
+        <rect width="4" height="56" fill="#c8a040"/>
+        <rect x="676" width="4" height="56" fill="#c8a040"/>
+    </g>
+    <rect x="4" y="0" width="676" height="1" fill="#3d1c1c"/>
+    <rect x="4" y="55" width="676" height="1" fill="#3d1c1c"/>
+    <rect x="4" y="0" width="40" height="56" fill="#0f0d08"/>
+    <rect x="44" y="0" width="1" height="56" fill="#2a1515"/>
+    <!-- status indicator -->
+    <g filter="url(#glow-gold)">
+        <circle cx="24" cy="28" r="5" fill="none" stroke="#c8a040" stroke-width="1.2"/>
+        <circle cx="24" cy="28" r="2" fill="#c8a040"/>
+    </g>
     <text x="64" y="22" font-family="'Courier New',monospace" font-size="9" fill="#4a3830" letter-spacing="2">
         ARASAKA-OPS-BOT
     </text>
     <text x="64" y="37" font-family="'Courier New',monospace" font-size="12" font-weight="700" fill="#c8a040"
           letter-spacing="1">STATUS: IN PROGRESS
     </text>
+    <!-- Japanese secondary text -->
+    <text x="280" y="22" font-family="'Courier New',monospace" font-size="8" fill="#3a2520" letter-spacing="1">処理中
+    </text>
     <text x="460" y="37" font-family="'Courier New',monospace" font-size="10" fill="#6a5030" letter-spacing="1">ETA 48h
         · HIGH
     </text>
-    <line x1="452" y1="20" x2="452" y2="44" stroke="#2a1515" stroke-width="0.5"></line>
+    <line x1="452" y1="20" x2="452" y2="44" stroke="#2a1515" stroke-width="0.5"/>
 </svg>

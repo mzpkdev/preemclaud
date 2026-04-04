@@ -1,0 +1,28 @@
+<svg id="arasaka-footer" width="100%" viewBox="0 0 680 24" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    <rect width="680" height="24" fill="#0C0808"/>
+    <!-- top border line -->
+    <line x1="0" y1="0" x2="680" y2="0" stroke="#8B0816" stroke-width="0.5"/>
+    <!-- corner marks bottom -->
+    <rect x="8" y="14" width="12" height="2" fill="#C8102E" filter="url(#glow-red)"/>
+    <rect x="8" y="8" width="2" height="12" fill="#C8102E" filter="url(#glow-red)"/>
+    <rect x="660" y="14" width="12" height="2" fill="#C8102E" filter="url(#glow-red)"/>
+    <rect x="672" y="8" width="2" height="12" fill="#C8102E" filter="url(#glow-red)"/>
+    <!-- center diamond -->
+    <polygon points="340,6 344,12 340,18 336,12" fill="#C8102E" opacity="0.8" filter="url(#glow-red)"/>
+    <!-- connecting lines -->
+    <line x1="24" y1="12" x2="328" y2="12" stroke="#3A1010" stroke-width="0.5"/>
+    <line x1="352" y1="12" x2="656" y2="12" stroke="#3A1010" stroke-width="0.5"/>
+    <!-- label -->
+    <text x="340" y="23" text-anchor="middle" font-family="'Courier New',monospace" font-size="6"
+          fill="#4a3030" letter-spacing="4">ARASAKA AUTOMATED SYSTEMS
+    </text>
+</svg>

@@ -1,0 +1,45 @@
+<svg id="arasaka-error-reply" width="100%" viewBox="0 0 680 56" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <filter id="glow-amber" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="20" y2="0" stroke="#E04040" stroke-width="0.3" opacity="0.04"/>
+            <line x1="0" y1="0" x2="0" y2="20" stroke="#E04040" stroke-width="0.3" opacity="0.04"/>
+        </pattern>
+    </defs>
+    <rect width="680" height="56" fill="#0a0707"/>
+    <rect width="680" height="56" fill="none" stroke="#3a1515" stroke-width="0.5"/>
+    <!-- background grid -->
+    <rect x="44" y="0" width="632" height="56" fill="url(#grid)"/>
+    <!-- side accent bars -->
+    <g filter="url(#glow-amber)">
+        <rect width="4" height="56" fill="#E04040"/>
+        <rect x="676" width="4" height="56" fill="#E04040"/>
+    </g>
+    <rect x="4" y="0" width="676" height="1" fill="#4d1c1c"/>
+    <rect x="4" y="55" width="676" height="1" fill="#4d1c1c"/>
+    <rect x="4" y="0" width="40" height="56" fill="#1a0808"/>
+    <rect x="44" y="0" width="1" height="56" fill="#3a1515"/>
+    <!-- warning triangle in left panel -->
+    <polygon points="24,18 32,36 16,36" fill="none" stroke="#E04040" stroke-width="1.2"
+             filter="url(#glow-amber)"/>
+    <text x="24" y="33" text-anchor="middle" font-family="'Courier New',monospace" font-size="10"
+          font-weight="700" fill="#E04040">!
+    </text>
+    <text x="64" y="22" font-family="'Courier New',monospace" font-size="9" fill="#5a3030" letter-spacing="2">ERROR
+        REPORT
+    </text>
+    <!-- Japanese secondary text -->
+    <text x="180" y="22" font-family="'Courier New',monospace" font-size="8" fill="#3a2020" letter-spacing="1">異常
+    </text>
+    <text x="64" y="37" font-family="'Courier New',monospace" font-size="12" font-weight="700" fill="#E04040"
+          letter-spacing="1" filter="url(#glow-amber)">OPERATION FAILED
+    </text>
+    <polygon points="640,20 648,28 640,36 632,28" fill="none" stroke="#E04040" stroke-width="0.5"/>
+    <polygon points="656,20 664,28 656,36 648,28" fill="none" stroke="#3a1515" stroke-width="0.5"/>
+</svg>

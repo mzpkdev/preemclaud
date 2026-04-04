@@ -1,21 +1,43 @@
-<svg id="svg1" width="100%" viewBox="0 0 680 56" xmlns="http://www.w3.org/2000/svg">
-    <rect width="680" height="56" fill="#0a0707"></rect>
-    <rect width="680" height="56" fill="none" stroke="#2a1515" stroke-width="0.5"></rect>
-    <rect width="4" height="56" fill="#C8102E"></rect>
-    <rect x="676" width="4" height="56" fill="#C8102E"></rect>
-    <rect x="4" y="0" width="676" height="1" fill="#3d1c1c"></rect>
-    <rect x="4" y="55" width="676" height="1" fill="#3d1c1c"></rect>
-    <rect x="4" y="0" width="40" height="56" fill="#160c0c"></rect>
-    <rect x="44" y="0" width="1" height="56" fill="#2a1515"></rect>
+<svg id="arasaka-issue-reply" width="100%" viewBox="0 0 680 56" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="20" y2="0" stroke="#C8102E" stroke-width="0.3" opacity="0.04"/>
+            <line x1="0" y1="0" x2="0" y2="20" stroke="#C8102E" stroke-width="0.3" opacity="0.04"/>
+        </pattern>
+    </defs>
+    <rect width="680" height="56" fill="#0a0707"/>
+    <rect width="680" height="56" fill="none" stroke="#2a1515" stroke-width="0.5"/>
+    <!-- background grid -->
+    <rect x="44" y="0" width="632" height="56" fill="url(#grid)"/>
+    <!-- side accent bars -->
+    <g filter="url(#glow-red)">
+        <rect width="4" height="56" fill="#C8102E"/>
+        <rect x="676" width="4" height="56" fill="#C8102E"/>
+    </g>
+    <rect x="4" y="0" width="676" height="1" fill="#3d1c1c"/>
+    <rect x="4" y="55" width="676" height="1" fill="#3d1c1c"/>
+    <rect x="4" y="0" width="40" height="56" fill="#160c0c"/>
+    <rect x="44" y="0" width="1" height="56" fill="#2a1515"/>
+    <!-- left panel label -->
     <text x="24" y="28" text-anchor="middle" dominant-baseline="central" font-family="'Courier New',monospace"
-          font-size="9" font-weight="700" fill="#C8102E" letter-spacing="1">REP
+          font-size="9" font-weight="700" fill="#C8102E" letter-spacing="1" filter="url(#glow-red)">REP
     </text>
     <text x="64" y="22" font-family="'Courier New',monospace" font-size="9" fill="#4a3830" letter-spacing="2">ISSUE
         RESPONSE
     </text>
-    <text x="64" y="37" font-family="'Courier New',monospace" font-size="12" font-weight="700" fill="#d4c8c4"
-          letter-spacing="1">k-watanabe · ARASAKA CORP
+    <!-- Japanese secondary text -->
+    <text x="200" y="22" font-family="'Courier New',monospace" font-size="8" fill="#3a2520" letter-spacing="1">応答
     </text>
-    <polygon points="640,20 648,28 640,36 632,28" fill="none" stroke="#8B0816" stroke-width="0.5"></polygon>
-    <polygon points="656,20 664,28 656,36 648,28" fill="none" stroke="#3d1c1c" stroke-width="0.5"></polygon>
+    <text x="64" y="37" font-family="'Courier New',monospace" font-size="12" font-weight="700" fill="#d4c8c4"
+          letter-spacing="1">アラサカ · AUTOMATED RESPONSE
+    </text>
+    <polygon points="640,20 648,28 640,36 632,28" fill="none" stroke="#8B0816" stroke-width="0.5"/>
+    <polygon points="656,20 664,28 656,36 648,28" fill="none" stroke="#3d1c1c" stroke-width="0.5"/>
 </svg>
