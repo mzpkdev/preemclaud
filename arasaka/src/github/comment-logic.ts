@@ -88,6 +88,8 @@ export function updateCommentBody(input: CommentUpdateInput): string {
   // First, remove the "Claude Code is working…" or "Claude Code is working..." message
   const workingPattern = /Claude Code is working[…\.]{1,3}(?:\s*<img[^>]*>)?/i;
   let bodyContent = originalBody.replace(workingPattern, "").trim();
+  // Strip our Arasaka in-progress initial comment (defensive, for crash-before-update cases)
+  bodyContent = bodyContent.replace(/<img[^>]+issue-in-progress\.svg[^>]*>/i, "").trim();
 
   // Check if there's a PR link in the content
   let prLinkFromContent = "";

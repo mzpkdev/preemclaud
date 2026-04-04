@@ -65,8 +65,11 @@ import type { ClaudeRunResult } from "../../upstream/base-action/src/run-claude-
 // ─── Our custom prompt builder ─────────────────────────────────────
 import { buildPrompt } from "../prompt/index.ts";
 
+// ─── Upstream imports: Comment operations ──────────────────────────
+import { updateClaudeComment } from "../../upstream/src/github/operations/comments/update-claude-comment.ts";
+
 // ─── Arasaka hardcoded defaults ────────────────────────────────────
-import { SYSTEM_PROMPT } from "../config/defaults.ts";
+import { SYSTEM_PROMPT, INITIAL_COMMENT_BODY } from "../config/defaults.ts";
 
 // ═══════════════════════════════════════════════════════════════════
 // installClaudeCode — copied from upstream (self-contained)
@@ -235,6 +238,26 @@ async function run() {
       modeName === "tag"
         ? await prepareTagMode({ context, octokit, githubToken })
         : await prepareAgentMode({ context, octokit, githubToken });
+
+    // ── ARASAKA: Replace upstream's "Claude Code is working…" with branded initial comment ──
+    if (
+      modeName === "tag" &&
+      prepareResult.commentId &&
+      isEntityContext(context)
+    ) {
+      try {
+        await updateClaudeComment(octokit.rest, {
+          owner: context.repository.owner,
+          repo: context.repository.repo,
+          commentId: prepareResult.commentId,
+          body: INITIAL_COMMENT_BODY,
+          isPullRequestReviewComment: isPullRequestReviewCommentEvent(context),
+        });
+      } catch (error) {
+        console.error("[arasaka] Failed to brand initial comment:", error);
+        // Non-fatal — continue regardless
+      }
+    }
 
     // ── ARASAKA: Overwrite upstream prompt with our data-only prompt ──
     if (modeName === "tag" && isEntityContext(context)) {

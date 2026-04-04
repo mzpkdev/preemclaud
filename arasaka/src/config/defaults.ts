@@ -3,6 +3,14 @@
  * Edit these values to change the system prompt or comment format.
  */
 
+const ASSET_BASE =
+  "https://raw.githubusercontent.com/mzpkdev/preemclaud/main/arasaka/assets";
+
+// ─── Initial comment ───────────────────────────────────────────────────────────
+// Posted immediately when the action starts, before Claude has any output.
+// Replaces upstream's "Claude Code is working…" text.
+export const INITIAL_COMMENT_BODY = `<img src="${ASSET_BASE}/issue-in-progress.svg" />`;
+
 // ─── System prompt ─────────────────────────────────────────────────────────────
 // Sourced from upstream anthropics/claude-code-action behavioral instructions.
 // The human-turn prompt file already provides structured GitHub context
@@ -160,7 +168,8 @@ export const HEADER_ERROR_TEMPLATE = `**Claude encountered an error after {durat
 //   {job_url}   — GitHub Actions job URL
 //   {branch}    — claude branch name (empty if not set)
 export const COMMENT_TEMPLATE = `\
-<img src="https://raw.githubusercontent.com/mzpkdev/preemclaud/main/.github/assets/banner.svg" alt="Arasaka" height="48" />
+<img src="${ASSET_BASE}/issue-reply.svg" />
+<img src="${ASSET_BASE}/divider.svg" />
 
 {header}{links}{error}
 
