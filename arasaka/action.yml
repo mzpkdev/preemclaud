@@ -172,7 +172,7 @@ runs:
     - name: Add Claude to PATH
       if: inputs.path_to_claude_code_executable == ''
       shell: bash
-      run: echo "$HOME/.cache/claude-npm/bin" >> $GITHUB_PATH
+      run: echo "$HOME/.cache/claude-npm/node_modules/.bin" >> $GITHUB_PATH
 
     - name: Cache preemclaud
       if: inputs.path_to_claude_code_executable == ''
