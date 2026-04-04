@@ -31,6 +31,7 @@ const mainResult = await Bun.build({
   entrypoints: ["./src/entrypoints/run.ts"],
   outdir: DIST,
   target: "bun",
+  loader: { ".md": "text" },
 });
 if (!mainResult.success) {
   console.error("Main entrypoint build failed:", mainResult.logs);
