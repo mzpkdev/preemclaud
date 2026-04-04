@@ -159,7 +159,7 @@ export function updateCommentBody(input: CommentUpdateInput): string {
     .replace(/\{branch\}/g, input.branchName ?? "");
 
   // Add links section
-  let links = ` —— [View job](${jobUrl})`;
+  let links = `[View job](${jobUrl})`;
 
   // Add branch name with link
   if (branchName || branchLink) {

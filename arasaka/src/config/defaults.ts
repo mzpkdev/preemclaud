@@ -6,6 +6,7 @@
 
 import personaMd from "../../content/prompt/persona.md";
 import formatMd from "../../content/prompt/format.md";
+import scenariosMd from "../../content/prompt/scenarios.md";
 import instructionsMd from "../../content/prompt/instructions.md";
 import initialCommentMd from "../../content/comments/states/initial.md";
 import commentTemplateMd from "../../content/comments/templates/comment.md";
@@ -33,12 +34,19 @@ export const PERSONA = personaMd;
 // operational instructions below so each concern can be edited independently.
 export const RESPONSE_FORMAT = formatMd;
 
+// ─── Scenario guidance ────────────────────────────────────────────────────────
+// Canonical event-specific body patterns. Kept separate so persona stays purely
+// tonal and operational instructions stay procedural.
+export const SCENARIO_GUIDANCE = scenariosMd;
+
 // ─── System prompt ─────────────────────────────────────────────────────────────
 // Sourced from upstream anthropics/claude-code-action behavioral instructions.
 // The human-turn prompt file already provides structured GitHub context
 // (<github_context>, <tooling>, <trigger_comment>, etc.) — this is the behavioral layer only.
-// PERSONA and RESPONSE_FORMAT are prepended for tonal and structural consistency.
-export const SYSTEM_PROMPT = `${PERSONA}\n${RESPONSE_FORMAT}\n${instructionsMd}`;
+// PERSONA, RESPONSE_FORMAT, and SCENARIO_GUIDANCE are prepended so each layer
+// can be edited independently.
+export const SYSTEM_PROMPT =
+  `${PERSONA}\n${RESPONSE_FORMAT}\n${SCENARIO_GUIDANCE}\n${instructionsMd}`;
 
 // ─── Header templates ──────────────────────────────────────────────────────────
 // Control the {header} line prepended to the comment after execution.
@@ -57,7 +65,7 @@ export const HEADER_ERROR_TEMPLATE = headerFailureMd.trim();
 //
 // Available variables:
 //   {header}    — built from HEADER_TEMPLATE / HEADER_ERROR_TEMPLATE above
-//   {links}     — e.g. " —— [View job](url) • [`branch`](url) • [Create PR ➔](url)"
+//   {links}     — e.g. "[View job](url) • [`branch`](url) • [Create PR ➔](url)"
 //   {content}   — Claude's comment body (spinner removed, stale links stripped)
 //   {error}     — error details code block (non-empty only on failure with details)
 //   {duration}  — wall-clock time, e.g. "2m 30s" (empty if unavailable)
