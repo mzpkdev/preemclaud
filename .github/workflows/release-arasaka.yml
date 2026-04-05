@@ -32,9 +32,10 @@ jobs:
 
       - name: Deploy to v1 branch
         run: |
-          # uses: mzpkdev/preemclaud/arasaka@v1 resolves to arasaka/ subdir on v1 branch
-          mkdir -p /tmp/v1-release/arasaka
-          cp -r arasaka/dist/. /tmp/v1-release/arasaka/
+          # The v1 branch contains the raw action under arasaka/ and the reusable
+          # workflow entrypoint at .github/workflows/arasaka.yml.
+          mkdir -p /tmp/v1-release
+          cp -r arasaka/dist/. /tmp/v1-release/
           cd /tmp/v1-release
 
           git init

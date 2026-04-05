@@ -113,6 +113,74 @@ arasaka/
 All other inputs (`trigger_phrase`, `base_branch`, `branch_prefix`, `use_commit_signing`, etc.) are pass-throughs to
 upstream — see `action.yml` for the full list.
 
+## Reusable Workflow
+
+The recommended end-user integration is the umbrella reusable workflow:
+
+```yaml
+name: Arasaka
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+  issue_comment:
+    types: [created]
+  issues:
+    types: [labeled]
+
+jobs:
+  arasaka:
+    uses: mzpkdev/preemclaud/.github/workflows/arasaka.yml@v1
+    secrets: inherit
+```
+
+This wrapper gives users one entrypoint that handles:
+
+- queue generation on `schedule` and `workflow_dispatch`
+- same-run issue implementation for queue items it just created
+- automatic pull request review on `pull_request`
+- issue or PR-thread development when someone comments `@arasaka`
+- issue-driven development when an issue gets the `arasaka:ready` label
+
+### Workflow Inputs
+
+The reusable workflow intentionally exposes a small surface:
+
+| Input                   | Default           | Purpose                                             |
+| ----------------------- | ----------------- | --------------------------------------------------- |
+| `trigger_phrase`        | `@arasaka`        | Comment trigger for direct issue / PR-thread work   |
+| `ready_label`           | `arasaka:ready`   | Label trigger for issue-driven development          |
+| `queue_max_issues`      | `3`               | Max issues the queue planner opens per run          |
+| `branch_prefix`         | `claude/`         | Prefix used for generated work branches             |
+| `base_branch`           | _repo default_    | Base branch override for queue-created development  |
+| `auto_start_from_queue` | `true`            | Start implementation jobs in the same workflow run  |
+
+Example with overrides:
+
+```yaml
+jobs:
+  arasaka:
+    uses: mzpkdev/preemclaud/.github/workflows/arasaka.yml@v1
+    with:
+      queue_max_issues: "2"
+      ready_label: "bot:ready"
+      branch_prefix: "arasaka/"
+    secrets: inherit
+```
+
+## Internal Presets
+
+The reusable workflow is backed by preset composite actions stored in `arasaka/actions/`:
+
+- `queue` for autonomous issue creation
+- `review` for automatic PR review
+- `develop` for same-run issue implementation
+
+These are versioned with the main Arasaka release, but the reusable workflow above is the intended public entrypoint.
+
 ### With preemclaud
 
 If the calling repo has preemclaud installed on the runner, pass its binary directly to skip the default Claude Code

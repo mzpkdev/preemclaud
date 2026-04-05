@@ -1,0 +1,232 @@
+name: Arasaka
+
+on:
+  workflow_call:
+    inputs:
+      trigger_phrase:
+        type: string
+        required: false
+        default: "@arasaka"
+      ready_label:
+        type: string
+        required: false
+        default: "arasaka:ready"
+      queue_max_issues:
+        type: string
+        required: false
+        default: "3"
+      branch_prefix:
+        type: string
+        required: false
+        default: "claude/"
+      base_branch:
+        type: string
+        required: false
+        default: ""
+      auto_start_from_queue:
+        type: boolean
+        required: false
+        default: true
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+
+jobs:
+  queue:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    outputs:
+      structured_output: ${{ steps.run.outputs.structured_output }}
+      issue_matrix: ${{ steps.matrix.outputs.issue_matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build queue preset
+        id: preset
+        uses: __ARASAKA_OWNER_REPO__/arasaka/actions/queue@__ARASAKA_REF__
+        with:
+          queue_max_issues: ${{ inputs.queue_max_issues }}
+
+      - name: Run queue planner
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          base_branch: ${{ inputs.base_branch }}
+          branch_prefix: ${{ inputs.branch_prefix }}
+          allowed_bots: "github-actions[bot]"
+
+      - name: Build develop matrix
+        id: matrix
+        shell: bash
+        env:
+          OUTPUT: ${{ steps.run.outputs.structured_output }}
+        run: |
+          if [ -z "$OUTPUT" ]; then
+            echo 'issue_matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          MATRIX=$(printf '%s' "$OUTPUT" | jq -c '
+            if (.issues // []) | length == 0
+            then {"include":[]}
+            else {"include":[.issues[] | {issue_number:(.number | tostring), issue_title:(.title // "")}]}
+            end
+          ')
+
+          echo "issue_matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  develop_from_queue:
+    if: >
+      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') &&
+      inputs.auto_start_from_queue &&
+      needs.queue.result == 'success' &&
+      needs.queue.outputs.issue_matrix != '{"include":[]}'
+    needs: queue
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.queue.outputs.issue_matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare branch
+        id: branch
+        shell: bash
+        env:
+          ISSUE_NUMBER: ${{ matrix.issue_number }}
+          BASE_BRANCH_INPUT: ${{ inputs.base_branch }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BRANCH_PREFIX: ${{ inputs.branch_prefix }}
+        run: |
+          BASE_BRANCH="${BASE_BRANCH_INPUT:-$DEFAULT_BRANCH}"
+          PREFIX="${BRANCH_PREFIX%/}"
+
+          if [ -n "$PREFIX" ]; then
+            BRANCH_NAME="$PREFIX/issue-$ISSUE_NUMBER"
+          else
+            BRANCH_NAME="issue-$ISSUE_NUMBER"
+          fi
+
+          git fetch origin "$BASE_BRANCH" --depth=1
+
+          if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+            git fetch origin "$BRANCH_NAME" --depth=1
+            git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
+          else
+            git checkout -B "$BRANCH_NAME" "origin/$BASE_BRANCH"
+          fi
+
+          echo "base_branch=$BASE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build develop preset
+        id: preset
+        uses: __ARASAKA_OWNER_REPO__/arasaka/actions/develop@__ARASAKA_REF__
+        with:
+          issue_number: ${{ matrix.issue_number }}
+          branch_name: ${{ steps.branch.outputs.branch_name }}
+          base_branch: ${{ steps.branch.outputs.base_branch }}
+
+      - name: Run issue implementation
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        env:
+          CLAUDE_BRANCH: ${{ steps.branch.outputs.branch_name }}
+          BASE_BRANCH: ${{ steps.branch.outputs.base_branch }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          base_branch: ${{ steps.branch.outputs.base_branch }}
+          branch_prefix: ${{ inputs.branch_prefix }}
+          allowed_bots: "github-actions[bot]"
+
+  review:
+    if: >
+      github.event_name == 'pull_request' &&
+      (
+        github.event.action == 'opened' ||
+        github.event.action == 'synchronize' ||
+        github.event.action == 'ready_for_review' ||
+        github.event.action == 'reopened'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Build review preset
+        id: preset
+        uses: __ARASAKA_OWNER_REPO__/arasaka/actions/review@__ARASAKA_REF__
+        with:
+          pr_number: ${{ github.event.pull_request.number }}
+          base_branch: ${{ github.event.pull_request.base.ref }}
+
+      - name: Run PR review
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          base_branch: ${{ github.event.pull_request.base.ref }}
+
+  develop_from_issue:
+    if: >
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, inputs.trigger_phrase)) ||
+      (github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == inputs.ready_label)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run direct issue development
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          trigger_phrase: ${{ inputs.trigger_phrase }}
+          label_trigger: ${{ inputs.ready_label }}
+          base_branch: ${{ inputs.base_branch }}
+          branch_prefix: ${{ inputs.branch_prefix }}

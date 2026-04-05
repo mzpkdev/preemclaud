@@ -1,0 +1,78 @@
+name: "Arasaka Queue Preset"
+description: "Generate prompt, system prompt, and Claude args for autonomous queue creation"
+
+inputs:
+  queue_max_issues:
+    description: "Maximum number of issues to create in a single run"
+    required: false
+    default: "3"
+  backlog_label:
+    description: "Preferred backlog label to apply when the repository already uses it"
+    required: false
+    default: "auto-generated"
+
+outputs:
+  prompt:
+    description: "Queue generation prompt"
+    value: ${{ steps.preset.outputs.prompt }}
+  system_prompt:
+    description: "Queue generation system prompt"
+    value: ${{ steps.preset.outputs.system_prompt }}
+  claude_args:
+    description: "Claude CLI arguments for queue generation"
+    value: ${{ steps.preset.outputs.claude_args }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: preset
+      shell: bash
+      env:
+        QUEUE_MAX_ISSUES: ${{ inputs.queue_max_issues }}
+        BACKLOG_LABEL: ${{ inputs.backlog_label }}
+      run: |
+        {
+          echo "prompt<<EOF"
+          cat <<EOF
+Repository: ${{ github.repository }}
+Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+Create or refresh a small, high-signal implementation queue for this repository.
+
+Requirements:
+- Read the repository before opening issues. Start with README, docs, manifests, and obvious entrypoints.
+- Review existing open issues so you do not create duplicates.
+- Create at most ${QUEUE_MAX_ISSUES} new issues.
+- Prefer bounded work that fits in one pull request.
+- Good candidates: missing tests, broken docs, clear bugs, consistency fixes, automation gaps, or small follow-up work.
+- Avoid vague roadmap items, speculative rewrites, or work that depends on product decisions not present in the repo.
+- If the repository already appears to use the label "${BACKLOG_LABEL}", add it to new issues. If not, skip it without failing.
+- If there is no worthwhile work to enqueue, create no issues.
+
+Return only structured output matching the provided JSON schema.
+EOF
+          echo "EOF"
+          echo "system_prompt<<'EOF'"
+          cat <<'EOF'
+You are Arasaka Queue Planner operating inside GitHub Actions.
+
+You are responsible for creating a small, concrete, non-duplicate development queue.
+
+Rules:
+- Do not edit repository files.
+- Do not create speculative or organizational issues.
+- Only create issues that are implementable from repository evidence.
+- Prefer work that a single engineer or coding agent can complete in one pull request.
+- If an issue would duplicate or overlap an existing open issue, do not create it.
+- If you create no issues, return an empty issues array.
+- Your final response must satisfy the JSON schema exactly.
+EOF
+          echo "EOF"
+          echo "claude_args<<'EOF'"
+          cat <<'EOF'
+--max-turns 16
+--allowedTools "Read,Glob,Grep,LS,mcp__github__create_issue,mcp__github__create_issue_comment,mcp__github__get_issue,mcp__github__get_issue_comments,mcp__github__list_issues,mcp__github__search_issues,mcp__github__update_issue"
+--json-schema '{"type":"object","properties":{"issues":{"type":"array","items":{"type":"object","properties":{"number":{"type":"integer"},"title":{"type":"string"}},"required":["number","title"],"additionalProperties":false}}},"required":["issues"],"additionalProperties":false}'
+EOF
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"

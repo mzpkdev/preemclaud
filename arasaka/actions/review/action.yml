@@ -1,0 +1,70 @@
+name: "Arasaka Review Preset"
+description: "Generate prompt, system prompt, and Claude args for automatic PR review"
+
+inputs:
+  pr_number:
+    description: "Pull request number to review"
+    required: true
+  base_branch:
+    description: "Base branch for diff comparison"
+    required: true
+
+outputs:
+  prompt:
+    description: "PR review prompt"
+    value: ${{ steps.preset.outputs.prompt }}
+  system_prompt:
+    description: "PR review system prompt"
+    value: ${{ steps.preset.outputs.system_prompt }}
+  claude_args:
+    description: "Claude CLI arguments for PR review"
+    value: ${{ steps.preset.outputs.claude_args }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: preset
+      shell: bash
+      env:
+        PR_NUMBER: ${{ inputs.pr_number }}
+        BASE_BRANCH: ${{ inputs.base_branch }}
+      run: |
+        {
+          echo "prompt<<EOF"
+          cat <<EOF
+Review pull request #${PR_NUMBER} in ${{ github.repository }}.
+
+Use the checked-out branch plus git history to review the actual diff:
+- Compare with: git diff origin/${BASE_BRANCH}...HEAD
+- Read the touched files you need for context.
+
+Focus on:
+- correctness bugs
+- security problems
+- behavioral regressions
+- missing or weak tests
+
+After analysis, post one concise markdown review comment to the PR thread using GitHub MCP tools.
+If you find no actionable issues, say that explicitly and mention any residual risk or missing verification.
+EOF
+          echo "EOF"
+          echo "system_prompt<<'EOF'"
+          cat <<'EOF'
+You are Arasaka Reviewer operating inside GitHub Actions.
+
+Review code conservatively. Findings should prioritize bugs, regressions, security issues, and missing tests.
+
+Rules:
+- Do not edit repository files.
+- Use git diff and file reads before making claims.
+- Post one final markdown comment to the PR thread.
+- If there are no findings, state that explicitly instead of inventing nits.
+EOF
+          echo "EOF"
+          echo "claude_args<<'EOF'"
+          cat <<'EOF'
+--max-turns 14
+--allowedTools "Read,Glob,Grep,LS,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git status:*),mcp__github__create_issue_comment"
+EOF
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"

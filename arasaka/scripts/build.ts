@@ -4,32 +4,32 @@
  * Build script for the arasaka action.
  * Bundles the entrypoint and MCP servers for the orphan v1 branch.
  *
- * Output layout matches what prepareMcpConfig() expects:
- *   dist/src/mcp/<server>.ts  (bundled JS, named .ts for path compat)
- *   dist/src/entrypoints/<entry>.ts
- *   dist/scripts/git-push.sh
- *   dist/run.js               (main entrypoint)
+ * Output layout matches the published v1 branch:
+ *   dist/arasaka/<raw action files>
+ *   dist/.github/workflows/arasaka.yml
  */
 
 import { $ } from "bun";
-import { mkdir, copyFile, readFile, writeFile } from "fs/promises";
+import { cp, mkdir, copyFile, readFile, writeFile } from "fs/promises";
 
 const DIST = "./dist";
+const DIST_ARASAKA = `${DIST}/arasaka`;
 const UPSTREAM_MCP = "./upstream/src/mcp";
 const UPSTREAM_ENTRYPOINTS = "./upstream/src/entrypoints";
 const UPSTREAM_SCRIPTS = "./upstream/scripts";
 
 // 1. Clean and create output directories
 await $`rm -rf ${DIST}`;
-await mkdir(`${DIST}/src/mcp`, { recursive: true });
-await mkdir(`${DIST}/src/entrypoints`, { recursive: true });
-await mkdir(`${DIST}/scripts`, { recursive: true });
+await mkdir(`${DIST_ARASAKA}/src/mcp`, { recursive: true });
+await mkdir(`${DIST_ARASAKA}/src/entrypoints`, { recursive: true });
+await mkdir(`${DIST_ARASAKA}/scripts`, { recursive: true });
+await mkdir(`${DIST}/.github/workflows`, { recursive: true });
 
 // 2. Bundle main entrypoint
 console.log("Bundling main entrypoint...");
 const mainResult = await Bun.build({
   entrypoints: ["./src/entrypoints/run.ts"],
-  outdir: DIST,
+  outdir: DIST_ARASAKA,
   target: "bun",
   loader: { ".md": "text" },
 });
@@ -50,7 +50,7 @@ for (const server of mcpServers) {
   console.log(`Bundling MCP server: ${server}...`);
   const result = await Bun.build({
     entrypoints: [`${UPSTREAM_MCP}/${server}`],
-    outdir: `${DIST}/src/mcp`,
+    outdir: `${DIST_ARASAKA}/src/mcp`,
     target: "bun",
   });
   if (!result.success) {
@@ -59,7 +59,7 @@ for (const server of mcpServers) {
   }
   // Rename .js to .ts so prepareMcpConfig paths resolve correctly
   const jsName = server.replace(".ts", ".js");
-  await $`mv ${DIST}/src/mcp/${jsName} ${DIST}/src/mcp/${server}`;
+  await $`mv ${DIST_ARASAKA}/src/mcp/${jsName} ${DIST_ARASAKA}/src/mcp/${server}`;
 }
 
 // 4. Bundle cleanup and post-buffered-inline-comments entrypoints
@@ -72,7 +72,7 @@ for (const entry of extraEntrypoints) {
   console.log(`Bundling entrypoint: ${entry}...`);
   const result = await Bun.build({
     entrypoints: [`${UPSTREAM_ENTRYPOINTS}/${entry}`],
-    outdir: `${DIST}/src/entrypoints`,
+    outdir: `${DIST_ARASAKA}/src/entrypoints`,
     target: "bun",
   });
   if (!result.success) {
@@ -81,18 +81,22 @@ for (const entry of extraEntrypoints) {
   }
   // Rename .js to .ts for path compatibility
   const jsName = entry.replace(".ts", ".js");
-  await $`mv ${DIST}/src/entrypoints/${jsName} ${DIST}/src/entrypoints/${entry}`;
+  await $`mv ${DIST_ARASAKA}/src/entrypoints/${jsName} ${DIST_ARASAKA}/src/entrypoints/${entry}`;
 }
 
 // 5. Copy scripts
 console.log("Copying scripts...");
 await copyFile(
   `${UPSTREAM_SCRIPTS}/git-push.sh`,
-  `${DIST}/scripts/git-push.sh`,
+  `${DIST_ARASAKA}/scripts/git-push.sh`,
 );
-await $`chmod +x ${DIST}/scripts/git-push.sh`;
+await $`chmod +x ${DIST_ARASAKA}/scripts/git-push.sh`;
 
-// 6. Generate v1-specific action.yml with patched paths
+// 6. Copy preset composite actions
+console.log("Copying preset actions...");
+await cp("./actions", `${DIST_ARASAKA}/actions`, { recursive: true });
+
+// 7. Generate v1-specific action.yml with patched paths
 console.log("Generating v1 action.yml...");
 let actionYml = await readFile("./action.yml", "utf-8");
 
@@ -116,9 +120,17 @@ actionYml = actionYml.replace(
   "",
 );
 
-await writeFile(`${DIST}/action.yml`, actionYml);
+await writeFile(`${DIST_ARASAKA}/action.yml`, actionYml);
 
-// 7. Minimal package.json
-await writeFile(`${DIST}/package.json`, '{"private":true}\n');
+// 8. Generate reusable workflow entrypoint for v1 consumers
+console.log("Generating reusable workflow...");
+let workflowYml = await readFile("./workflows/arasaka.yml", "utf-8");
+workflowYml = workflowYml
+  .replace(/__ARASAKA_OWNER_REPO__/g, "mzpkdev/preemclaud")
+  .replace(/__ARASAKA_REF__/g, "v1");
+await writeFile(`${DIST}/.github/workflows/arasaka.yml`, workflowYml);
+
+// 9. Minimal package.json
+await writeFile(`${DIST_ARASAKA}/package.json`, '{"private":true}\n');
 
 console.log("Build complete. Output in dist/");
