@@ -32,14 +32,19 @@ jobs:
 
       - name: Deploy to v1 branch
         env:
-          RELEASE_TOKEN: ${{ secrets.ARASAKA_RELEASE_TOKEN || github.token }}
+          RELEASE_TOKEN: ${{ secrets.ARASAKA_RELEASE_TOKEN }}
         run: |
           # The v1 branch contains the raw action under arasaka/ and the reusable
           # workflow entrypoint at .github/workflows/arasaka.yml.
           #
-          # If the branch update includes workflow files, the default GITHUB_TOKEN
-          # may be rejected. In that case, set ARASAKA_RELEASE_TOKEN to a token
+          # This release always includes .github/workflows/arasaka.yml, so the
+          # default GitHub Actions token is insufficient. Use a dedicated token
           # with repository contents write access and workflow write access.
+          if [ -z "${RELEASE_TOKEN}" ]; then
+            echo "::error::Missing ARASAKA_RELEASE_TOKEN. Publishing .github/workflows/arasaka.yml to v1 requires a dedicated token with contents:write and workflows:write."
+            exit 1
+          fi
+
           mkdir -p /tmp/v1-release
           cp -r arasaka/dist/. /tmp/v1-release/
           cd /tmp/v1-release
