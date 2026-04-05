@@ -1,28 +1,44 @@
 <svg id="arasaka-footer" width="100%" viewBox="0 0 680 24" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
-            <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-    </defs>
-    <rect width="680" height="24" fill="#0C0808"/>
-    <!-- top border line -->
-    <line x1="0" y1="0" x2="680" y2="0" stroke="#8B0816" stroke-width="0.5"/>
-    <!-- corner marks bottom -->
-    <rect x="8" y="14" width="12" height="2" fill="#C8102E" filter="url(#glow-red)"/>
-    <rect x="8" y="8" width="2" height="12" fill="#C8102E" filter="url(#glow-red)"/>
-    <rect x="660" y="14" width="12" height="2" fill="#C8102E" filter="url(#glow-red)"/>
-    <rect x="672" y="8" width="2" height="12" fill="#C8102E" filter="url(#glow-red)"/>
-    <!-- center diamond -->
-    <polygon points="340,6 344,12 340,18 336,12" fill="#C8102E" opacity="0.8" filter="url(#glow-red)"/>
-    <!-- connecting lines -->
-    <line x1="24" y1="12" x2="328" y2="12" stroke="#3A1010" stroke-width="0.5"/>
-    <line x1="352" y1="12" x2="656" y2="12" stroke="#3A1010" stroke-width="0.5"/>
-    <!-- label -->
-    <text x="340" y="23" text-anchor="middle" font-family="'Courier New',monospace" font-size="6"
-          fill="#4a3030" letter-spacing="4">ARASAKA AUTOMATED SYSTEMS
-    </text>
+  <defs>
+    <linearGradient id="footer-bg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#080404"/>
+      <stop offset="50%" stop-color="#0c0607"/>
+      <stop offset="100%" stop-color="#080404"/>
+    </linearGradient>
+    <filter id="footer-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="680" height="24" fill="url(#footer-bg)"/>
+  <line x1="0" y1="1" x2="680" y2="1" stroke="#3a1214" stroke-width="0.8"/>
+  <line x1="0" y1="8" x2="680" y2="8" stroke="#120708" stroke-width="0.8" opacity="0.7"/>
+  <line x1="0" y1="16" x2="680" y2="16" stroke="#120708" stroke-width="0.8" opacity="0.7"/>
+
+  <g opacity="0.12">
+    <line x1="92" y1="1" x2="92" y2="23" stroke="#c5162f"/>
+    <line x1="588" y1="1" x2="588" y2="23" stroke="#c5162f"/>
+  </g>
+
+  <g filter="url(#footer-glow)">
+    <rect x="10" y="5" width="2" height="14" fill="#c5162f"/>
+    <rect x="668" y="5" width="2" height="14" fill="#c5162f"/>
+    <circle cx="28" cy="12" r="2" fill="#c8a000" opacity="0.75"/>
+    <circle cx="652" cy="12" r="2" fill="#c8a000" opacity="0.75"/>
+  </g>
+
+  <line x1="44" y1="12" x2="182" y2="12" stroke="#2f0e11" stroke-width="0.8"/>
+  <line x1="498" y1="12" x2="636" y2="12" stroke="#2f0e11" stroke-width="0.8"/>
+  <line x1="52" y1="12" x2="168" y2="12" stroke="#52151c" stroke-width="0.4" opacity="0.45"/>
+  <line x1="512" y1="12" x2="628" y2="12" stroke="#52151c" stroke-width="0.4" opacity="0.45"/>
+
+  <text x="54" y="14" font-family="'Courier New', monospace" font-size="5.5" fill="#695153" letter-spacing="1.8">NET://MONITORED</text>
+  <text x="626" y="14" text-anchor="end" font-family="'Courier New', monospace" font-size="5.5" fill="#695153" letter-spacing="1.8">TOKYO-00  SECURE</text>
+
+  <rect x="218" y="6" width="244" height="12" rx="1" fill="#0f0708" stroke="#251012" stroke-width="0.7"/>
+  <text x="340" y="14" text-anchor="middle" font-family="'Courier New', monospace" font-size="5.8" fill="#7b6162" letter-spacing="2.4">ARASAKA AUTOMATED SYSTEMS // v1</text>
 </svg>

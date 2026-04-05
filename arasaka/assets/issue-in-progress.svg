@@ -1,46 +1,60 @@
 <svg id="arasaka-status-in-progress" width="100%" viewBox="0 0 680 56" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-            <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-            <line x1="0" y1="0" x2="20" y2="0" stroke="#c8a040" stroke-width="0.3" opacity="0.04"/>
-            <line x1="0" y1="0" x2="0" y2="20" stroke="#c8a040" stroke-width="0.3" opacity="0.04"/>
-        </pattern>
-    </defs>
-    <rect width="680" height="56" fill="#0a0707"/>
-    <rect width="680" height="56" fill="none" stroke="#2a1515" stroke-width="0.5"/>
-    <!-- background grid -->
-    <rect x="44" y="0" width="632" height="56" fill="url(#grid)"/>
-    <!-- side accent bars -->
-    <g filter="url(#glow-gold)">
-        <rect width="4" height="56" fill="#c8a040"/>
-        <rect x="676" width="4" height="56" fill="#c8a040"/>
-    </g>
-    <rect x="4" y="0" width="676" height="1" fill="#3d1c1c"/>
-    <rect x="4" y="55" width="676" height="1" fill="#3d1c1c"/>
-    <rect x="4" y="0" width="40" height="56" fill="#0f0d08"/>
-    <rect x="44" y="0" width="1" height="56" fill="#2a1515"/>
-    <!-- status indicator -->
-    <g filter="url(#glow-gold)">
-        <circle cx="24" cy="28" r="5" fill="none" stroke="#c8a040" stroke-width="1.2"/>
-        <circle cx="24" cy="28" r="2" fill="#c8a040"/>
-    </g>
-    <text x="64" y="22" font-family="'Courier New',monospace" font-size="9" fill="#4a3830" letter-spacing="2">
-        ARASAKA-OPS-BOT
-    </text>
-    <text x="64" y="37" font-family="'Courier New',monospace" font-size="12" font-weight="700" fill="#c8a040"
-          letter-spacing="1">STATUS: IN PROGRESS
-    </text>
-    <!-- Japanese secondary text -->
-    <text x="280" y="22" font-family="'Courier New',monospace" font-size="8" fill="#3a2520" letter-spacing="1">処理中
-    </text>
-    <text x="460" y="37" font-family="'Courier New',monospace" font-size="10" fill="#6a5030" letter-spacing="1">ETA 48h
-        · HIGH
-    </text>
-    <line x1="452" y1="20" x2="452" y2="44" stroke="#2a1515" stroke-width="0.5"/>
+  <defs>
+    <linearGradient id="progress-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#110807"/>
+      <stop offset="60%" stop-color="#090504"/>
+      <stop offset="100%" stop-color="#120a07"/>
+    </linearGradient>
+    <pattern id="progress-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0 L0 0 0 20" fill="none" stroke="#c8a040" stroke-width="0.35" opacity="0.09"/>
+    </pattern>
+    <pattern id="progress-scan" width="680" height="4" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="680" y2="0" stroke="#050304" stroke-width="1" opacity="0.3"/>
+    </pattern>
+    <filter id="progress-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="680" height="56" fill="url(#progress-bg)"/>
+  <rect width="680" height="56" fill="url(#progress-grid)"/>
+  <rect width="680" height="56" fill="none" stroke="#312114" stroke-width="0.8"/>
+  <rect x="44" y="0" width="636" height="56" fill="url(#progress-scan)" opacity="0.26"/>
+
+  <g opacity="0.14">
+    <line x1="86" y1="0" x2="86" y2="18" stroke="#c8a040"/>
+    <line x1="164" y1="0" x2="164" y2="13" stroke="#8f6c1d"/>
+    <line x1="514" y1="0" x2="514" y2="16" stroke="#8f6c1d"/>
+    <line x1="596" y1="0" x2="596" y2="23" stroke="#c8a040"/>
+  </g>
+
+  <rect x="4" y="0" width="40" height="56" fill="#151008"/>
+  <rect x="44" y="0" width="1" height="56" fill="#312114"/>
+  <rect x="4" y="0" width="676" height="1" fill="#483120"/>
+  <rect x="4" y="55" width="676" height="1" fill="#483120"/>
+  <rect width="4" height="56" fill="#c8a040" filter="url(#progress-glow)"/>
+  <rect x="676" width="4" height="56" fill="#c8a040" filter="url(#progress-glow)"/>
+
+  <g filter="url(#progress-glow)">
+    <circle cx="24" cy="28" r="6" fill="none" stroke="#c8a040" stroke-width="1.2"/>
+    <circle cx="24" cy="28" r="2.2" fill="#c8a040"/>
+  </g>
+
+  <text x="64" y="18" font-family="'Courier New', monospace" font-size="7.5" fill="#887052" letter-spacing="2">ARASAKA-OPS-BOT</text>
+  <text x="64" y="36" font-family="'Courier New', monospace" font-size="12" font-weight="700" fill="#d8bb63" letter-spacing="1.1">STATUS: IN PROGRESS</text>
+  <text x="286" y="18" font-family="'Courier New', monospace" font-size="7" fill="#7a6327" letter-spacing="1.4">処理中  PIPELINE ACTIVE</text>
+  <text x="624" y="36" text-anchor="end" font-family="'Courier New', monospace" font-size="9" fill="#9f8040" letter-spacing="1">ETA 48H  HIGH</text>
+
+  <line x1="64" y1="24" x2="642" y2="24" stroke="#23180f" stroke-width="0.8"/>
+  <line x1="64" y1="42" x2="642" y2="42" stroke="#23180f" stroke-width="0.8"/>
+  <line x1="450" y1="18" x2="450" y2="42" stroke="#312114" stroke-width="0.7"/>
+
+  <rect x="584" y="26" width="44" height="2" fill="#c8a040" opacity="0.2"/>
+  <rect x="574" y="30" width="8" height="5" fill="#c8a040" opacity="0.08"/>
+  <polygon points="626,16 634,24 626,32 618,24" fill="none" stroke="#c8a040" stroke-width="0.7"/>
+  <polygon points="644,16 652,24 644,32 636,24" fill="none" stroke="#4f3b15" stroke-width="0.7"/>
 </svg>

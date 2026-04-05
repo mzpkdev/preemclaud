@@ -1,32 +1,55 @@
 <svg id="arasaka-divider" width="100%" viewBox="0 0 680 28" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
-            <feMerge>
-                <feMergeNode in="blur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-    </defs>
-    <rect x="0" y="10" width="680" height="8" fill="#0C0808"/>
-    <line x1="0" y1="10" x2="680" y2="10" stroke="#8B0816" stroke-width="0.5"/>
-    <line x1="0" y1="18" x2="680" y2="18" stroke="#8B0816" stroke-width="0.5"/>
-    <!-- left group -->
-    <g filter="url(#glow-red)">
-        <rect x="0" y="10" width="60" height="8" fill="#C8102E"/>
-    </g>
-    <polygon points="60,10 80,10 70,18 60,18" fill="#8B0816"/>
-    <!-- right group -->
-    <g filter="url(#glow-red)">
-        <rect x="620" y="10" width="60" height="8" fill="#C8102E"/>
-    </g>
-    <polygon points="620,10 610,18 620,18" fill="#8B0816"/>
-    <!-- center diamond row -->
-    <g filter="url(#glow-red)">
-        <polygon points="340,10 346,14 340,18 334,14" fill="#C8102E"/>
-    </g>
-    <polygon points="320,10 326,14 320,18 314,14" fill="#8B0816" opacity="0.6"/>
-    <polygon points="360,10 366,14 360,18 354,14" fill="#8B0816" opacity="0.6"/>
-    <line x1="90" y1="14" x2="304" y2="14" stroke="#3A1010" stroke-width="1"/>
-    <line x1="376" y1="14" x2="608" y2="14" stroke="#3A1010" stroke-width="1"/>
+  <defs>
+    <linearGradient id="divider-bg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#100607"/>
+      <stop offset="50%" stop-color="#070304"/>
+      <stop offset="100%" stop-color="#100607"/>
+    </linearGradient>
+    <linearGradient id="divider-core" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5e141c"/>
+      <stop offset="50%" stop-color="#c5162f"/>
+      <stop offset="100%" stop-color="#5e141c"/>
+    </linearGradient>
+    <filter id="divider-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect y="7" width="680" height="14" fill="url(#divider-bg)"/>
+  <line x1="0" y1="7" x2="680" y2="7" stroke="#361114" stroke-width="0.7"/>
+  <line x1="0" y1="21" x2="680" y2="21" stroke="#361114" stroke-width="0.7"/>
+  <line x1="0" y1="14" x2="680" y2="14" stroke="#180809" stroke-width="8" opacity="0.55"/>
+
+  <g opacity="0.12">
+    <line x1="42" y1="7" x2="42" y2="21" stroke="#c5162f"/>
+    <line x1="88" y1="7" x2="88" y2="21" stroke="#c8a000"/>
+    <line x1="592" y1="7" x2="592" y2="21" stroke="#c8a000"/>
+    <line x1="638" y1="7" x2="638" y2="21" stroke="#c5162f"/>
+  </g>
+
+  <g filter="url(#divider-glow)">
+    <rect x="0" y="9" width="74" height="10" fill="#c5162f" opacity="0.95"/>
+    <rect x="606" y="9" width="74" height="10" fill="#c5162f" opacity="0.95"/>
+    <polygon points="74,9 96,9 82,19 74,19" fill="#7b171f" opacity="0.98"/>
+    <polygon points="606,9 592,19 606,19" fill="#7b171f" opacity="0.98"/>
+    <rect x="18" y="11" width="22" height="6" fill="#efc23e" opacity="0.3"/>
+    <rect x="640" y="11" width="22" height="6" fill="#efc23e" opacity="0.3"/>
+  </g>
+
+  <line x1="110" y1="14" x2="286" y2="14" stroke="#2c0e10" stroke-width="1.1"/>
+  <line x1="394" y1="14" x2="570" y2="14" stroke="#2c0e10" stroke-width="1.1"/>
+  <line x1="132" y1="14" x2="264" y2="14" stroke="url(#divider-core)" stroke-width="1.1" opacity="0.9"/>
+  <line x1="416" y1="14" x2="548" y2="14" stroke="url(#divider-core)" stroke-width="1.1" opacity="0.9"/>
+  <polygon points="102,14 110,10 110,18" fill="#c8a000" opacity="0.6"/>
+  <polygon points="578,14 570,10 570,18" fill="#c8a000" opacity="0.6"/>
+
+  <polygon points="340,8 347,14 340,20 333,14" fill="#c5162f" opacity="0.95" filter="url(#divider-glow)"/>
+  <polygon points="320,9 326,14 320,19 314,14" fill="#7b171f" opacity="0.6"/>
+  <polygon points="360,9 366,14 360,19 354,14" fill="#7b171f" opacity="0.6"/>
+  <rect x="333" y="5" width="14" height="1" fill="#c8a000" opacity="0.35"/>
+  <text x="340" y="26" text-anchor="middle" font-family="'Courier New', monospace" font-size="5.5" fill="#6e4d4f" letter-spacing="2.4">SECURE CHANNEL DIVIDE</text>
 </svg>
