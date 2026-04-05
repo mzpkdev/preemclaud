@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      workflows: write
     steps:
       - name: Checkout with submodules
         uses: actions/checkout@v4
@@ -32,9 +31,15 @@ jobs:
         run: cd arasaka && bun run build
 
       - name: Deploy to v1 branch
+        env:
+          RELEASE_TOKEN: ${{ secrets.ARASAKA_RELEASE_TOKEN || github.token }}
         run: |
           # The v1 branch contains the raw action under arasaka/ and the reusable
           # workflow entrypoint at .github/workflows/arasaka.yml.
+          #
+          # If the branch update includes workflow files, the default GITHUB_TOKEN
+          # may be rejected. In that case, set ARASAKA_RELEASE_TOKEN to a token
+          # with repository contents write access and workflow write access.
           mkdir -p /tmp/v1-release
           cp -r arasaka/dist/. /tmp/v1-release/
           cd /tmp/v1-release
@@ -48,5 +53,5 @@ jobs:
           git add -A
           git commit -m "Release arasaka v1 from ${{ github.sha }}"
 
-          git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git remote add origin "https://x-access-token:${RELEASE_TOKEN}@github.com/${{ github.repository }}.git"
           git push -f origin v1
