@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "properties": {
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string", "enum": ["create", "update"] },
+          "existing_issue_number": { "type": "integer" },
+          "title": { "type": "string" },
+          "summary": { "type": "string" },
+          "problem": { "type": "string" },
+          "acceptance_criteria": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "labels": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": [
+          "action",
+          "title",
+          "summary",
+          "problem",
+          "acceptance_criteria",
+          "evidence",
+          "labels"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["issues"],
+  "additionalProperties": false
+}

@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "properties": {
+    "pull_request": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "changes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "verification": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["title", "summary", "changes", "verification", "assumptions"],
+      "additionalProperties": false
+    },
+    "issue_comment": {
+      "type": "object",
+      "properties": {
+        "summary": { "type": "string" },
+        "verification": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "follow_ups": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["summary", "verification", "follow_ups"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["pull_request", "issue_comment"],
+  "additionalProperties": false
+}

@@ -1,0 +1,1 @@
+Read,Glob,Grep,LS,mcp__github__get_issue,mcp__github__get_issue_comments,mcp__github__list_issues,mcp__github__search_issues

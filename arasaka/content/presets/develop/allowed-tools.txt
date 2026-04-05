@@ -1,0 +1,1 @@
+Read,Glob,Grep,LS,Edit,MultiEdit,Write,Bash(git add:*),Bash(git commit:*),Bash(git diff:*),Bash(git fetch:*),Bash(git push:*),Bash(git status:*),Bash(bun:*),Bash(make:*),Bash(npm:*),Bash(npx:*),Bash(pnpm:*),Bash(pytest:*),Bash(python:*),Bash(yarn:*),mcp__github__get_issue,mcp__github__get_issue_comments

@@ -26,6 +26,7 @@ import {
 import { sanitizeContent } from "../../upstream/src/github/utils/sanitizer.ts";
 import { extractUserRequest } from "../../upstream/src/utils/extract-user-request.ts";
 import { GITHUB_SERVER_URL } from "../../upstream/src/github/api/config.ts";
+import { buildToolingBlock } from "./tooling.ts";
 
 const USER_REQUEST_FILENAME = "claude-user-request.txt";
 
@@ -140,29 +141,13 @@ ${triggerComment}
   promptContent += `
 
 <tooling>
-- Update your tracking comment using mcp__github_comment__update_claude_comment (only "body" param needed)
-${
-  useCommitSigning
-    ? `- Commit files: mcp__github_file_ops__commit_files
-- Delete files: mcp__github_file_ops__delete_files`
-    : `- Stage: Bash(git add <files>)
-- Commit: Bash(git commit -m "<message>")
-- Push: Bash(${gitPushWrapper} origin ${claudeBranch || "HEAD"})
-- Delete: Bash(git rm <files>)`
-}
-${
-  claudeBranch
-    ? `- You are on branch: ${claudeBranch}
-- After pushing changes, always create a PR and enable auto-merge:
-  Bash(gh pr create --title "<title>" --body "<body>" --base ${baseBranch})
-  Bash(gh pr merge --auto --squash)${
-      closingKeyword
-        ? `
-- Because this run was triggered from an issue, the PR body must include "${closingKeyword}" so GitHub auto-closes the issue when the PR is merged.`
-        : ""
-    }`
-    : ""
-}
+${buildToolingBlock({
+  useCommitSigning,
+  gitPushWrapper,
+  claudeBranch,
+  baseBranch,
+  closingKeyword,
+})}
 </tooling>`;
 
   // Write prompt file
