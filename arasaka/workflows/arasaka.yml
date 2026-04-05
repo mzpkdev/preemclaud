@@ -206,6 +206,7 @@ jobs:
           system_prompt: ${{ steps.preset.outputs.system_prompt }}
           claude_args: ${{ steps.preset.outputs.claude_args }}
           base_branch: ${{ github.event.pull_request.base.ref }}
+          allowed_bots: "claude[bot]"
 
   develop_from_issue:
     if: >
