@@ -34,8 +34,8 @@ runs:
         {
           echo "prompt<<EOF"
           cat <<EOF
-Repository: ${{ github.repository }}
-Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+Repository: ${GITHUB_REPOSITORY}
+Workflow run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
 Create or refresh a small, high-signal implementation queue for this repository.
 
