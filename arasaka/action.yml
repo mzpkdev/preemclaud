@@ -52,6 +52,18 @@ inputs:
     description: "Full system prompt override (replaces defaults.ts SYSTEM_PROMPT)"
     required: false
     default: ""
+  artifact_mode:
+    description: "Internal publication mode for structured artifact workflows"
+    required: false
+    default: ""
+  artifact_issue_number:
+    description: "Internal issue number used by develop artifact publishing"
+    required: false
+    default: ""
+  artifact_pr_number:
+    description: "Internal pull request number used by review artifact publishing"
+    required: false
+    default: ""
   settings:
     description: "Claude Code settings as JSON string or path"
     required: false
@@ -226,6 +238,9 @@ runs:
         # Standard inputs
         PROMPT: ${{ inputs.prompt }}
         SYSTEM_PROMPT: ${{ inputs.system_prompt }}
+        ARTIFACT_MODE: ${{ inputs.artifact_mode }}
+        ARTIFACT_ISSUE_NUMBER: ${{ inputs.artifact_issue_number }}
+        ARTIFACT_PR_NUMBER: ${{ inputs.artifact_pr_number }}
         TRIGGER_PHRASE: ${{ inputs.trigger_phrase }}
         ASSIGNEE_TRIGGER: ${{ inputs.assignee_trigger }}
         LABEL_TRIGGER: ${{ inputs.label_trigger }}

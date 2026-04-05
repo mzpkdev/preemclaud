@@ -199,7 +199,7 @@ describe("updateCommentBody — Arasaka-specific", () => {
 
       const replyAssetIdx = result.indexOf("issue-reply.svg");
       const headerIdx = result.indexOf("STATUS: FULFILLED");
-      const linksIdx = result.indexOf("—— [View job]");
+      const linksIdx = result.indexOf("[View job]");
       const dividerIdx = result.indexOf("divider.svg");
       const contentIdx = result.indexOf("### Todo List:");
       const subIdx = result.indexOf("Arasaka Corporation.");
@@ -235,7 +235,7 @@ describe("updateCommentBody — Arasaka-specific", () => {
 
     it("includes View job link", () => {
       const result = updateCommentBody({ ...baseInput, triggerUsername: "u" });
-      expect(result).toContain(`—— [View job](${baseInput.jobUrl})`);
+      expect(result).toContain(`[View job](${baseInput.jobUrl})`);
     });
 
     it("includes branch and PR links when provided", () => {
@@ -257,7 +257,7 @@ describe("updateCommentBody — Arasaka-specific", () => {
     it("injects a persona-derived closing line into the footer", () => {
       const result = updateCommentBody({ ...baseInput, triggerUsername: "u" });
       expect(result).toMatch(
-        /<sub>Arasaka Corporation\. (Your future is our property\.|The family remembers\.|Your record reflects your loyalty\.|We are patient\. We have time\.|The family is grateful for your contribution\.|Continuity is the highest form of loyalty\.|What you build here does not disappear\.)<\/sub>/,
+        /<sub>(Your future is our property\.|The family remembers\.|Your record reflects your loyalty\.|We are patient\. We have time\.|The family is grateful for your contribution\.|Continuity is the highest form of loyalty\.|What you build here does not disappear\.)<\/sub>/,
       );
     });
 
@@ -265,8 +265,8 @@ describe("updateCommentBody — Arasaka-specific", () => {
       const first = updateCommentBody({ ...baseInput, triggerUsername: "u" });
       const second = updateCommentBody({ ...baseInput, triggerUsername: "u" });
 
-      const firstClosing = first.match(/<sub>Arasaka Corporation\. (.*)<\/sub>/)?.[1];
-      const secondClosing = second.match(/<sub>Arasaka Corporation\. (.*)<\/sub>/)?.[1];
+      const firstClosing = first.match(/<sub>(?!Arasaka Corporation\.)(.*)<\/sub>/)?.[1];
+      const secondClosing = second.match(/<sub>(?!Arasaka Corporation\.)(.*)<\/sub>/)?.[1];
 
       expect(firstClosing).toBeDefined();
       expect(secondClosing).toBeDefined();
@@ -285,8 +285,8 @@ describe("updateCommentBody — Arasaka-specific", () => {
         jobUrl: "https://github.com/owner/repo/actions/runs/125",
       });
 
-      const firstClosing = first.match(/<sub>Arasaka Corporation\. (.*)<\/sub>/)?.[1];
-      const secondClosing = second.match(/<sub>Arasaka Corporation\. (.*)<\/sub>/)?.[1];
+      const firstClosing = first.match(/<sub>(?!Arasaka Corporation\.)(.*)<\/sub>/)?.[1];
+      const secondClosing = second.match(/<sub>(?!Arasaka Corporation\.)(.*)<\/sub>/)?.[1];
 
       expect(firstClosing).toBeDefined();
       expect(secondClosing).toBeDefined();

@@ -33,36 +33,4 @@ runs:
         BRANCH_NAME: ${{ inputs.branch_name }}
         BASE_BRANCH: ${{ inputs.base_branch }}
       run: |
-        {
-          printf '%s\n' 'prompt<<EOF'
-          printf '%s\n' "Implement GitHub issue #${ISSUE_NUMBER} in ${GITHUB_REPOSITORY}."
-          printf '%s\n' ""
-          printf '%s\n' "Execution requirements:"
-          printf '%s\n' "- Fetch the issue and its comments with GitHub MCP tools before changing code."
-          printf '%s\n' "- Work on the already-created branch: ${BRANCH_NAME}"
-          printf '%s\n' "- Target PR base branch: ${BASE_BRANCH}"
-          printf '%s\n' "- Make the smallest reasonable change set that resolves the issue."
-          printf '%s\n' "- Run targeted verification when practical with the tools already allowed to you."
-          printf '%s\n' "- Commit and push your changes on the current branch."
-          printf '%s\n' "- Open a PR with a clear title and body that includes: Closes #${ISSUE_NUMBER}"
-          printf '%s\n' "- Leave one issue comment summarizing what changed and linking the PR."
-          printf '%s\n' ""
-          printf '%s\n' "If the issue is ambiguous or under-specified, make the most conservative reasonable implementation and note the assumptions in the PR body and issue comment."
-          printf '%s\n' 'EOF'
-          printf '%s\n' 'system_prompt<<EOF'
-          printf '%s\n' "You are Arasaka Developer operating inside GitHub Actions."
-          printf '%s\n' ""
-          printf '%s\n' "Implement issue requests conservatively and pragmatically."
-          printf '%s\n' ""
-          printf '%s\n' "Rules:"
-          printf '%s\n' "- Read the issue and repository context before editing code."
-          printf '%s\n' "- Prefer bounded changes over broad refactors."
-          printf '%s\n' "- Run targeted verification when feasible with the allowed tools."
-          printf '%s\n' "- Do not stop after editing locally; commit, push, open a PR, and report back on the issue."
-          printf '%s\n' "- If the issue is too ambiguous to solve perfectly, choose the safest reasonable interpretation and document it."
-          printf '%s\n' 'EOF'
-          printf '%s\n' 'claude_args<<EOF'
-          printf '%s\n' '--max-turns 24'
-          printf '%s\n' '--allowedTools "Read,Glob,Grep,LS,Edit,MultiEdit,Write,Bash(git add:*),Bash(git commit:*),Bash(git diff:*),Bash(git fetch:*),Bash(git push:*),Bash(git status:*),Bash(gh pr:*),Bash(bun:*),Bash(make:*),Bash(npm:*),Bash(npx:*),Bash(pnpm:*),Bash(pytest:*),Bash(python:*),Bash(yarn:*),mcp__github__create_issue_comment,mcp__github__get_issue,mcp__github__get_issue_comments,mcp__github__update_issue"'
-          printf '%s\n' 'EOF'
-        } >> "$GITHUB_OUTPUT"
+        python3 "${GITHUB_ACTION_PATH}/../../scripts/write_preset.py" develop

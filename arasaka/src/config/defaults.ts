@@ -4,14 +4,12 @@
  * This file loads them and assembles the exported constants.
  */
 
-import personaMd from "../../content/prompt/persona.md";
-import formatMd from "../../content/prompt/format.md";
-import scenariosMd from "../../content/prompt/scenarios.md";
-import instructionsMd from "../../content/prompt/instructions.md";
+import sharedPersonaMd from "../../content/shared/persona.md";
 import initialCommentMd from "../../content/comments/states/initial.md";
 import commentTemplateMd from "../../content/comments/templates/comment.md";
 import headerSuccessMd from "../../content/comments/templates/header-success.md";
 import headerFailureMd from "../../content/comments/templates/header-failure.md";
+import { getSystemPrompt } from "./prompt-registry.ts";
 
 const ASSET_BASE =
   "https://raw.githubusercontent.com/mzpkdev/preemclaud/main/arasaka/assets";
@@ -27,17 +25,17 @@ export const INITIAL_COMMENT_BODY = initialCommentMd.replace(
 // ─── Persona ──────────────────────────────────────────────────────────────────
 // Tonal preamble prepended to the system prompt. Kept separate for easy tweaking
 // without touching the operational instructions below.
-export const PERSONA = personaMd;
+export const PERSONA = sharedPersonaMd;
 
 // ─── Response format ──────────────────────────────────────────────────────────
 // Controls document structure. Kept separate from PERSONA (voice) and the
 // operational instructions below so each concern can be edited independently.
-export const RESPONSE_FORMAT = formatMd;
+export const RESPONSE_FORMAT = "";
 
 // ─── Scenario guidance ────────────────────────────────────────────────────────
 // Canonical event-specific body patterns. Kept separate so persona stays purely
 // tonal and operational instructions stay procedural.
-export const SCENARIO_GUIDANCE = scenariosMd;
+export const SCENARIO_GUIDANCE = "";
 
 // ─── System prompt ─────────────────────────────────────────────────────────────
 // Sourced from upstream anthropics/claude-code-action behavioral instructions.
@@ -45,8 +43,7 @@ export const SCENARIO_GUIDANCE = scenariosMd;
 // (<github_context>, <tooling>, <trigger_comment>, etc.) — this is the behavioral layer only.
 // PERSONA, RESPONSE_FORMAT, and SCENARIO_GUIDANCE are prepended so each layer
 // can be edited independently.
-export const SYSTEM_PROMPT =
-  `${PERSONA}\n${RESPONSE_FORMAT}\n${SCENARIO_GUIDANCE}\n${instructionsMd}`;
+export const SYSTEM_PROMPT = getSystemPrompt("comment");
 
 // ─── Header templates ──────────────────────────────────────────────────────────
 // Control the {header} line prepended to the comment after execution.

@@ -70,6 +70,7 @@ import { updateClaudeComment } from "../../upstream/src/github/operations/commen
 
 // ─── Arasaka hardcoded defaults ────────────────────────────────────
 import { SYSTEM_PROMPT, INITIAL_COMMENT_BODY } from "../config/defaults.ts";
+import { publishStructuredOutput, type ArtifactMode } from "../publish/index.ts";
 
 // ═══════════════════════════════════════════════════════════════════
 // installClaudeCode — copied from upstream (self-contained)
@@ -368,7 +369,20 @@ async function run() {
       core.setOutput("session_id", claudeResult.sessionId);
     }
     if (claudeResult.structuredOutput) {
-      core.setOutput("structured_output", claudeResult.structuredOutput);
+      const artifactMode = process.env.ARTIFACT_MODE as ArtifactMode | "";
+      const publishedStructuredOutput =
+        artifactMode && octokit
+          ? await publishStructuredOutput({
+              mode: artifactMode,
+              octokit,
+              context,
+              rawStructuredOutput: claudeResult.structuredOutput,
+              baseBranch,
+              claudeBranch,
+            })
+          : claudeResult.structuredOutput;
+
+      core.setOutput("structured_output", publishedStructuredOutput);
     }
     core.setOutput("conclusion", claudeResult.conclusion);
   } catch (error) {

@@ -153,7 +153,7 @@ The reusable workflow intentionally exposes a small surface:
 | ----------------------- | ----------------- | --------------------------------------------------- |
 | `trigger_phrase`        | `@arasaka`        | Comment trigger for direct issue / PR-thread work   |
 | `ready_label`           | `arasaka:ready`   | Label trigger for issue-driven development          |
-| `queue_max_issues`      | `3`               | Max issues the queue planner opens per run          |
+| `queue_max_issues`      | `1`               | Max issues the queue planner opens per run          |
 | `branch_prefix`         | `claude/`         | Prefix used for generated work branches             |
 | `base_branch`           | _repo default_    | Base branch override for queue-created development  |
 | `auto_start_from_queue` | `true`            | Start implementation jobs in the same workflow run  |
