@@ -32,47 +32,41 @@ runs:
         BACKLOG_LABEL: ${{ inputs.backlog_label }}
       run: |
         {
-          echo "prompt<<EOF"
-          cat <<EOF
-Repository: ${GITHUB_REPOSITORY}
-Workflow run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
-
-Create or refresh a small, high-signal implementation queue for this repository.
-
-Requirements:
-- Read the repository before opening issues. Start with README, docs, manifests, and obvious entrypoints.
-- Review existing open issues so you do not create duplicates.
-- Create at most ${QUEUE_MAX_ISSUES} new issues.
-- Prefer bounded work that fits in one pull request.
-- Good candidates: missing tests, broken docs, clear bugs, consistency fixes, automation gaps, or small follow-up work.
-- Avoid vague roadmap items, speculative rewrites, or work that depends on product decisions not present in the repo.
-- If the repository already appears to use the label "${BACKLOG_LABEL}", add it to new issues. If not, skip it without failing.
-- If there is no worthwhile work to enqueue, create no issues.
-
-Return only structured output matching the provided JSON schema.
-EOF
-          echo "EOF"
-          echo "system_prompt<<'EOF'"
-          cat <<'EOF'
-You are Arasaka Queue Planner operating inside GitHub Actions.
-
-You are responsible for creating a small, concrete, non-duplicate development queue.
-
-Rules:
-- Do not edit repository files.
-- Do not create speculative or organizational issues.
-- Only create issues that are implementable from repository evidence.
-- Prefer work that a single engineer or coding agent can complete in one pull request.
-- If an issue would duplicate or overlap an existing open issue, do not create it.
-- If you create no issues, return an empty issues array.
-- Your final response must satisfy the JSON schema exactly.
-EOF
-          echo "EOF"
-          echo "claude_args<<'EOF'"
-          cat <<'EOF'
---max-turns 16
---allowedTools "Read,Glob,Grep,LS,mcp__github__create_issue,mcp__github__create_issue_comment,mcp__github__get_issue,mcp__github__get_issue_comments,mcp__github__list_issues,mcp__github__search_issues,mcp__github__update_issue"
---json-schema '{"type":"object","properties":{"issues":{"type":"array","items":{"type":"object","properties":{"number":{"type":"integer"},"title":{"type":"string"}},"required":["number","title"],"additionalProperties":false}}},"required":["issues"],"additionalProperties":false}'
-EOF
-          echo "EOF"
+          printf '%s\n' 'prompt<<EOF'
+          printf '%s\n' "Repository: ${GITHUB_REPOSITORY}"
+          printf '%s\n' "Workflow run: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          printf '%s\n' ""
+          printf '%s\n' "Create or refresh a small, high-signal implementation queue for this repository."
+          printf '%s\n' ""
+          printf '%s\n' "Requirements:"
+          printf '%s\n' "- Read the repository before opening issues. Start with README, docs, manifests, and obvious entrypoints."
+          printf '%s\n' "- Review existing open issues so you do not create duplicates."
+          printf '%s\n' "- Create at most ${QUEUE_MAX_ISSUES} new issues."
+          printf '%s\n' "- Prefer bounded work that fits in one pull request."
+          printf '%s\n' "- Good candidates: missing tests, broken docs, clear bugs, consistency fixes, automation gaps, or small follow-up work."
+          printf '%s\n' "- Avoid vague roadmap items, speculative rewrites, or work that depends on product decisions not present in the repo."
+          printf '%s\n' "- If the repository already appears to use the label \"${BACKLOG_LABEL}\", add it to new issues. If not, skip it without failing."
+          printf '%s\n' "- If there is no worthwhile work to enqueue, create no issues."
+          printf '%s\n' ""
+          printf '%s\n' "Return only structured output matching the provided JSON schema."
+          printf '%s\n' 'EOF'
+          printf '%s\n' 'system_prompt<<EOF'
+          printf '%s\n' "You are Arasaka Queue Planner operating inside GitHub Actions."
+          printf '%s\n' ""
+          printf '%s\n' "You are responsible for creating a small, concrete, non-duplicate development queue."
+          printf '%s\n' ""
+          printf '%s\n' "Rules:"
+          printf '%s\n' "- Do not edit repository files."
+          printf '%s\n' "- Do not create speculative or organizational issues."
+          printf '%s\n' "- Only create issues that are implementable from repository evidence."
+          printf '%s\n' "- Prefer work that a single engineer or coding agent can complete in one pull request."
+          printf '%s\n' "- If an issue would duplicate or overlap an existing open issue, do not create it."
+          printf '%s\n' "- If you create no issues, return an empty issues array."
+          printf '%s\n' "- Your final response must satisfy the JSON schema exactly."
+          printf '%s\n' 'EOF'
+          printf '%s\n' 'claude_args<<EOF'
+          printf '%s\n' '--max-turns 16'
+          printf '%s\n' '--allowedTools "Read,Glob,Grep,LS,mcp__github__create_issue,mcp__github__create_issue_comment,mcp__github__get_issue,mcp__github__get_issue_comments,mcp__github__list_issues,mcp__github__search_issues,mcp__github__update_issue"'
+          printf '%s\n' '--json-schema '"'"'{"type":"object","properties":{"issues":{"type":"array","items":{"type":"object","properties":{"number":{"type":"integer"},"title":{"type":"string"}},"required":["number","title"],"additionalProperties":false}}},"required":["issues"],"additionalProperties":false}'"'"
+          printf '%s\n' 'EOF'
         } >> "$GITHUB_OUTPUT"

@@ -30,41 +30,35 @@ runs:
         BASE_BRANCH: ${{ inputs.base_branch }}
       run: |
         {
-          echo "prompt<<EOF"
-          cat <<EOF
-Review pull request #${PR_NUMBER} in ${{ github.repository }}.
-
-Use the checked-out branch plus git history to review the actual diff:
-- Compare with: git diff origin/${BASE_BRANCH}...HEAD
-- Read the touched files you need for context.
-
-Focus on:
-- correctness bugs
-- security problems
-- behavioral regressions
-- missing or weak tests
-
-After analysis, post one concise markdown review comment to the PR thread using GitHub MCP tools.
-If you find no actionable issues, say that explicitly and mention any residual risk or missing verification.
-EOF
-          echo "EOF"
-          echo "system_prompt<<'EOF'"
-          cat <<'EOF'
-You are Arasaka Reviewer operating inside GitHub Actions.
-
-Review code conservatively. Findings should prioritize bugs, regressions, security issues, and missing tests.
-
-Rules:
-- Do not edit repository files.
-- Use git diff and file reads before making claims.
-- Post one final markdown comment to the PR thread.
-- If there are no findings, state that explicitly instead of inventing nits.
-EOF
-          echo "EOF"
-          echo "claude_args<<'EOF'"
-          cat <<'EOF'
---max-turns 14
---allowedTools "Read,Glob,Grep,LS,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git status:*),mcp__github__create_issue_comment"
-EOF
-          echo "EOF"
+          printf '%s\n' 'prompt<<EOF'
+          printf '%s\n' "Review pull request #${PR_NUMBER} in ${GITHUB_REPOSITORY}."
+          printf '%s\n' ""
+          printf '%s\n' "Use the checked-out branch plus git history to review the actual diff:"
+          printf '%s\n' "- Compare with: git diff origin/${BASE_BRANCH}...HEAD"
+          printf '%s\n' "- Read the touched files you need for context."
+          printf '%s\n' ""
+          printf '%s\n' "Focus on:"
+          printf '%s\n' "- correctness bugs"
+          printf '%s\n' "- security problems"
+          printf '%s\n' "- behavioral regressions"
+          printf '%s\n' "- missing or weak tests"
+          printf '%s\n' ""
+          printf '%s\n' "After analysis, post one concise markdown review comment to the PR thread using GitHub MCP tools."
+          printf '%s\n' "If you find no actionable issues, say that explicitly and mention any residual risk or missing verification."
+          printf '%s\n' 'EOF'
+          printf '%s\n' 'system_prompt<<EOF'
+          printf '%s\n' "You are Arasaka Reviewer operating inside GitHub Actions."
+          printf '%s\n' ""
+          printf '%s\n' "Review code conservatively. Findings should prioritize bugs, regressions, security issues, and missing tests."
+          printf '%s\n' ""
+          printf '%s\n' "Rules:"
+          printf '%s\n' "- Do not edit repository files."
+          printf '%s\n' "- Use git diff and file reads before making claims."
+          printf '%s\n' "- Post one final markdown comment to the PR thread."
+          printf '%s\n' "- If there are no findings, state that explicitly instead of inventing nits."
+          printf '%s\n' 'EOF'
+          printf '%s\n' 'claude_args<<EOF'
+          printf '%s\n' '--max-turns 14'
+          printf '%s\n' '--allowedTools "Read,Glob,Grep,LS,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git status:*),mcp__github__create_issue_comment"'
+          printf '%s\n' 'EOF'
         } >> "$GITHUB_OUTPUT"
