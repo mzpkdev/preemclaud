@@ -39,6 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
       issues: write
       pull-requests: read
     outputs:
@@ -99,6 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
       issues: write
       pull-requests: write
       actions: read
@@ -177,6 +179,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
       issues: write
       pull-requests: read
     steps:
@@ -211,6 +214,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
       issues: write
       pull-requests: write
       actions: read
