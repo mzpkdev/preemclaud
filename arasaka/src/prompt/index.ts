@@ -64,6 +64,9 @@ export async function buildPrompt(params: BuildPromptParams): Promise<void> {
   // Build structured context
   const repository = `${context.repository.owner}/${context.repository.repo}`;
   const entityType = context.isPR ? "pull request" : "issue";
+  const closingKeyword = !context.isPR
+    ? `Closes #${context.entityNumber}`
+    : undefined;
   const triggerPhrase = context.inputs.triggerPhrase || "@claude";
   const jobUrl = `${GITHUB_SERVER_URL}/${repository}/actions/runs/${process.env.GITHUB_RUN_ID}`;
 
@@ -152,7 +155,12 @@ ${
     ? `- You are on branch: ${claudeBranch}
 - After pushing changes, always create a PR and enable auto-merge:
   Bash(gh pr create --title "<title>" --body "<body>" --base ${baseBranch})
-  Bash(gh pr merge --auto --squash)`
+  Bash(gh pr merge --auto --squash)${
+      closingKeyword
+        ? `
+- Because this run was triggered from an issue, the PR body must include "${closingKeyword}" so GitHub auto-closes the issue when the PR is merged.`
+        : ""
+    }`
     : ""
 }
 </tooling>`;
