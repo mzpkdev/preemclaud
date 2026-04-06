@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import type { RestEndpointMethodTypes } from "@octokit/rest";
 import type { Octokits } from "../../upstream/src/github/api/client.ts";
 import type { AutomationContext } from "../../upstream/src/github/context.ts";
@@ -43,6 +44,22 @@ async function enableAutoMerge(
   }
 }
 
+function ensureRemoteBranch(branchName: string): void {
+  try {
+    // Push the prepared implementation branch before PR publication so the
+    // GitHub PR API always sees a valid remote head ref.
+    execFileSync(
+      "git",
+      ["push", "--set-upstream", "origin", branchName],
+      { stdio: "pipe" },
+    );
+  } catch (error) {
+    throw new Error(
+      `Failed to push implementation branch '${branchName}' before PR publication: ${String(error)}`,
+    );
+  }
+}
+
 export async function publishDevelopOutput(params: {
   octokit: Octokits;
   context: AutomationContext;
@@ -60,6 +77,8 @@ export async function publishDevelopOutput(params: {
   if (!branchName) {
     throw new Error("Missing branch name for develop publication");
   }
+
+  ensureRemoteBranch(branchName);
 
   const body = renderPullRequestBody({
     summary: parsed.pull_request.summary,
