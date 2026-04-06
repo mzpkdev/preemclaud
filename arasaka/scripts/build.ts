@@ -90,13 +90,21 @@ await copyFile(
   `${UPSTREAM_SCRIPTS}/git-push.sh`,
   `${DIST_ARASAKA}/scripts/git-push.sh`,
 );
+await copyFile(
+  "./scripts/write_preset.py",
+  `${DIST_ARASAKA}/scripts/write_preset.py`,
+);
 await $`chmod +x ${DIST_ARASAKA}/scripts/git-push.sh`;
 
-// 6. Copy preset composite actions
+// 6. Copy preset content consumed by write_preset.py at runtime
+console.log("Copying preset content...");
+await cp("./content", `${DIST_ARASAKA}/content`, { recursive: true });
+
+// 7. Copy preset composite actions
 console.log("Copying preset actions...");
 await cp("./actions", `${DIST_ARASAKA}/actions`, { recursive: true });
 
-// 7. Generate v1-specific action.yml with patched paths
+// 8. Generate v1-specific action.yml with patched paths
 console.log("Generating v1 action.yml...");
 let actionYml = await readFile("./action.yml", "utf-8");
 
@@ -122,7 +130,7 @@ actionYml = actionYml.replace(
 
 await writeFile(`${DIST_ARASAKA}/action.yml`, actionYml);
 
-// 8. Generate reusable workflow entrypoint for v1 consumers
+// 9. Generate reusable workflow entrypoint for v1 consumers
 console.log("Generating reusable workflow...");
 let workflowYml = await readFile("./workflows/arasaka.yml", "utf-8");
 workflowYml = workflowYml
@@ -130,7 +138,7 @@ workflowYml = workflowYml
   .replace(/__ARASAKA_REF__/g, "v1");
 await writeFile(`${DIST}/.github/workflows/arasaka.yml`, workflowYml);
 
-// 9. Minimal package.json
+// 10. Minimal package.json
 await writeFile(`${DIST_ARASAKA}/package.json`, '{"private":true}\n');
 
 console.log("Build complete. Output in dist/");
