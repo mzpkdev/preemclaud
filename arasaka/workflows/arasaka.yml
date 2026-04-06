@@ -170,6 +170,8 @@ jobs:
           artifact_decomposition_depth: "0"
           base_branch: ${{ steps.branch.outputs.base_branch }}
           branch_prefix: ${{ inputs.branch_prefix }}
+          additional_permissions: |
+            workflows: write
           allowed_bots: "github-actions[bot]"
 
       - name: Save develop result
@@ -313,6 +315,8 @@ jobs:
           artifact_decomposition_depth: ${{ matrix.decomposition_depth }}
           base_branch: ${{ steps.branch.outputs.base_branch }}
           branch_prefix: ${{ inputs.branch_prefix }}
+          additional_permissions: |
+            workflows: write
           allowed_bots: "github-actions[bot]"
 
   review:
@@ -386,3 +390,5 @@ jobs:
           label_trigger: ${{ inputs.ready_label }}
           base_branch: ${{ inputs.base_branch }}
           branch_prefix: ${{ inputs.branch_prefix }}
+          additional_permissions: |
+            workflows: write

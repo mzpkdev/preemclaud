@@ -101,6 +101,10 @@ inputs:
     description: "Additional CLI arguments for Claude"
     required: false
     default: ""
+  additional_permissions:
+    description: "Additional GitHub App token permissions to request"
+    required: false
+    default: ""
   use_commit_signing:
     description: "Enable commit signing via GitHub API"
     required: false
@@ -266,6 +270,7 @@ runs:
         BOT_ID: ${{ inputs.bot_id }}
         BOT_NAME: ${{ inputs.bot_name }}
         TRACK_PROGRESS: ${{ inputs.track_progress }}
+        ADDITIONAL_PERMISSIONS: ${{ inputs.additional_permissions }}
         CLAUDE_ARGS: ${{ inputs.claude_args }}
         ALL_INPUTS: ${{ toJson(inputs) }}
 
