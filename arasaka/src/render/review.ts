@@ -1,5 +1,6 @@
 import reviewClearMd from "../../content/artifacts/review/templates/comment-clear.md";
 import reviewFindingsMd from "../../content/artifacts/review/templates/comment-findings.md";
+import { wrapArtifactBody } from "./chrome.ts";
 import { renderBulletList, renderTemplate } from "./template.ts";
 import type { ReviewFinding } from "../publish/contracts.ts";
 
@@ -25,7 +26,7 @@ export function renderReviewComment(input: {
   const template =
     input.verdict === "no_findings" ? reviewClearMd : reviewFindingsMd;
 
-  return renderTemplate(template, {
+  const body = renderTemplate(template, {
     summary: input.summary.trim(),
     findings: renderFindings(input.findings),
     residual_risks: renderBulletList(
@@ -33,4 +34,9 @@ export function renderReviewComment(input: {
       "- No residual risk was recorded beyond the reviewed diff.",
     ),
   }).trim();
+
+  return wrapArtifactBody({
+    body,
+    replyAsset: input.verdict === "findings" ? "error-reply.svg" : "issue-reply.svg",
+  });
 }

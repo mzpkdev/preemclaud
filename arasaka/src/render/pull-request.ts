@@ -1,4 +1,5 @@
 import pullRequestBodyMd from "../../content/artifacts/pull-request/templates/body.md";
+import { wrapArtifactBody } from "./chrome.ts";
 import { renderBulletList, renderTemplate } from "./template.ts";
 
 export type PullRequestRenderInput = {
@@ -12,7 +13,7 @@ export type PullRequestRenderInput = {
 export function renderPullRequestBody(
   input: PullRequestRenderInput,
 ): string {
-  return renderTemplate(pullRequestBodyMd, {
+  const body = renderTemplate(pullRequestBodyMd, {
     summary: input.summary.trim(),
     changes: renderBulletList(input.changes, "- No implementation changes listed."),
     verification: renderBulletList(
@@ -25,4 +26,6 @@ export function renderPullRequestBody(
     ),
     closing: `Closes #${input.closingIssueNumber}`,
   }).trim();
+
+  return wrapArtifactBody({ body });
 }

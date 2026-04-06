@@ -1,4 +1,5 @@
 import issueBodyMd from "../../content/artifacts/issue/templates/body.md";
+import { wrapArtifactBody } from "./chrome.ts";
 import { renderBulletList, renderTemplate } from "./template.ts";
 
 export type IssueRenderInput = {
@@ -9,7 +10,7 @@ export type IssueRenderInput = {
 };
 
 export function renderIssueBody(input: IssueRenderInput): string {
-  return renderTemplate(issueBodyMd, {
+  const body = renderTemplate(issueBodyMd, {
     summary: input.summary.trim(),
     problem: input.problem.trim(),
     acceptance_criteria: renderBulletList(
@@ -21,4 +22,6 @@ export function renderIssueBody(input: IssueRenderInput): string {
       "- No repository evidence was supplied.",
     ),
   }).trim();
+
+  return wrapArtifactBody({ body });
 }

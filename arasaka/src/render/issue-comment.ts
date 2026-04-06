@@ -1,4 +1,5 @@
 import issueCommentBodyMd from "../../content/artifacts/issue-comment/templates/body.md";
+import { wrapArtifactBody } from "./chrome.ts";
 import { renderBulletList, renderTemplate } from "./template.ts";
 
 export function renderIssueCommentBody(input: {
@@ -7,7 +8,7 @@ export function renderIssueCommentBody(input: {
   followUps: string[];
   prUrl: string;
 }): string {
-  return renderTemplate(issueCommentBodyMd, {
+  const body = renderTemplate(issueCommentBodyMd, {
     summary: input.summary.trim(),
     verification: renderBulletList(
       input.verification,
@@ -19,4 +20,6 @@ export function renderIssueCommentBody(input: {
     ),
     pr_link: `[View pull request](${input.prUrl})`,
   }).trim();
+
+  return wrapArtifactBody({ body });
 }

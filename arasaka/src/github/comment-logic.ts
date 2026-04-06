@@ -149,14 +149,23 @@ export function updateCommentBody(input: CommentUpdateInput): string {
   const usernameMatch = bodyContent.match(/@([a-zA-Z0-9-]+)/);
   const username = triggerUsername || usernameMatch?.[1] || "user";
 
+  const metaLine =
+    [durationStr, costStr]
+      .filter((value) => value.length > 0)
+      .map((value) => `\`${value}\``)
+      .join(" · ");
+
   // Build header from template
   const headerTpl = actionFailed ? HEADER_ERROR_TEMPLATE : HEADER_TEMPLATE;
   const header = headerTpl
     .replace(/\{username\}/g, username)
-    .replace(/\{duration\}/g, durationStr)
-    .replace(/\{cost\}/g, costStr)
+    .replace(/`?\{duration\}`?\s*·\s*`?\{cost\}`?/g, metaLine)
+    .replace(/`?\{duration\}`?/g, durationStr ? `\`${durationStr}\`` : "")
+    .replace(/`?\{cost\}`?/g, costStr ? `\`${costStr}\`` : "")
     .replace(/\{job_url\}/g, jobUrl)
-    .replace(/\{branch\}/g, input.branchName ?? "");
+    .replace(/\{branch\}/g, input.branchName ?? "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
   // Add links section
   let links = `[View job](${jobUrl})`;

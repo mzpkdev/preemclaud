@@ -16,6 +16,9 @@ describe("artifact renderers", () => {
     expect(body).toContain("The family has identified");
     expect(body).toContain("- Structured contract is enforced");
     expect(body).toContain("- arasaka/workflows/arasaka.yml");
+    expect(body).toContain("banner.svg");
+    expect(body).toContain("issue-reply.svg");
+    expect(body).toContain("footer.svg");
   });
 
   it("renders pull request bodies with closing issue marker", () => {
@@ -30,6 +33,7 @@ describe("artifact renderers", () => {
     expect(body).toContain("Closes #17");
     expect(body).toContain("- npm run typecheck");
     expect(body).toContain("Arasaka Implementation Pipeline");
+    expect(body).toContain("divider.svg");
   });
 
   it("renders review comments for findings and no-findings cases", () => {
@@ -57,7 +61,9 @@ describe("artifact renderers", () => {
 
     expect(findingsBody).toContain("[HIGH] `src/run.ts:42`");
     expect(findingsBody).toContain("Residual Risk");
+    expect(findingsBody).toContain("error-reply.svg");
     expect(cleanBody).toContain("The pipeline found no actionable defects");
+    expect(cleanBody).toContain("issue-reply.svg");
   });
 
   it("renders issue comments with PR links", () => {
@@ -70,5 +76,7 @@ describe("artifact renderers", () => {
 
     expect(body).toContain("[View pull request](https://github.com/example/repo/pull/12)");
     expect(body).toContain("Arasaka Repository Integrity Monitor");
+    expect(body).toContain("banner.svg");
+    expect(body).toContain("footer.svg");
   });
 });

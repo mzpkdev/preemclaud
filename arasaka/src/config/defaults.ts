@@ -10,9 +10,7 @@ import commentTemplateMd from "../../content/comments/templates/comment.md";
 import headerSuccessMd from "../../content/comments/templates/header-success.md";
 import headerFailureMd from "../../content/comments/templates/header-failure.md";
 import { getSystemPrompt } from "./prompt-registry.ts";
-
-const ASSET_BASE =
-  "https://raw.githubusercontent.com/mzpkdev/preemclaud/main/arasaka/assets";
+import { ASSET_BASE } from "./assets.ts";
 
 // ─── Initial comment ───────────────────────────────────────────────────────────
 // Posted immediately when the action starts, before Claude has any output.
