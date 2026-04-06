@@ -1,44 +1,85 @@
 {
-  "type": "object",
-  "properties": {
-    "pull_request": {
+  "oneOf": [
+    {
       "type": "object",
       "properties": {
-        "title": { "type": "string" },
-        "summary": { "type": "string" },
-        "changes": {
-          "type": "array",
-          "items": { "type": "string" }
+        "status": { "const": "implemented" },
+        "pull_request": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "summary": { "type": "string" },
+            "changes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "verification": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "assumptions": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "required": ["title", "summary", "changes", "verification", "assumptions"],
+          "additionalProperties": false
         },
-        "verification": {
-          "type": "array",
-          "items": { "type": "string" }
-        },
-        "assumptions": {
-          "type": "array",
-          "items": { "type": "string" }
+        "issue_comment": {
+          "type": "object",
+          "properties": {
+            "summary": { "type": "string" },
+            "verification": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "follow_ups": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "required": ["summary", "verification", "follow_ups"],
+          "additionalProperties": false
         }
       },
-      "required": ["title", "summary", "changes", "verification", "assumptions"],
+      "required": ["status", "pull_request", "issue_comment"],
       "additionalProperties": false
     },
-    "issue_comment": {
+    {
       "type": "object",
       "properties": {
+        "status": { "const": "needs_decomposition" },
         "summary": { "type": "string" },
-        "verification": {
+        "reason": { "type": "string" },
+        "child_issues": {
           "type": "array",
-          "items": { "type": "string" }
-        },
-        "follow_ups": {
-          "type": "array",
-          "items": { "type": "string" }
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "summary": { "type": "string" },
+              "problem": { "type": "string" },
+              "acceptance_criteria": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "evidence": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "labels": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            },
+            "required": ["title", "summary", "problem", "acceptance_criteria", "evidence", "labels"],
+            "additionalProperties": false
+          }
         }
       },
-      "required": ["summary", "verification", "follow_ups"],
+      "required": ["status", "summary", "reason", "child_issues"],
       "additionalProperties": false
     }
-  },
-  "required": ["pull_request", "issue_comment"],
-  "additionalProperties": false
+  ]
 }

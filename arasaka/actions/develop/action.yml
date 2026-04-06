@@ -11,6 +11,10 @@ inputs:
   base_branch:
     description: "Base branch for the pull request"
     required: true
+  decomposition_depth:
+    description: "Internal decomposition depth for queued child issues"
+    required: false
+    default: "0"
 
 outputs:
   prompt:
@@ -32,5 +36,6 @@ runs:
         ISSUE_NUMBER: ${{ inputs.issue_number }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         BASE_BRANCH: ${{ inputs.base_branch }}
+        DECOMPOSITION_DEPTH: ${{ inputs.decomposition_depth }}
       run: |
         python3 "${GITHUB_ACTION_PATH}/../../scripts/write_preset.py" develop

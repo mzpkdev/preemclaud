@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { renderDecompositionCommentBody } from "./decomposition-comment.ts";
 import { renderIssueBody } from "./issue.ts";
 import { renderPullRequestBody } from "./pull-request.ts";
 import { renderReviewComment } from "./review.ts";
@@ -19,6 +20,18 @@ describe("artifact renderers", () => {
     expect(body).toContain("banner.svg");
     expect(body).toContain("issue-reply.svg");
     expect(body).toContain("footer.svg");
+  });
+
+  it("appends hidden metadata markers to issue bodies when provided", () => {
+    const body = renderIssueBody({
+      summary: "Split a large issue into smaller units.",
+      problem: "The parent task is too broad.",
+      acceptanceCriteria: ["Create one focused child issue"],
+      evidence: ["#57"],
+      metadataComment: "<!-- arasaka:decomposition-child parent_issue=57 depth=1 -->",
+    });
+
+    expect(body).toContain("<!-- arasaka:decomposition-child parent_issue=57 depth=1 -->");
   });
 
   it("renders pull request bodies with closing issue marker", () => {
@@ -77,6 +90,18 @@ describe("artifact renderers", () => {
     expect(body).toContain("[View pull request](https://github.com/example/repo/pull/12)");
     expect(body).toContain("Arasaka Repository Integrity Monitor");
     expect(body).toContain("banner.svg");
+    expect(body).toContain("footer.svg");
+  });
+
+  it("renders decomposition comments with child issue links", () => {
+    const body = renderDecompositionCommentBody({
+      summary: "The requested change is too large for one safe implementation pass.",
+      reason: "The workflow and verification work should be split into separate bounded tasks.",
+      childIssues: ["[#101](https://github.com/example/repo/issues/101) Tighten CI test gating"],
+    });
+
+    expect(body).toContain("Created Child Issues");
+    expect(body).toContain("#101");
     expect(body).toContain("footer.svg");
   });
 });

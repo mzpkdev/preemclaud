@@ -151,6 +151,7 @@ jobs:
           issue_number: ${{ matrix.issue_number }}
           branch_name: ${{ steps.branch.outputs.branch_name }}
           base_branch: ${{ steps.branch.outputs.base_branch }}
+          decomposition_depth: "0"
 
       - name: Run issue implementation
         id: run
@@ -166,6 +167,150 @@ jobs:
           claude_args: ${{ steps.preset.outputs.claude_args }}
           artifact_mode: "develop"
           artifact_issue_number: ${{ matrix.issue_number }}
+          artifact_decomposition_depth: "0"
+          base_branch: ${{ steps.branch.outputs.base_branch }}
+          branch_prefix: ${{ inputs.branch_prefix }}
+          allowed_bots: "github-actions[bot]"
+
+      - name: Save develop result
+        if: ${{ steps.run.outputs.structured_output != '' }}
+        shell: bash
+        env:
+          OUTPUT: ${{ steps.run.outputs.structured_output }}
+          ISSUE_NUMBER: ${{ matrix.issue_number }}
+        run: |
+          printf '%s' "$OUTPUT" > "develop-result-$ISSUE_NUMBER.json"
+
+      - name: Upload develop result
+        if: ${{ steps.run.outputs.structured_output != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: develop-result-${{ matrix.issue_number }}
+          path: develop-result-${{ matrix.issue_number }}.json
+
+  collect_decomposition_children:
+    if: >
+      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') &&
+      inputs.auto_start_from_queue &&
+      needs.develop_from_queue.result == 'success'
+    needs: develop_from_queue
+    runs-on: ubuntu-latest
+    outputs:
+      issue_matrix: ${{ steps.matrix.outputs.issue_matrix }}
+    steps:
+      - name: Download develop result artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          path: develop-results
+          pattern: develop-result-*
+          merge-multiple: true
+
+      - name: Build decomposition matrix
+        id: matrix
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(develop-results/*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo 'issue_matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          MATRIX=$(jq -sc '
+            map(select(.status == "needs_decomposition")) |
+            map(.child_issues // []) |
+            add |
+            unique_by(.number) |
+            if length == 0
+            then {"include":[]}
+            else {"include":[.[] | {
+              issue_number:(.number | tostring),
+              issue_title:(.title // ""),
+              decomposition_depth:"1"
+            }]}
+            end
+          ' "${files[@]}")
+
+          echo "issue_matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+
+  develop_from_decomposition:
+    if: >
+      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') &&
+      inputs.auto_start_from_queue &&
+      needs.collect_decomposition_children.result == 'success' &&
+      needs.collect_decomposition_children.outputs.issue_matrix != '{"include":[]}'
+    needs: collect_decomposition_children
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.collect_decomposition_children.outputs.issue_matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare branch
+        id: branch
+        shell: bash
+        env:
+          ISSUE_NUMBER: ${{ matrix.issue_number }}
+          BASE_BRANCH_INPUT: ${{ inputs.base_branch }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BRANCH_PREFIX: ${{ inputs.branch_prefix }}
+        run: |
+          BASE_BRANCH="${BASE_BRANCH_INPUT:-$DEFAULT_BRANCH}"
+          PREFIX="${BRANCH_PREFIX%/}"
+
+          if [ -n "$PREFIX" ]; then
+            BRANCH_NAME="$PREFIX/issue-$ISSUE_NUMBER"
+          else
+            BRANCH_NAME="issue-$ISSUE_NUMBER"
+          fi
+
+          git fetch origin "$BASE_BRANCH" --depth=1
+
+          if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+            git fetch origin "$BRANCH_NAME" --depth=1
+            git checkout -B "$BRANCH_NAME" "origin/$BRANCH_NAME"
+          else
+            git checkout -B "$BRANCH_NAME" "origin/$BASE_BRANCH"
+          fi
+
+          echo "base_branch=$BASE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build develop preset
+        id: preset
+        uses: __ARASAKA_OWNER_REPO__/arasaka/actions/develop@__ARASAKA_REF__
+        with:
+          issue_number: ${{ matrix.issue_number }}
+          branch_name: ${{ steps.branch.outputs.branch_name }}
+          base_branch: ${{ steps.branch.outputs.base_branch }}
+          decomposition_depth: ${{ matrix.decomposition_depth }}
+
+      - name: Run decomposed issue implementation
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        env:
+          CLAUDE_BRANCH: ${{ steps.branch.outputs.branch_name }}
+          BASE_BRANCH: ${{ steps.branch.outputs.base_branch }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          artifact_mode: "develop"
+          artifact_issue_number: ${{ matrix.issue_number }}
+          artifact_decomposition_depth: ${{ matrix.decomposition_depth }}
           base_branch: ${{ steps.branch.outputs.base_branch }}
           branch_prefix: ${{ inputs.branch_prefix }}
           allowed_bots: "github-actions[bot]"

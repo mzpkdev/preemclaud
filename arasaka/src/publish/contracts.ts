@@ -1,15 +1,18 @@
 import { z } from "zod";
 
-export const queueIssueSchema = z
-  .object({
+export const issuePublicationSchema = z.object({
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  problem: z.string().min(1),
+  acceptance_criteria: z.array(z.string().min(1)),
+  evidence: z.array(z.string().min(1)),
+  labels: z.array(z.string().min(1)),
+});
+
+export const queueIssueSchema = issuePublicationSchema
+  .extend({
     action: z.enum(["create", "update"]),
     existing_issue_number: z.number().int().positive().optional(),
-    title: z.string().min(1),
-    summary: z.string().min(1),
-    problem: z.string().min(1),
-    acceptance_criteria: z.array(z.string().min(1)),
-    evidence: z.array(z.string().min(1)),
-    labels: z.array(z.string().min(1)),
   })
   .superRefine((value, ctx) => {
     if (value.action === "update" && value.existing_issue_number === undefined) {
@@ -24,7 +27,8 @@ export const queueOutputSchema = z.object({
   issues: z.array(queueIssueSchema),
 });
 
-export const developOutputSchema = z.object({
+export const developImplementedOutputSchema = z.object({
+  status: z.literal("implemented"),
   pull_request: z.object({
     title: z.string().min(1),
     summary: z.string().min(1),
@@ -38,6 +42,18 @@ export const developOutputSchema = z.object({
     follow_ups: z.array(z.string().min(1)),
   }),
 });
+
+export const developDecompositionOutputSchema = z.object({
+  status: z.literal("needs_decomposition"),
+  summary: z.string().min(1),
+  reason: z.string().min(1),
+  child_issues: z.array(issuePublicationSchema).min(1),
+});
+
+export const developOutputSchema = z.discriminatedUnion("status", [
+  developImplementedOutputSchema,
+  developDecompositionOutputSchema,
+]);
 
 export const reviewFindingSchema = z.object({
   severity: z.enum(["high", "medium", "low"]),
