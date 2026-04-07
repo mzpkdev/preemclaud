@@ -68,6 +68,18 @@ inputs:
     description: "Label to apply to queue-created issues for develop discovery"
     required: false
     default: ""
+  artifact_stale_label:
+    description: "Stale label used by maintain artifact publishing"
+    required: false
+    default: ""
+  artifact_dry_run:
+    description: "If true, maintain mode reports planned actions without executing"
+    required: false
+    default: ""
+  artifact_max_actions:
+    description: "Maximum number of maintenance actions to execute per run"
+    required: false
+    default: ""
   settings:
     description: "Claude Code settings as JSON string or path"
     required: false
@@ -250,6 +262,9 @@ runs:
         ARTIFACT_ISSUE_NUMBER: ${{ inputs.artifact_issue_number }}
         ARTIFACT_PR_NUMBER: ${{ inputs.artifact_pr_number }}
         ARTIFACT_READY_LABEL: ${{ inputs.artifact_ready_label }}
+        ARTIFACT_STALE_LABEL: ${{ inputs.artifact_stale_label }}
+        ARTIFACT_DRY_RUN: ${{ inputs.artifact_dry_run }}
+        ARTIFACT_MAX_ACTIONS: ${{ inputs.artifact_max_actions }}
         TRIGGER_PHRASE: ${{ inputs.trigger_phrase }}
         ASSIGNEE_TRIGGER: ${{ inputs.assignee_trigger }}
         LABEL_TRIGGER: ${{ inputs.label_trigger }}

@@ -3,8 +3,9 @@ import type { Octokits } from "../../upstream/src/github/api/client.ts";
 import { publishQueueOutput } from "./queue.ts";
 import { publishDevelopOutput } from "./develop.ts";
 import { publishReviewOutput } from "./review.ts";
+import { publishMaintainOutput } from "./maintain.ts";
 
-export type ArtifactMode = "queue" | "develop" | "review";
+export type ArtifactMode = "queue" | "develop" | "review" | "maintain";
 
 function getRequiredNumber(
   rawValue: string | undefined,
@@ -58,6 +59,21 @@ export async function publishStructuredOutput(params: {
         ),
         branchName: claudeBranch || process.env.CLAUDE_BRANCH || "",
         baseBranch: baseBranch || process.env.BASE_BRANCH || "main",
+      }),
+    );
+  }
+
+  if (mode === "maintain") {
+    if (isEntityContext(context)) {
+      throw new Error("maintain publishing requires automation context");
+    }
+    return JSON.stringify(
+      await publishMaintainOutput({
+        octokit,
+        context,
+        rawStructuredOutput,
+        staleLabel: process.env.ARTIFACT_STALE_LABEL || "stale",
+        dryRun: process.env.ARTIFACT_DRY_RUN === "true",
       }),
     );
   }

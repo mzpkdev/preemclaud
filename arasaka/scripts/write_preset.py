@@ -108,9 +108,27 @@ def review_payload() -> dict[str, str]:
     }
 
 
+def maintain_payload() -> dict[str, str]:
+    return {
+        "prompt": build_prompt(
+            "maintain",
+            {
+                "GITHUB_REPOSITORY": os.environ["GITHUB_REPOSITORY"],
+                "GITHUB_RUN_ID": os.environ["GITHUB_RUN_ID"],
+                "STALE_DAYS": os.environ["STALE_DAYS"],
+                "STALE_LABEL": os.environ["STALE_LABEL"],
+                "MAX_ACTIONS": os.environ["MAX_ACTIONS"],
+                "DRY_RUN": os.environ.get("DRY_RUN", "false"),
+            },
+        ),
+        "system_prompt": build_system_prompt("maintain"),
+        "claude_args": build_claude_args("maintain"),
+    }
+
+
 def main() -> int:
     if len(sys.argv) != 2:
-        raise SystemExit("usage: write_preset.py <queue|develop|review>")
+        raise SystemExit("usage: write_preset.py <queue|develop|review|maintain>")
 
     mode = sys.argv[1]
     if mode == "queue":
@@ -119,6 +137,8 @@ def main() -> int:
         payload = develop_payload()
     elif mode == "review":
         payload = review_payload()
+    elif mode == "maintain":
+        payload = maintain_payload()
     else:
         raise SystemExit(f"unknown mode: {mode}")
 

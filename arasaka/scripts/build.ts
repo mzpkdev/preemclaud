@@ -132,7 +132,7 @@ await writeFile(`${DIST_ARASAKA}/action.yml`, actionYml);
 
 // 9. Generate reusable workflow entrypoints for v1 consumers
 console.log("Generating reusable workflows...");
-const workflows = ["develop.yml", "queue.yml", "review.yml"];
+const workflows = ["develop.yml", "queue.yml", "review.yml", "maintain.yml"];
 
 for (const workflow of workflows) {
   let workflowYml = await readFile(`./workflows/${workflow}`, "utf-8");

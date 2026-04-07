@@ -3,6 +3,7 @@ import { renderIssueBody } from "./issue.ts";
 import { renderPullRequestBody } from "./pull-request.ts";
 import { renderReviewComment } from "./review.ts";
 import { renderIssueCommentBody } from "./issue-comment.ts";
+import { renderMaintainComment } from "./maintain.ts";
 
 describe("artifact renderers", () => {
   it("renders issue bodies with criteria and evidence lists", () => {
@@ -76,6 +77,66 @@ describe("artifact renderers", () => {
 
     expect(body).toContain("[View pull request](https://github.com/example/repo/pull/12)");
     expect(body).toContain("Arasaka Repository Integrity Monitor");
+    expect(body).toContain("banner.svg");
+    expect(body).toContain("footer.svg");
+  });
+
+  it("renders maintain warn comment with stale notice", () => {
+    const body = renderMaintainComment({
+      variant: "warn",
+      comment: "This issue has seen no updates since March.",
+      reason: "No activity for 35 days.",
+      entityType: "issue",
+    });
+
+    expect(body).toContain("flagged for review");
+    expect(body).toContain("No activity for 35 days.");
+    expect(body).toContain("no updates since March");
+    expect(body).toContain("Arasaka Repository Maintenance Division");
+    expect(body).toContain("banner.svg");
+    expect(body).toContain("footer.svg");
+  });
+
+  it("renders maintain close comment with inactivity notice", () => {
+    const body = renderMaintainComment({
+      variant: "close",
+      comment: "Closing after sustained inactivity.",
+      reason: "No response to stale warning for 30 days.",
+      entityType: "pull_request",
+    });
+
+    expect(body).toContain("closed due to sustained inactivity");
+    expect(body).toContain("pull request");
+    expect(body).toContain("may be reopened");
+    expect(body).toContain("banner.svg");
+    expect(body).toContain("footer.svg");
+  });
+
+  it("renders maintain reply comment", () => {
+    const body = renderMaintainComment({
+      variant: "reply",
+      comment: "The configuration file is located at `config/settings.yml`.",
+      reason: "Unanswered question about configuration.",
+      entityType: "issue",
+    });
+
+    expect(body).toContain("config/settings.yml");
+    expect(body).toContain("Arasaka Repository Maintenance Division");
+    expect(body).toContain("issue-reply.svg");
+  });
+
+  it("renders maintain label comment with label names", () => {
+    const body = renderMaintainComment({
+      variant: "label",
+      comment: "",
+      reason: "Issue discusses authentication flow.",
+      entityType: "issue",
+      labels: ["auth", "enhancement"],
+    });
+
+    expect(body).toContain("`auth`");
+    expect(body).toContain("`enhancement`");
+    expect(body).toContain("content analysis");
     expect(body).toContain("banner.svg");
     expect(body).toContain("footer.svg");
   });

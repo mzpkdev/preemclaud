@@ -4,6 +4,7 @@ import {
   developImplementedOutputSchema,
   queueOutputSchema,
   reviewOutputSchema,
+  maintainOutputSchema,
 } from "./contracts.ts";
 
 describe("structured publication contracts", () => {
@@ -95,5 +96,69 @@ describe("structured publication contracts", () => {
     });
 
     expect(parsed.verdict).toBe("no_findings");
+  });
+
+  it("accepts valid maintain output with warn_stale action", () => {
+    const parsed = maintainOutputSchema.parse({
+      actions: [
+        {
+          type: "warn_stale",
+          entity: "issue",
+          number: 5,
+          title: "Old feature request",
+          reason: "No activity for 45 days",
+          comment: "This issue has been inactive. Please respond to keep it open.",
+          labels_to_add: ["stale"],
+        },
+      ],
+      summary: "One stale issue flagged for review.",
+    });
+
+    expect(parsed.actions).toHaveLength(1);
+    expect(parsed.actions[0].type).toBe("warn_stale");
+  });
+
+  it("rejects warn_stale without comment", () => {
+    expect(() =>
+      maintainOutputSchema.parse({
+        actions: [
+          {
+            type: "warn_stale",
+            entity: "issue",
+            number: 5,
+            title: "Old feature request",
+            reason: "No activity for 45 days",
+            labels_to_add: ["stale"],
+          },
+        ],
+        summary: "One stale issue flagged.",
+      }),
+    ).toThrow("comment is required");
+  });
+
+  it("rejects add_labels without labels_to_add", () => {
+    expect(() =>
+      maintainOutputSchema.parse({
+        actions: [
+          {
+            type: "add_labels",
+            entity: "issue",
+            number: 10,
+            title: "Unlabeled issue",
+            reason: "Issue has no labels",
+          },
+        ],
+        summary: "One issue needs labels.",
+      }),
+    ).toThrow("labels_to_add is required");
+  });
+
+  it("accepts empty maintain actions array", () => {
+    const parsed = maintainOutputSchema.parse({
+      actions: [],
+      summary: "No maintenance actions warranted.",
+    });
+
+    expect(parsed.actions).toHaveLength(0);
   });
 });

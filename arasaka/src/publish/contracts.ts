@@ -60,7 +60,48 @@ export const reviewOutputSchema = z.object({
   residual_risks: z.array(z.string().min(1)),
 });
 
+export const maintainActionSchema = z
+  .object({
+    type: z.enum(["warn_stale", "close_stale", "reply_question", "add_labels"]),
+    entity: z.enum(["issue", "pull_request"]),
+    number: z.number().int().positive(),
+    title: z.string().min(1),
+    reason: z.string().min(1),
+    comment: z.string().optional(),
+    labels_to_add: z.array(z.string().min(1)).optional(),
+    labels_to_remove: z.array(z.string().min(1)).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (
+      (value.type === "warn_stale" ||
+        value.type === "close_stale" ||
+        value.type === "reply_question") &&
+      !value.comment
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `comment is required for ${value.type} actions`,
+      });
+    }
+    if (
+      (value.type === "warn_stale" || value.type === "add_labels") &&
+      (!value.labels_to_add || value.labels_to_add.length === 0)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `labels_to_add is required for ${value.type} actions`,
+      });
+    }
+  });
+
+export const maintainOutputSchema = z.object({
+  actions: z.array(maintainActionSchema),
+  summary: z.string().min(1),
+});
+
 export type QueueOutput = z.infer<typeof queueOutputSchema>;
 export type DevelopOutput = z.infer<typeof developOutputSchema>;
 export type ReviewOutput = z.infer<typeof reviewOutputSchema>;
 export type ReviewFinding = z.infer<typeof reviewFindingSchema>;
+export type MaintainOutput = z.infer<typeof maintainOutputSchema>;
+export type MaintainAction = z.infer<typeof maintainActionSchema>;
