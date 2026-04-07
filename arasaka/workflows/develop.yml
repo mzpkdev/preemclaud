@@ -22,7 +22,7 @@ on:
       max_issues:
         type: string
         required: false
-        default: "5"
+        default: "1"
     secrets:
       ANTHROPIC_API_KEY:
         required: false
