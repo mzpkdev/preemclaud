@@ -1,113 +1,73 @@
-import { describe, expect, it, mock } from "bun:test";
-import { publishDevelopOutput } from "./develop.ts";
+import { describe, expect, it, mock, beforeEach, afterEach } from "bun:test";
+
+// Mock execFileSync before importing the module under test
+import { mock as mockModule } from "bun:test";
+
+const execFileSyncMock = mock(() => Buffer.from(""));
+mock.module("node:child_process", () => ({
+  execFileSync: execFileSyncMock,
+}));
+
+const { publishDevelopOutput } = await import("./develop.ts");
 
 describe("develop publication", () => {
-  it("publishes decomposition child issues and a parent comment", async () => {
-    const createIssue = mock(async ({ title }: { title: string }) => ({
+  beforeEach(() => {
+    execFileSyncMock.mockClear();
+  });
+
+  it("creates a pull request and posts an issue comment", async () => {
+    const createPR = mock(async () => ({
       data: {
-        number: title.includes("tests") ? 101 : 102,
-        title,
-        html_url: `https://github.com/example/repo/issues/${title.includes("tests") ? 101 : 102}`,
+        number: 12,
+        html_url: "https://github.com/example/repo/pull/12",
+        title: "Fix widget rendering",
+        node_id: "PR_123",
       },
     }));
+    const listPRs = mock(async () => ({ data: [] }));
     const createComment = mock(async () => ({
-      data: { html_url: "https://github.com/example/repo/issues/57#issuecomment-1" },
+      data: { html_url: "https://github.com/example/repo/issues/5#issuecomment-1" },
     }));
 
     const result = await publishDevelopOutput({
       octokit: {
         rest: {
-          issues: {
-            create: createIssue,
-            createComment,
-            listLabelsForRepo: {},
-          },
-          paginate: {
-            iterator: async function* () {
-              yield { data: [{ name: "auto-generated" }] };
-            },
-          },
+          pulls: { create: createPR, list: listPRs },
+          issues: { createComment },
         },
+        graphql: mock(async () => ({
+          enablePullRequestAutoMerge: { pullRequest: { number: 12 } },
+        })),
       } as any,
       context: {
         repository: { owner: "example", repo: "repo" },
       } as any,
-      issueNumber: 57,
-      branchName: "claude/issue-57",
+      issueNumber: 5,
+      branchName: "claude/issue-5",
       baseBranch: "main",
       rawStructuredOutput: JSON.stringify({
-        status: "needs_decomposition",
-        summary: "This should be split into smaller tasks.",
-        reason: "Workflow changes and deployment hardening should not land together.",
-        child_issues: [
-          {
-            title: "Run tests before deploy",
-            summary: "Block deploy when tests fail.",
-            problem: "The deploy workflow does not execute tests first.",
-            acceptance_criteria: [
-              "Tests run before build",
-              "Deploy does not continue after test failures",
-            ],
-            evidence: [".github/workflows/deploy-pages.yml"],
-            labels: ["auto-generated", "missing-label"],
-          },
-        ],
-      }),
-    });
-
-    expect(createIssue).toHaveBeenCalledTimes(1);
-    expect(createIssue).toHaveBeenCalledWith({
-      owner: "example",
-      repo: "repo",
-      title: "Run tests before deploy",
-      body: expect.stringContaining("parent_issue=57 depth=1"),
-      labels: ["auto-generated"],
-    });
-    expect(createComment).toHaveBeenCalledTimes(1);
-    expect(result).toEqual({
-      status: "needs_decomposition",
-      parent_issue_number: 57,
-      parent_issue_comment_url: "https://github.com/example/repo/issues/57#issuecomment-1",
-      child_issues: [
-        {
-          number: 101,
-          title: "Run tests before deploy",
-          url: "https://github.com/example/repo/issues/101",
+        status: "implemented",
+        pull_request: {
+          title: "Fix widget rendering",
+          summary: "Corrects the flex layout for widget containers.",
+          changes: ["Updated widget.css flex properties"],
+          verification: ["npm test"],
+          assumptions: ["No IE11 support needed"],
         },
-      ],
-    });
-  });
-
-  it("rejects recursive decomposition for child issues", async () => {
-    process.env.ARTIFACT_DECOMPOSITION_DEPTH = "1";
-
-    await expect(
-      publishDevelopOutput({
-        octokit: {} as any,
-        context: {
-          repository: { owner: "example", repo: "repo" },
-        } as any,
-        issueNumber: 101,
-        branchName: "claude/issue-101",
-        baseBranch: "main",
-        rawStructuredOutput: JSON.stringify({
-          status: "needs_decomposition",
-          summary: "Still too large.",
-          reason: "This should fail.",
-          child_issues: [
-            {
-              title: "Another child",
-              summary: "Invalid recursion.",
-              problem: "Should not recurse.",
-              acceptance_criteria: ["No recursion"],
-              evidence: ["#101"],
-              labels: [],
-            },
-          ],
-        }),
+        issue_comment: {
+          summary: "Implemented the fix on claude/issue-5.",
+          verification: ["npm test"],
+          follow_ups: [],
+        },
       }),
-    ).rejects.toThrow("must not decompose again");
+    });
 
-    delete process.env.ARTIFACT_DECOMPOSITION_DEPTH;
+    expect(result.status).toBe("implemented");
+    if (result.status !== "implemented") throw new Error("unreachable");
+    expect(result.pull_request.number).toBe(12);
+    expect(result.pull_request.action).toBe("created");
+    expect(createPR).toHaveBeenCalledTimes(1);
+    expect(createComment).toHaveBeenCalledTimes(1);
+    expect(execFileSyncMock).toHaveBeenCalledTimes(1);
   });
 });

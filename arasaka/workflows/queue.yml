@@ -1,0 +1,56 @@
+name: Arasaka Queue
+
+on:
+  workflow_call:
+    inputs:
+      ready_label:
+        type: string
+        required: false
+        default: "arasaka:ready"
+      queue_max_issues:
+        type: string
+        required: false
+        default: "1"
+      base_branch:
+        type: string
+        required: false
+        default: ""
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build queue preset
+        id: preset
+        uses: __ARASAKA_OWNER_REPO__/arasaka/actions/queue@__ARASAKA_REF__
+        with:
+          queue_max_issues: ${{ inputs.queue_max_issues }}
+
+      - name: Run queue planner
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          artifact_mode: "queue"
+          artifact_ready_label: ${{ inputs.ready_label }}
+          base_branch: ${{ inputs.base_branch }}
+          allowed_bots: "github-actions[bot]"

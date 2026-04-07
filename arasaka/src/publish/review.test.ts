@@ -6,11 +6,8 @@ import {
 } from "./review.ts";
 
 describe("review publication", () => {
-  it("requests changes when findings exist", () => {
-    expect(getReviewEvent("findings")).toBe("REQUEST_CHANGES");
-  });
-
-  it("posts a comment review when there are no findings", () => {
+  it("always posts a comment review regardless of verdict", () => {
+    expect(getReviewEvent("findings")).toBe("COMMENT");
     expect(getReviewEvent("no_findings")).toBe("COMMENT");
   });
 
@@ -61,7 +58,7 @@ describe("review publication", () => {
       repo: "repo",
       pull_number: 1,
       body: expect.stringContaining("error-reply.svg"),
-      event: "REQUEST_CHANGES",
+      event: "COMMENT",
     });
     expect(createCheck).toHaveBeenCalledTimes(1);
     expect(createCheck).toHaveBeenCalledWith({
@@ -80,7 +77,7 @@ describe("review publication", () => {
     });
     expect(result).toEqual({
       review_url: "https://github.com/example/repo/pull/1#pullrequestreview-1",
-      event: "REQUEST_CHANGES",
+      event: "COMMENT",
       check_run_url: "https://github.com/example/repo/runs/123456",
       check_conclusion: "failure",
     });

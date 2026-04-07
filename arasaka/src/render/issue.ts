@@ -7,7 +7,6 @@ export type IssueRenderInput = {
   problem: string;
   acceptanceCriteria: string[];
   evidence: string[];
-  metadataComment?: string;
 };
 
 export function renderIssueBody(input: IssueRenderInput): string {
@@ -24,10 +23,5 @@ export function renderIssueBody(input: IssueRenderInput): string {
     ),
   }).trim();
 
-  const wrapped = wrapArtifactBody({ body });
-  if (!input.metadataComment) {
-    return wrapped;
-  }
-
-  return `${wrapped}\n\n${input.metadataComment.trim()}`;
+  return wrapArtifactBody({ body });
 }

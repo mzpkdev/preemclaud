@@ -43,17 +43,7 @@ export const developImplementedOutputSchema = z.object({
   }),
 });
 
-export const developDecompositionOutputSchema = z.object({
-  status: z.literal("needs_decomposition"),
-  summary: z.string().min(1),
-  reason: z.string().min(1),
-  child_issues: z.array(issuePublicationSchema).min(1),
-});
-
-export const developOutputSchema = z.discriminatedUnion("status", [
-  developImplementedOutputSchema,
-  developDecompositionOutputSchema,
-]);
+export const developOutputSchema = developImplementedOutputSchema;
 
 export const reviewFindingSchema = z.object({
   severity: z.enum(["high", "medium", "low"]),

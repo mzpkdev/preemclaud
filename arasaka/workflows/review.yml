@@ -1,0 +1,54 @@
+name: Arasaka Review
+
+on:
+  workflow_call:
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+
+jobs:
+  review:
+    if: >
+      github.event_name == 'pull_request' &&
+      (
+        github.event.action == 'opened' ||
+        github.event.action == 'synchronize' ||
+        github.event.action == 'ready_for_review' ||
+        github.event.action == 'reopened'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Build review preset
+        id: preset
+        uses: __ARASAKA_OWNER_REPO__/arasaka/actions/review@__ARASAKA_REF__
+        with:
+          pr_number: ${{ github.event.pull_request.number }}
+          base_branch: ${{ github.event.pull_request.base.ref }}
+
+      - name: Run PR review
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          artifact_mode: "review"
+          artifact_pr_number: ${{ github.event.pull_request.number }}
+          base_branch: ${{ github.event.pull_request.base.ref }}
+          allowed_bots: "claude[bot]"

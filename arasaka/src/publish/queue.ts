@@ -35,8 +35,9 @@ export async function publishQueueOutput(params: {
   octokit: Octokits;
   context: AutomationContext;
   rawStructuredOutput: string;
+  readyLabel?: string;
 }): Promise<QueuePublishResult> {
-  const { octokit, context, rawStructuredOutput } = params;
+  const { octokit, context, rawStructuredOutput, readyLabel } = params;
   const parsed: QueueOutput = queueOutputSchema.parse(
     JSON.parse(rawStructuredOutput),
   );
@@ -70,12 +71,13 @@ export async function publishQueueOutput(params: {
       continue;
     }
 
+    const createLabels = readyLabel ? [...labels, readyLabel] : labels;
     const { data } = await octokit.rest.issues.create({
       owner,
       repo,
       title: item.title,
       body,
-      ...(labels.length > 0 ? { labels } : {}),
+      ...(createLabels.length > 0 ? { labels: createLabels } : {}),
     });
     issues.push({
       number: data.number,

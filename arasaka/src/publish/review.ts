@@ -6,9 +6,9 @@ import { renderReviewComment } from "../render/review.ts";
 const REVIEW_CHECK_NAME = "arasaka/review";
 
 export function getReviewEvent(
-  verdict: ReviewOutput["verdict"],
-): "COMMENT" | "REQUEST_CHANGES" {
-  return verdict === "findings" ? "REQUEST_CHANGES" : "COMMENT";
+  _verdict: ReviewOutput["verdict"],
+): "COMMENT" {
+  return "COMMENT";
 }
 
 export function getReviewCheckConclusion(
@@ -35,7 +35,7 @@ export async function publishReviewOutput(params: {
   prNumber: number;
 }): Promise<{
   review_url: string;
-  event: "COMMENT" | "REQUEST_CHANGES";
+  event: "COMMENT";
   check_run_url: string;
   check_conclusion: "success" | "failure";
 }> {

@@ -113,63 +113,79 @@ arasaka/
 All other inputs (`trigger_phrase`, `base_branch`, `branch_prefix`, `use_commit_signing`, etc.) are pass-throughs to
 upstream — see `action.yml` for the full list.
 
-## Reusable Workflow
+## Reusable Workflows
 
-The recommended end-user integration is the umbrella reusable workflow:
+Three independent reusable workflows, each handling one concern. Consumers wire their own triggers and cron schedules.
+
+### Queue
+
+Creates implementation issues from codebase analysis. Labels created issues with `ready_label` so the develop workflow
+can discover them.
 
 ```yaml
-name: Arasaka
-
+name: Queue
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "0 3 * * *"
-  pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
+    - cron: "0 6 * * 1" # Monday 6am
+  workflow_dispatch:
+
+jobs:
+  queue:
+    uses: mzpkdev/preemclaud/arasaka/workflows/queue.yml@v1
+    secrets: inherit
+```
+
+| Input              | Default         | Purpose                                    |
+| ------------------ | --------------- | ------------------------------------------ |
+| `ready_label`      | `arasaka:ready` | Label applied to created issues            |
+| `queue_max_issues` | `1`             | Max issues the queue planner opens per run |
+| `base_branch`      | _repo default_  | Base branch override                       |
+
+### Develop
+
+Discovers labeled issues and implements them. Removes the ready label before starting work to prevent re-processing.
+Also supports direct `@arasaka` comment triggers for immediate work.
+
+```yaml
+name: Develop
+on:
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours
+  workflow_dispatch:
   issue_comment:
     types: [created]
-  issues:
-    types: [labeled]
 
 jobs:
-  arasaka:
-    uses: mzpkdev/preemclaud/.github/workflows/arasaka.yml@v1
+  develop:
+    uses: mzpkdev/preemclaud/arasaka/workflows/develop.yml@v1
     secrets: inherit
 ```
 
-This wrapper gives users one entrypoint that handles:
+| Input            | Default         | Purpose                                           |
+| ---------------- | --------------- | ------------------------------------------------- |
+| `trigger_phrase` | `@arasaka`      | Comment trigger for direct issue / PR-thread work |
+| `ready_label`    | `arasaka:ready` | Label to query for cron-based issue discovery     |
+| `branch_prefix`  | `claude/`       | Prefix used for generated work branches           |
+| `base_branch`    | _repo default_  | Base branch override                              |
+| `max_issues`     | `5`             | Max issues to pick up per cron run                |
 
-- queue generation on `schedule` and `workflow_dispatch`
-- same-run issue implementation for queue items it just created
-- automatic pull request review on `pull_request`
-- issue or PR-thread development when someone comments `@arasaka`
-- issue-driven development when an issue gets the `arasaka:ready` label
+### Review
 
-### Workflow Inputs
-
-The reusable workflow intentionally exposes a small surface:
-
-| Input                   | Default           | Purpose                                             |
-| ----------------------- | ----------------- | --------------------------------------------------- |
-| `trigger_phrase`        | `@arasaka`        | Comment trigger for direct issue / PR-thread work   |
-| `ready_label`           | `arasaka:ready`   | Label trigger for issue-driven development          |
-| `queue_max_issues`      | `1`               | Max issues the queue planner opens per run          |
-| `branch_prefix`         | `claude/`         | Prefix used for generated work branches             |
-| `base_branch`           | _repo default_    | Base branch override for queue-created development  |
-| `auto_start_from_queue` | `true`            | Start implementation jobs in the same workflow run  |
-
-Example with overrides:
+Automatic pull request review on PR events.
 
 ```yaml
+name: Review
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
 jobs:
-  arasaka:
-    uses: mzpkdev/preemclaud/.github/workflows/arasaka.yml@v1
-    with:
-      queue_max_issues: "2"
-      ready_label: "bot:ready"
-      branch_prefix: "arasaka/"
+  review:
+    uses: mzpkdev/preemclaud/arasaka/workflows/review.yml@v1
     secrets: inherit
 ```
+
+No additional inputs — review context comes from the PR event payload.
 
 ## Internal Presets
 

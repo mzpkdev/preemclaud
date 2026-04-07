@@ -1,7 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
   developOutputSchema,
-  developDecompositionOutputSchema,
   developImplementedOutputSchema,
   queueOutputSchema,
   reviewOutputSchema,
@@ -68,30 +67,6 @@ describe("structured publication contracts", () => {
     expect(parsed.pull_request.title).toContain("Arasaka");
   });
 
-  it("accepts valid decomposition develop output", () => {
-    const parsed = developOutputSchema.parse({
-      status: "needs_decomposition",
-      summary: "The change should be split into smaller tasks.",
-      reason: "Workflow and verification changes should land separately.",
-      child_issues: [
-        {
-          title: "Run tests before deploy",
-          summary: "Ensure deploy waits for tests.",
-          problem: "Deployment currently runs without test gating.",
-          acceptance_criteria: ["Tests run before build", "Deployment stops on test failures"],
-          evidence: [".github/workflows/deploy-pages.yml"],
-          labels: [],
-        },
-      ],
-    });
-
-    expect(parsed.status).toBe("needs_decomposition");
-    if (parsed.status !== "needs_decomposition") {
-      throw new Error("expected decomposition develop output");
-    }
-    expect(parsed.child_issues).toHaveLength(1);
-  });
-
   it("rejects implemented output without status", () => {
     expect(() =>
       developImplementedOutputSchema.parse({
@@ -107,17 +82,6 @@ describe("structured publication contracts", () => {
           verification: ["npm test"],
           follow_ups: [],
         },
-      }),
-    ).toThrow();
-  });
-
-  it("requires at least one child issue for decomposition output", () => {
-    expect(() =>
-      developDecompositionOutputSchema.parse({
-        status: "needs_decomposition",
-        summary: "Split it.",
-        reason: "Too large.",
-        child_issues: [],
       }),
     ).toThrow();
   });

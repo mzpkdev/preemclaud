@@ -6,7 +6,6 @@ import os
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 PERSONA_PATH = ROOT / "content" / "shared" / "persona.md"
 
@@ -18,7 +17,7 @@ def read_text(path: Path) -> str:
 def render_text(template: str, variables: dict[str, str]) -> str:
     rendered = template
     for key, value in variables.items():
-      rendered = rendered.replace(f"${{{key}}}", value)
+        rendered = rendered.replace(f"${{{key}}}", value)
     return rendered
 
 
@@ -79,12 +78,6 @@ def queue_payload() -> dict[str, str]:
 
 
 def develop_payload() -> dict[str, str]:
-    decomposition_depth = os.environ.get("DECOMPOSITION_DEPTH", "0")
-    decomposition_depth_rule = (
-        "- This issue is already a decomposition child. You must not decompose it again; if it is still too large or unclear, fail the run instead of returning structured decomposition output."
-        if decomposition_depth != "0"
-        else "- You may decompose this issue once if implementation is not safely finishable in one run."
-    )
     return {
         "prompt": build_prompt(
             "develop",
@@ -93,7 +86,6 @@ def develop_payload() -> dict[str, str]:
                 "GITHUB_REPOSITORY": os.environ["GITHUB_REPOSITORY"],
                 "BRANCH_NAME": os.environ["BRANCH_NAME"],
                 "BASE_BRANCH": os.environ["BASE_BRANCH"],
-                "DECOMPOSITION_DEPTH_RULE": decomposition_depth_rule,
             },
         ),
         "system_prompt": build_system_prompt("develop"),

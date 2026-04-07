@@ -3,7 +3,7 @@
   "properties": {
     "status": {
       "type": "string",
-      "enum": ["implemented", "needs_decomposition"]
+      "enum": ["implemented"]
     },
     "pull_request": {
       "type": "object",
@@ -41,35 +41,8 @@
       },
       "required": ["summary", "verification", "follow_ups"],
       "additionalProperties": false
-    },
-    "summary": { "type": "string" },
-    "reason": { "type": "string" },
-    "child_issues": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "title": { "type": "string" },
-          "summary": { "type": "string" },
-          "problem": { "type": "string" },
-          "acceptance_criteria": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "evidence": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
-          "labels": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
-        },
-        "required": ["title", "summary", "problem", "acceptance_criteria", "evidence", "labels"],
-        "additionalProperties": false
-      }
     }
   },
-  "required": ["status"],
+  "required": ["status", "pull_request", "issue_comment"],
   "additionalProperties": false
 }

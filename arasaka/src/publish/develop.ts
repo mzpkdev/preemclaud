@@ -3,8 +3,6 @@ import type { RestEndpointMethodTypes } from "@octokit/rest";
 import type { Octokits } from "../../upstream/src/github/api/client.ts";
 import type { AutomationContext } from "../../upstream/src/github/context.ts";
 import { developOutputSchema, type DevelopOutput } from "./contracts.ts";
-import { renderDecompositionCommentBody } from "../render/decomposition-comment.ts";
-import { renderIssueBody } from "../render/issue.ts";
 import { renderPullRequestBody } from "../render/pull-request.ts";
 import { renderIssueCommentBody } from "../render/issue-comment.ts";
 
@@ -19,20 +17,7 @@ type DevelopImplementedPublishResult = {
   issue_comment_url: string;
 };
 
-type DevelopDecompositionPublishResult = {
-  status: "needs_decomposition";
-  parent_issue_number: number;
-  parent_issue_comment_url: string;
-  child_issues: Array<{
-    number: number;
-    title: string;
-    url: string;
-  }>;
-};
-
-type DevelopPublishResult =
-  | DevelopImplementedPublishResult
-  | DevelopDecompositionPublishResult;
+type DevelopPublishResult = DevelopImplementedPublishResult;
 
 async function enableAutoMerge(
   octokit: Octokits,
@@ -78,35 +63,6 @@ function ensureRemoteBranch(branchName: string): void {
   }
 }
 
-async function getExistingLabels(
-  octokit: Octokits,
-  owner: string,
-  repo: string,
-): Promise<Set<string>> {
-  const labels = new Set<string>();
-  const iterator = octokit.rest.paginate.iterator(
-    octokit.rest.issues.listLabelsForRepo,
-    { owner, repo, per_page: 100 },
-  );
-
-  for await (const page of iterator) {
-    for (const label of page.data) {
-      labels.add(label.name);
-    }
-  }
-
-  return labels;
-}
-
-function buildDecompositionMarker(parentIssueNumber: number): string {
-  return `<!-- arasaka:decomposition-child parent_issue=${parentIssueNumber} depth=1 -->`;
-}
-
-function getDecompositionDepth(): number {
-  const value = Number(process.env.ARTIFACT_DECOMPOSITION_DEPTH || "0");
-  return Number.isInteger(value) && value >= 0 ? value : 0;
-}
-
 export async function publishDevelopOutput(params: {
   octokit: Octokits;
   context: AutomationContext;
@@ -121,66 +77,6 @@ export async function publishDevelopOutput(params: {
     JSON.parse(rawStructuredOutput),
   );
   const { owner, repo } = context.repository;
-  const decompositionDepth = getDecompositionDepth();
-
-  if (parsed.status === "needs_decomposition" && decompositionDepth > 0) {
-    throw new Error(
-      "Decomposition child issues must not decompose again; the develop run must fail instead.",
-    );
-  }
-
-  if (parsed.status === "needs_decomposition") {
-    const existingLabels = await getExistingLabels(octokit, owner, repo);
-    const marker = buildDecompositionMarker(issueNumber);
-    const childIssues: DevelopDecompositionPublishResult["child_issues"] = [];
-
-    for (const child of parsed.child_issues) {
-      const body = renderIssueBody({
-        summary: child.summary,
-        problem: child.problem,
-        acceptanceCriteria: child.acceptance_criteria,
-        evidence: [...child.evidence, `Parent issue: #${issueNumber}`],
-        metadataComment: marker,
-      });
-      const labels = child.labels.filter((label) => existingLabels.has(label));
-
-      const { data } = await octokit.rest.issues.create({
-        owner,
-        repo,
-        title: child.title,
-        body,
-        ...(labels.length > 0 ? { labels } : {}),
-      });
-
-      childIssues.push({
-        number: data.number,
-        title: data.title,
-        url: data.html_url,
-      });
-    }
-
-    const parentCommentBody = renderDecompositionCommentBody({
-      summary: parsed.summary,
-      reason: parsed.reason,
-      childIssues: childIssues.map(
-        (child) => `[#${child.number}](${child.url}) ${child.title}`,
-      ),
-    });
-
-    const { data: parentComment } = await octokit.rest.issues.createComment({
-      owner,
-      repo,
-      issue_number: issueNumber,
-      body: parentCommentBody,
-    });
-
-    return {
-      status: "needs_decomposition",
-      parent_issue_number: issueNumber,
-      parent_issue_comment_url: parentComment.html_url,
-      child_issues: childIssues,
-    };
-  }
 
   if (!branchName) {
     throw new Error("Missing branch name for develop publication");
