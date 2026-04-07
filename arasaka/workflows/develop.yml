@@ -50,9 +50,18 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --label "$READY_LABEL" \
             --state open \
-            --json number,title \
-            --limit "$MAX_ISSUES" \
-            --jq '[.[] | {issue_number: (.number | tostring), issue_title: .title}]')
+            --json number,title,author \
+            --limit 50 \
+            --jq "
+              [ .[] | {
+                  issue_number: (.number | tostring),
+                  issue_title: .title,
+                  is_bot: ((.author.type // \"\") != \"User\")
+              }]
+              | sort_by(.is_bot, .number)
+              | .[:${MAX_ISSUES}]
+              | [.[] | {issue_number, issue_title}]
+            ")
 
           if [ "$ISSUES" = "[]" ] || [ -z "$ISSUES" ]; then
             echo 'issue_matrix={"include":[]}' >> "$GITHUB_OUTPUT"
