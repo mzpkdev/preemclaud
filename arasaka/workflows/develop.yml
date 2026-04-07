@@ -7,10 +7,6 @@ on:
         type: string
         required: false
         default: "@arasaka"
-      ready_label:
-        type: string
-        required: false
-        default: "arasaka:ready"
       branch_prefix:
         type: string
         required: false
@@ -19,10 +15,6 @@ on:
         type: string
         required: false
         default: ""
-      max_issues:
-        type: string
-        required: false
-        default: "1"
     secrets:
       ANTHROPIC_API_KEY:
         required: false
@@ -34,47 +26,56 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       issues: read
     outputs:
-      issue_matrix: ${{ steps.matrix.outputs.issue_matrix }}
+      issue_number: ${{ steps.pick.outputs.issue_number }}
     steps:
-      - name: Discover ready issues
-        id: matrix
+      - name: Discover highest-priority bot-created issue without a work branch
+        id: pick
         shell: bash
         env:
-          READY_LABEL: ${{ inputs.ready_label }}
-          MAX_ISSUES: ${{ inputs.max_issues }}
+          BRANCH_PREFIX: ${{ inputs.branch_prefix }}
           GH_TOKEN: ${{ github.token }}
         run: |
           ISSUES=$(gh issue list \
             --repo "$GITHUB_REPOSITORY" \
-            --label "$READY_LABEL" \
+            --author "app/github-actions" \
             --state open \
-            --json number,title,author \
+            --json number,labels \
             --limit 50 \
-            --jq "
-              [ .[] | {
-                  issue_number: (.number | tostring),
-                  issue_title: .title,
-                  is_bot: ((.author.type // \"\") != \"User\")
-              }]
-              | sort_by(.is_bot, .number)
-              | .[:${MAX_ISSUES}]
-              | [.[] | {issue_number, issue_title}]
-            ")
+            --jq '[ .[] | {
+              number,
+              labels: [.labels[].name]
+            } ]')
 
           if [ "$ISSUES" = "[]" ] || [ -z "$ISSUES" ]; then
-            echo 'issue_matrix={"include":[]}' >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          MATRIX=$(echo "$ISSUES" | jq -c '{"include": .}')
-          echo "issue_matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          BRANCHES=$(git ls-remote --heads origin | awk '{print $2}' | sed 's|refs/heads/||')
+          PREFIX="${BRANCH_PREFIX%/}"
+
+          PICKED=$(echo "$ISSUES" | jq -r --arg branches "$BRANCHES" --arg prefix "$PREFIX" '
+            ($branches | split("\n")) as $br
+            | { "priority:critical": 0, "priority:high": 1, "priority:medium": 2, "priority:low": 3 } as $rank
+            | [ .[]
+                | (if $prefix != "" then "\($prefix)/issue-\(.number)" else "issue-\(.number)" end) as $expected
+                | select([$br[] | select(. == $expected)] | length == 0)
+              ]
+            | sort_by(
+                (.labels | map(select(startswith("priority:"))) | first // "priority:low") as $pl
+                | ($rank[$pl] // 3), .number
+              )
+            | first.number // empty
+          ')
+
+          if [ -n "$PICKED" ]; then
+            echo "issue_number=$PICKED" >> "$GITHUB_OUTPUT"
+          fi
 
   develop:
-    if: >
-      needs.discover.result == 'success' &&
-      needs.discover.outputs.issue_matrix != '{"include":[]}'
+    if: needs.discover.outputs.issue_number != ''
     needs: discover
     runs-on: ubuntu-latest
     permissions:
@@ -83,21 +84,7 @@ jobs:
       issues: write
       pull-requests: write
       actions: read
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.discover.outputs.issue_matrix) }}
     steps:
-      - name: Remove ready label
-        shell: bash
-        env:
-          ISSUE_NUMBER: ${{ matrix.issue_number }}
-          READY_LABEL: ${{ inputs.ready_label }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh issue edit "$ISSUE_NUMBER" \
-            --repo "$GITHUB_REPOSITORY" \
-            --remove-label "$READY_LABEL"
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -107,7 +94,7 @@ jobs:
         id: branch
         shell: bash
         env:
-          ISSUE_NUMBER: ${{ matrix.issue_number }}
+          ISSUE_NUMBER: ${{ needs.discover.outputs.issue_number }}
           BASE_BRANCH_INPUT: ${{ inputs.base_branch }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BRANCH_PREFIX: ${{ inputs.branch_prefix }}
@@ -137,7 +124,7 @@ jobs:
         id: preset
         uses: __ARASAKA_OWNER_REPO__/arasaka/actions/develop@__ARASAKA_REF__
         with:
-          issue_number: ${{ matrix.issue_number }}
+          issue_number: ${{ needs.discover.outputs.issue_number }}
           branch_name: ${{ steps.branch.outputs.branch_name }}
           base_branch: ${{ steps.branch.outputs.base_branch }}
           run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -155,7 +142,7 @@ jobs:
           system_prompt: ${{ steps.preset.outputs.system_prompt }}
           claude_args: ${{ steps.preset.outputs.claude_args }}
           artifact_mode: "develop"
-          artifact_issue_number: ${{ matrix.issue_number }}
+          artifact_issue_number: ${{ needs.discover.outputs.issue_number }}
           artifact_progress_comment_id: ${{ steps.preset.outputs.progress_comment_id }}
           base_branch: ${{ steps.branch.outputs.base_branch }}
           branch_prefix: ${{ inputs.branch_prefix }}
@@ -191,3 +178,50 @@ jobs:
           branch_prefix: ${{ inputs.branch_prefix }}
           additional_permissions: |
             workflows: write
+
+  develop_from_review:
+    if: >
+      github.event_name == 'repository_dispatch' &&
+      github.event.action == 'arasaka-revise'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.branch_name }}
+          fetch-depth: 0
+
+      - name: Build develop preset
+        id: preset
+        uses: __ARASAKA_OWNER_REPO__/arasaka/actions/develop@__ARASAKA_REF__
+        with:
+          issue_number: ${{ github.event.client_payload.issue_number }}
+          branch_name: ${{ github.event.client_payload.branch_name }}
+          base_branch: ${{ github.event.client_payload.base_branch }}
+          run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Run revision
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        env:
+          CLAUDE_BRANCH: ${{ github.event.client_payload.branch_name }}
+          BASE_BRANCH: ${{ github.event.client_payload.base_branch }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          artifact_mode: "develop"
+          artifact_issue_number: ${{ github.event.client_payload.issue_number }}
+          base_branch: ${{ github.event.client_payload.base_branch }}
+          branch_prefix: ${{ inputs.branch_prefix }}
+          additional_permissions: |
+            workflows: write
+          allowed_bots: "github-actions[bot]"

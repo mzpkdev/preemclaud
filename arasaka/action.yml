@@ -64,16 +64,16 @@ inputs:
     description: "Internal pull request number used by review artifact publishing"
     required: false
     default: ""
-  artifact_ready_label:
-    description: "Label to apply to queue-created issues for develop discovery"
-    required: false
-    default: ""
   artifact_stale_label:
     description: "Stale label used by maintain artifact publishing"
     required: false
     default: ""
   artifact_progress_comment_id:
     description: "Comment ID to update with final results instead of creating a new comment"
+    required: false
+    default: ""
+  artifact_max_revisions:
+    description: "Max review→develop revision cycles before stopping (0 disables, default 1)"
     required: false
     default: ""
   artifact_dry_run:
@@ -265,7 +265,7 @@ runs:
         ARTIFACT_MODE: ${{ inputs.artifact_mode }}
         ARTIFACT_ISSUE_NUMBER: ${{ inputs.artifact_issue_number }}
         ARTIFACT_PR_NUMBER: ${{ inputs.artifact_pr_number }}
-        ARTIFACT_READY_LABEL: ${{ inputs.artifact_ready_label }}
+        ARTIFACT_MAX_REVISIONS: ${{ inputs.artifact_max_revisions }}
         ARTIFACT_STALE_LABEL: ${{ inputs.artifact_stale_label }}
         ARTIFACT_DRY_RUN: ${{ inputs.artifact_dry_run }}
         ARTIFACT_PROGRESS_COMMENT_ID: ${{ inputs.artifact_progress_comment_id }}

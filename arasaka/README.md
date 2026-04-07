@@ -119,8 +119,8 @@ Three independent reusable workflows, each handling one concern. Consumers wire 
 
 ### Queue
 
-Creates implementation issues from codebase analysis. Labels created issues with `ready_label` so the develop workflow
-can discover them.
+Creates implementation issues from codebase analysis. The develop workflow discovers these issues automatically by
+author (`github-actions[bot]`) — no label handoff required.
 
 ```yaml
 name: Queue
@@ -135,16 +135,17 @@ jobs:
     secrets: inherit
 ```
 
-| Input              | Default         | Purpose                                    |
-| ------------------ | --------------- | ------------------------------------------ |
-| `ready_label`      | `arasaka:ready` | Label applied to created issues            |
-| `queue_max_issues` | `1`             | Max issues the queue planner opens per run |
-| `base_branch`      | _repo default_  | Base branch override                       |
+| Input              | Default        | Purpose                                    |
+| ------------------ | -------------- | ------------------------------------------ |
+| `queue_max_issues` | `1`            | Max issues the queue planner opens per run |
+| `base_branch`      | _repo default_ | Base branch override                       |
 
 ### Develop
 
-Discovers labeled issues and implements them. Removes the ready label before starting work to prevent re-processing.
-Also supports direct `@arasaka` comment triggers for immediate work.
+Discovers bot-created issues (`github-actions[bot]`) that don't yet have a work branch and implements them. Branch
+existence is the dedup mechanism — if `claude/issue-{N}` exists, that issue is skipped. Failed runs self-heal because
+the branch is only created once work starts. Also supports direct `@arasaka` comment triggers for immediate work on any
+issue (including human-created ones).
 
 ```yaml
 name: Develop
@@ -154,6 +155,8 @@ on:
   workflow_dispatch:
   issue_comment:
     types: [created]
+  repository_dispatch:
+    types: [arasaka-revise]
 
 jobs:
   develop:
@@ -161,13 +164,14 @@ jobs:
     secrets: inherit
 ```
 
-| Input            | Default         | Purpose                                           |
-| ---------------- | --------------- | ------------------------------------------------- |
-| `trigger_phrase` | `@arasaka`      | Comment trigger for direct issue / PR-thread work |
-| `ready_label`    | `arasaka:ready` | Label to query for cron-based issue discovery     |
-| `branch_prefix`  | `claude/`       | Prefix used for generated work branches           |
-| `base_branch`    | _repo default_  | Base branch override                              |
-| `max_issues`     | `5`             | Max issues to pick up per cron run                |
+The `repository_dispatch` trigger enables the review→develop revision loop. When review finds issues, it dispatches
+`arasaka-revise` which re-runs develop on the same branch to address findings. Add this trigger to close the loop.
+
+| Input            | Default        | Purpose                                           |
+| ---------------- | -------------- | ------------------------------------------------- |
+| `trigger_phrase` | `@arasaka`     | Comment trigger for direct issue / PR-thread work |
+| `branch_prefix`  | `claude/`      | Prefix used for generated work branches           |
+| `base_branch`    | _repo default_ | Base branch override                              |
 
 ### Review
 
@@ -185,7 +189,12 @@ jobs:
     secrets: inherit
 ```
 
-No additional inputs — review context comes from the PR event payload.
+When review finds actionable issues and the PR body contains a `Closes #N` link, it dispatches `arasaka-revise` to
+trigger the develop workflow for a revision pass. The loop is capped by `max_revisions` (default 1).
+
+| Input           | Default | Purpose                                                           |
+| --------------- | ------- | ----------------------------------------------------------------- |
+| `max_revisions` | `1`     | Max review→develop revision cycles (0 disables revision dispatch) |
 
 ## Internal Presets
 

@@ -10,7 +10,9 @@ Requirements:
 - Prefer bounded work that fits in one pull request.
 - If a `spec/` directory exists, read its `.md` files first. These are product specifications — create issues that implement what they describe.
 - Beyond specs, good candidates include: missing tests, broken docs, clear bugs, consistency fixes, automation gaps, or small follow-up work.
+- Actively look for technical debt that tightens the LLM feedback loop — the faster and more precisely an LLM can verify its own changes, the better. Examples: adding or improving tests (unit, integration, e2e), introducing or configuring linters and type checkers, writing custom assertions or test helpers, building small verification scripts or tooling, adding CI checks that catch regressions early. These issues are high-value even when the codebase has no obvious bugs.
 - Avoid vague roadmap items, speculative rewrites, or work that depends on product decisions not present in the repo or its specs.
+- Assign a priority to each issue: `critical` (broken functionality, security), `high` (blocks other work, significant gap, or tightens the LLM feedback loop), `medium` (clear improvement, moderate impact), `low` (nice-to-have, minor polish).
 - If the repository already appears to use the label "${BACKLOG_LABEL}", you may include it in labels. If not, omit it.
 - If there is no worthwhile work to enqueue, return an empty issues array.
 

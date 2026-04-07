@@ -1,7 +1,14 @@
 import type { Octokits } from "../../upstream/src/github/api/client.ts";
 import type { AutomationContext } from "../../upstream/src/github/context.ts";
-import { queueOutputSchema, type QueueOutput } from "./contracts.ts";
+import { queueOutputSchema, type QueueOutput, type Priority } from "./contracts.ts";
 import { renderIssueBody } from "../render/issue.ts";
+
+const PRIORITY_LABELS: Record<Priority, { name: string; color: string }> = {
+  critical: { name: "priority:critical", color: "b60205" },
+  high: { name: "priority:high", color: "d93f0b" },
+  medium: { name: "priority:medium", color: "fbca04" },
+  low: { name: "priority:low", color: "0e8a16" },
+};
 
 type QueuePublishResult = {
   issues: Array<{
@@ -31,18 +38,32 @@ async function getExistingLabels(
   return labels;
 }
 
+async function ensurePriorityLabels(
+  octokit: Octokits,
+  owner: string,
+  repo: string,
+  existingLabels: Set<string>,
+): Promise<void> {
+  for (const { name, color } of Object.values(PRIORITY_LABELS)) {
+    if (!existingLabels.has(name)) {
+      await octokit.rest.issues.createLabel({ owner, repo, name, color });
+      existingLabels.add(name);
+    }
+  }
+}
+
 export async function publishQueueOutput(params: {
   octokit: Octokits;
   context: AutomationContext;
   rawStructuredOutput: string;
-  readyLabel?: string;
 }): Promise<QueuePublishResult> {
-  const { octokit, context, rawStructuredOutput, readyLabel } = params;
+  const { octokit, context, rawStructuredOutput } = params;
   const parsed: QueueOutput = queueOutputSchema.parse(
     JSON.parse(rawStructuredOutput),
   );
   const { owner, repo } = context.repository;
   const existingLabels = await getExistingLabels(octokit, owner, repo);
+  await ensurePriorityLabels(octokit, owner, repo, existingLabels);
   const issues: QueuePublishResult["issues"] = [];
 
   for (const item of parsed.issues) {
@@ -52,7 +73,11 @@ export async function publishQueueOutput(params: {
       acceptanceCriteria: item.acceptance_criteria,
       evidence: item.evidence,
     });
-    const labels = item.labels.filter((label) => existingLabels.has(label));
+    const priorityLabel = PRIORITY_LABELS[item.priority].name;
+    const labels = [
+      ...item.labels.filter((label) => existingLabels.has(label)),
+      priorityLabel,
+    ];
 
     if (item.action === "update" && item.existing_issue_number !== undefined) {
       const { data } = await octokit.rest.issues.update({
@@ -61,7 +86,7 @@ export async function publishQueueOutput(params: {
         issue_number: item.existing_issue_number,
         title: item.title,
         body,
-        ...(labels.length > 0 ? { labels } : {}),
+        labels,
       });
       issues.push({
         number: data.number,
@@ -71,13 +96,12 @@ export async function publishQueueOutput(params: {
       continue;
     }
 
-    const createLabels = readyLabel ? [...labels, readyLabel] : labels;
     const { data } = await octokit.rest.issues.create({
       owner,
       repo,
       title: item.title,
       body,
-      ...(createLabels.length > 0 ? { labels: createLabels } : {}),
+      labels,
     });
     issues.push({
       number: data.number,

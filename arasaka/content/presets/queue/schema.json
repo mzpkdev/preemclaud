@@ -22,6 +22,10 @@
           "labels": {
             "type": "array",
             "items": { "type": "string" }
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
           }
         },
         "required": [
@@ -31,7 +35,8 @@
           "problem",
           "acceptance_criteria",
           "evidence",
-          "labels"
+          "labels",
+          "priority"
         ],
         "additionalProperties": false
       }

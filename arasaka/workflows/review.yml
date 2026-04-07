@@ -2,6 +2,11 @@ name: Arasaka Review
 
 on:
   workflow_call:
+    inputs:
+      max_revisions:
+        type: string
+        required: false
+        default: "1"
     secrets:
       ANTHROPIC_API_KEY:
         required: false
@@ -50,5 +55,6 @@ jobs:
           claude_args: ${{ steps.preset.outputs.claude_args }}
           artifact_mode: "review"
           artifact_pr_number: ${{ github.event.pull_request.number }}
+          artifact_max_revisions: ${{ inputs.max_revisions }}
           base_branch: ${{ github.event.pull_request.base.ref }}
           allowed_bots: "claude[bot]"

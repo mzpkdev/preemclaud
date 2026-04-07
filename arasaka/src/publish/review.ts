@@ -4,6 +4,8 @@ import { reviewOutputSchema, type ReviewOutput } from "./contracts.ts";
 import { renderReviewComment } from "../render/review.ts";
 
 const REVIEW_CHECK_NAME = "arasaka/review";
+const DEFAULT_MAX_REVISIONS = 1;
+const CLOSING_ISSUE_RE = /Closes\s+#(\d+)/i;
 
 export function getReviewEvent(
   _verdict: ReviewOutput["verdict"],
@@ -17,8 +19,16 @@ export function getReviewCheckConclusion(
   return verdict === "findings" ? "failure" : "success";
 }
 
+type PullRequestPayload = {
+  pull_request?: {
+    head?: { sha?: string; ref?: string };
+    base?: { ref?: string };
+    body?: string;
+  };
+};
+
 function getPullRequestHeadSha(context: ParsedGitHubContext): string {
-  const payload = context.payload as { pull_request?: { head?: { sha?: string } } };
+  const payload = context.payload as PullRequestPayload;
   const headSha = payload.pull_request?.head?.sha;
 
   if (!headSha) {
@@ -26,6 +36,68 @@ function getPullRequestHeadSha(context: ParsedGitHubContext): string {
   }
 
   return headSha;
+}
+
+async function dispatchRevisionIfNeeded(
+  octokit: Octokits,
+  context: ParsedGitHubContext,
+  verdict: ReviewOutput["verdict"],
+  prNumber: number,
+): Promise<void> {
+  const maxRevisions = Number(process.env.ARTIFACT_MAX_REVISIONS) || DEFAULT_MAX_REVISIONS;
+  if (maxRevisions <= 0 || verdict !== "findings") {
+    return;
+  }
+
+  const payload = context.payload as PullRequestPayload;
+  const prBody = payload.pull_request?.body ?? "";
+  const branchName = payload.pull_request?.head?.ref;
+  const baseBranch = payload.pull_request?.base?.ref;
+
+  const match = CLOSING_ISSUE_RE.exec(prBody);
+  if (!match) {
+    console.log("[arasaka] No linked issue in PR body, skipping revision dispatch");
+    return;
+  }
+
+  const issueNumber = match[1];
+  const { owner, repo } = context.repository;
+
+  const { data: reviews } = await octokit.rest.pulls.listReviews({
+    owner,
+    repo,
+    pull_number: prNumber,
+    per_page: 100,
+  });
+
+  const botReviewCount = reviews.filter(
+    (r) => r.user?.type === "Bot",
+  ).length;
+
+  if (botReviewCount > maxRevisions) {
+    console.log(
+      `[arasaka] Revision cap reached (${botReviewCount} > ${maxRevisions}), skipping dispatch`,
+    );
+    return;
+  }
+
+  try {
+    await octokit.rest.repos.createDispatchEvent({
+      owner,
+      repo,
+      event_type: "arasaka-revise",
+      client_payload: {
+        issue_number: issueNumber,
+        branch_name: branchName,
+        base_branch: baseBranch,
+      },
+    });
+    console.log(
+      `[arasaka] Dispatched arasaka-revise for issue #${issueNumber} (revision ${botReviewCount + 1}/${maxRevisions})`,
+    );
+  } catch (error) {
+    console.warn("[arasaka] Failed to dispatch revision:", error);
+  }
 }
 
 export async function publishReviewOutput(params: {
@@ -89,6 +161,8 @@ export async function publishReviewOutput(params: {
       text: [findingsSummary, "", body].join("\n").trim(),
     },
   });
+
+  await dispatchRevisionIfNeeded(octokit, context, parsed.verdict, prNumber);
 
   return {
     review_url: review.html_url ?? "",

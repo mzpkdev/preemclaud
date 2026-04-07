@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const priorityValues = ["critical", "high", "medium", "low"] as const;
+export type Priority = (typeof priorityValues)[number];
+
 export const issuePublicationSchema = z.object({
   title: z.string().min(1),
   summary: z.string().min(1),
@@ -7,6 +10,7 @@ export const issuePublicationSchema = z.object({
   acceptance_criteria: z.array(z.string().min(1)),
   evidence: z.array(z.string().min(1)),
   labels: z.array(z.string().min(1)),
+  priority: z.enum(priorityValues),
 });
 
 export const queueIssueSchema = issuePublicationSchema

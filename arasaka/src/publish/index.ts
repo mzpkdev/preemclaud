@@ -38,7 +38,6 @@ export async function publishStructuredOutput(params: {
         octokit,
         context,
         rawStructuredOutput,
-        readyLabel: process.env.ARTIFACT_READY_LABEL || undefined,
       }),
     );
   }
