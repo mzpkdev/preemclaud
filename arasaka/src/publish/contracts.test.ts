@@ -161,4 +161,81 @@ describe("structured publication contracts", () => {
 
     expect(parsed.actions).toHaveLength(0);
   });
+
+  it("accepts valid report_failure action without number", () => {
+    const parsed = maintainOutputSchema.parse({
+      actions: [
+        {
+          type: "report_failure",
+          entity: "issue",
+          title: "Deploy workflow failed",
+          reason: "Build step exited with code 1",
+          comment: "The deploy-pages workflow failed due to a TypeScript compilation error.",
+          run_id: 12345678,
+          run_url: "https://github.com/owner/repo/actions/runs/12345678",
+          workflow_name: "deploy-pages",
+        },
+      ],
+      summary: "One CI failure reported.",
+    });
+
+    expect(parsed.actions).toHaveLength(1);
+    expect(parsed.actions[0].type).toBe("report_failure");
+    expect(parsed.actions[0].number).toBeUndefined();
+  });
+
+  it("rejects report_failure without run_id", () => {
+    expect(() =>
+      maintainOutputSchema.parse({
+        actions: [
+          {
+            type: "report_failure",
+            entity: "issue",
+            title: "Deploy workflow failed",
+            reason: "Build step exited with code 1",
+            comment: "Compilation error.",
+            run_url: "https://github.com/owner/repo/actions/runs/123",
+            workflow_name: "deploy-pages",
+          },
+        ],
+        summary: "One CI failure.",
+      }),
+    ).toThrow("run_id is required");
+  });
+
+  it("rejects report_failure without comment", () => {
+    expect(() =>
+      maintainOutputSchema.parse({
+        actions: [
+          {
+            type: "report_failure",
+            entity: "issue",
+            title: "Deploy workflow failed",
+            reason: "Build step exited with code 1",
+            run_id: 12345678,
+            run_url: "https://github.com/owner/repo/actions/runs/12345678",
+            workflow_name: "deploy-pages",
+          },
+        ],
+        summary: "One CI failure.",
+      }),
+    ).toThrow("comment is required");
+  });
+
+  it("rejects non-report_failure action without number", () => {
+    expect(() =>
+      maintainOutputSchema.parse({
+        actions: [
+          {
+            type: "close_stale",
+            entity: "issue",
+            title: "Old issue",
+            reason: "No activity",
+            comment: "Closing.",
+          },
+        ],
+        summary: "Closing stale issue.",
+      }),
+    ).toThrow("number is required");
+  });
 });

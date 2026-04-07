@@ -7,10 +7,12 @@ import {
 } from "./contracts.ts";
 import { renderMaintainComment } from "../render/maintain.ts";
 
+const CI_FAILURE_LABEL = "ci-failure";
+
 type MaintainActionResult = {
   type: MaintainAction["type"];
   entity: MaintainAction["entity"];
-  number: number;
+  number?: number;
   title: string;
   executed: boolean;
   result_url?: string;
@@ -82,6 +84,52 @@ async function executeAction(
   };
 
   try {
+    if (action.type === "report_failure") {
+      // Dedup: search for an existing open issue matching this run ID
+      const issueTitle = `[CI] ${action.workflow_name} failed (run ${action.run_id})`;
+      const { data: existing } = await octokit.rest.search.issuesAndPullRequests(
+        {
+          q: `repo:${owner}/${repo} is:issue is:open "${issueTitle}" in:title`,
+          per_page: 1,
+        },
+      );
+      if (existing.total_count > 0) {
+        return {
+          ...base,
+          number: existing.items[0].number,
+          executed: false,
+        };
+      }
+
+      const body = renderMaintainComment({
+        variant: "failure",
+        comment: action.comment!,
+        reason: action.reason,
+        entityType: "issue",
+        workflowName: action.workflow_name!,
+        runUrl: action.run_url!,
+      });
+      await ensureLabelExists(
+        octokit,
+        owner,
+        repo,
+        CI_FAILURE_LABEL,
+        existingLabels,
+      );
+      const { data: issue } = await octokit.rest.issues.create({
+        owner,
+        repo,
+        title: issueTitle,
+        body,
+        labels: [CI_FAILURE_LABEL],
+      });
+      return {
+        ...base,
+        number: issue.number,
+        result_url: issue.html_url,
+      };
+    }
+
     if (action.type === "warn_stale") {
       const body = renderMaintainComment({
         variant: "warn",
@@ -212,7 +260,7 @@ export async function publishMaintainOutput(params: {
       actions: actions.map((a) => ({
         type: a.type,
         entity: a.entity,
-        number: a.number,
+        ...(a.number !== undefined ? { number: a.number } : {}),
         title: a.title,
         executed: false,
       })),

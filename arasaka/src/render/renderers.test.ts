@@ -141,4 +141,22 @@ describe("artifact renderers", () => {
     expect(body).toContain("footer.svg");
   });
 
+  it("renders maintain failure issue body with workflow details", () => {
+    const body = renderMaintainComment({
+      variant: "failure",
+      comment: "TypeScript compilation failed with 3 errors in src/main.ts.",
+      reason: "Build step exited with code 1",
+      entityType: "issue",
+      workflowName: "deploy-pages",
+      runUrl: "https://github.com/owner/repo/actions/runs/12345678",
+    });
+
+    expect(body).toContain("deploy-pages");
+    expect(body).toContain("https://github.com/owner/repo/actions/runs/12345678");
+    expect(body).toContain("TypeScript compilation failed");
+    expect(body).toContain("Arasaka Repository Maintenance Division");
+    expect(body).toContain("banner.svg");
+    expect(body).toContain("footer.svg");
+  });
+
 });

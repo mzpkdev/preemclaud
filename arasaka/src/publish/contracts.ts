@@ -62,20 +62,36 @@ export const reviewOutputSchema = z.object({
 
 export const maintainActionSchema = z
   .object({
-    type: z.enum(["warn_stale", "close_stale", "reply_question", "add_labels"]),
+    type: z.enum([
+      "warn_stale",
+      "close_stale",
+      "reply_question",
+      "add_labels",
+      "report_failure",
+    ]),
     entity: z.enum(["issue", "pull_request"]),
-    number: z.number().int().positive(),
+    number: z.number().int().positive().optional(),
     title: z.string().min(1),
     reason: z.string().min(1),
     comment: z.string().optional(),
     labels_to_add: z.array(z.string().min(1)).optional(),
     labels_to_remove: z.array(z.string().min(1)).optional(),
+    run_id: z.number().int().positive().optional(),
+    run_url: z.string().min(1).optional(),
+    workflow_name: z.string().min(1).optional(),
   })
   .superRefine((value, ctx) => {
+    if (value.type !== "report_failure" && value.number === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "number is required for non-report_failure actions",
+      });
+    }
     if (
       (value.type === "warn_stale" ||
         value.type === "close_stale" ||
-        value.type === "reply_question") &&
+        value.type === "reply_question" ||
+        value.type === "report_failure") &&
       !value.comment
     ) {
       ctx.addIssue({
@@ -91,6 +107,26 @@ export const maintainActionSchema = z
         code: z.ZodIssueCode.custom,
         message: `labels_to_add is required for ${value.type} actions`,
       });
+    }
+    if (value.type === "report_failure") {
+      if (!value.run_id) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "run_id is required for report_failure actions",
+        });
+      }
+      if (!value.run_url) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "run_url is required for report_failure actions",
+        });
+      }
+      if (!value.workflow_name) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "workflow_name is required for report_failure actions",
+        });
+      }
     }
   });
 

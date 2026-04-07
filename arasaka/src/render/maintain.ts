@@ -2,10 +2,11 @@ import warnMd from "../../content/artifacts/maintain/templates/warn.md";
 import closeMd from "../../content/artifacts/maintain/templates/close.md";
 import replyMd from "../../content/artifacts/maintain/templates/reply.md";
 import labelMd from "../../content/artifacts/maintain/templates/label.md";
+import failureMd from "../../content/artifacts/maintain/templates/failure.md";
 import { wrapArtifactBody } from "./chrome.ts";
 import { renderTemplate } from "./template.ts";
 
-type MaintainCommentVariant = "warn" | "close" | "reply" | "label";
+type MaintainCommentVariant = "warn" | "close" | "reply" | "label" | "failure";
 
 export type MaintainCommentInput = {
   variant: MaintainCommentVariant;
@@ -13,6 +14,8 @@ export type MaintainCommentInput = {
   reason: string;
   entityType: "issue" | "pull_request";
   labels?: string[];
+  workflowName?: string;
+  runUrl?: string;
 };
 
 const templateMap: Record<MaintainCommentVariant, string> = {
@@ -20,6 +23,7 @@ const templateMap: Record<MaintainCommentVariant, string> = {
   close: closeMd,
   reply: replyMd,
   label: labelMd,
+  failure: failureMd,
 };
 
 export function renderMaintainComment(input: MaintainCommentInput): string {
@@ -30,6 +34,8 @@ export function renderMaintainComment(input: MaintainCommentInput): string {
     reason: input.reason.trim(),
     entity_type: input.entityType === "pull_request" ? "pull request" : "issue",
     labels: (input.labels || []).map((l) => `\`${l}\``).join(", "),
+    workflow_name: input.workflowName || "",
+    run_url: input.runUrl || "",
   }).trim();
 
   return wrapArtifactBody({ body });
