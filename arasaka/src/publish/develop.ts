@@ -19,34 +19,6 @@ type DevelopImplementedPublishResult = {
 
 type DevelopPublishResult = DevelopImplementedPublishResult;
 
-async function markReadyForReview(
-  octokit: Octokits,
-  pullRequestNodeId: string | null,
-): Promise<void> {
-  if (!pullRequestNodeId) {
-    return;
-  }
-
-  try {
-    await octokit.graphql(
-      `
-        mutation MarkReadyForReview($pullRequestId: ID!) {
-          markPullRequestReadyForReview(
-            input: { pullRequestId: $pullRequestId }
-          ) {
-            pullRequest {
-              number
-            }
-          }
-        }
-      `,
-      { pullRequestId: pullRequestNodeId },
-    );
-  } catch (error) {
-    console.warn("[arasaka] Failed to mark PR as ready for review:", error);
-  }
-}
-
 async function enableAutoMerge(
   octokit: Octokits,
   pullRequestNodeId: string | null,
@@ -147,10 +119,6 @@ export async function publishDevelopOutput(params: {
     pullRequestUrl = data.html_url;
     pullRequestTitle = data.title;
     pullRequestNodeId = data.node_id ?? null;
-
-    if (data.draft) {
-      await markReadyForReview(octokit, pullRequestNodeId);
-    }
   } else {
     const { data } = await octokit.rest.pulls.create({
       owner,
