@@ -140,6 +140,7 @@ jobs:
           issue_number: ${{ matrix.issue_number }}
           branch_name: ${{ steps.branch.outputs.branch_name }}
           base_branch: ${{ steps.branch.outputs.base_branch }}
+          run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Run issue implementation
         id: run
@@ -155,6 +156,7 @@ jobs:
           claude_args: ${{ steps.preset.outputs.claude_args }}
           artifact_mode: "develop"
           artifact_issue_number: ${{ matrix.issue_number }}
+          artifact_progress_comment_id: ${{ steps.preset.outputs.progress_comment_id }}
           base_branch: ${{ steps.branch.outputs.base_branch }}
           branch_prefix: ${{ inputs.branch_prefix }}
           additional_permissions: |

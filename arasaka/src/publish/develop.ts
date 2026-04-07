@@ -19,6 +19,34 @@ type DevelopImplementedPublishResult = {
 
 type DevelopPublishResult = DevelopImplementedPublishResult;
 
+async function markReadyForReview(
+  octokit: Octokits,
+  pullRequestNodeId: string | null,
+): Promise<void> {
+  if (!pullRequestNodeId) {
+    return;
+  }
+
+  try {
+    await octokit.graphql(
+      `
+        mutation MarkReadyForReview($pullRequestId: ID!) {
+          markPullRequestReadyForReview(
+            input: { pullRequestId: $pullRequestId }
+          ) {
+            pullRequest {
+              number
+            }
+          }
+        }
+      `,
+      { pullRequestId: pullRequestNodeId },
+    );
+  } catch (error) {
+    console.warn("[arasaka] Failed to mark PR as ready for review:", error);
+  }
+}
+
 async function enableAutoMerge(
   octokit: Octokits,
   pullRequestNodeId: string | null,
@@ -119,6 +147,10 @@ export async function publishDevelopOutput(params: {
     pullRequestUrl = data.html_url;
     pullRequestTitle = data.title;
     pullRequestNodeId = data.node_id ?? null;
+
+    if (data.draft) {
+      await markReadyForReview(octokit, pullRequestNodeId);
+    }
   } else {
     const { data } = await octokit.rest.pulls.create({
       owner,
@@ -144,12 +176,21 @@ export async function publishDevelopOutput(params: {
     prUrl: pullRequestUrl,
   });
 
-  const { data: comment } = await octokit.rest.issues.createComment({
-    owner,
-    repo,
-    issue_number: issueNumber,
-    body: issueCommentBody,
-  });
+  const progressCommentId = Number(process.env.ARTIFACT_PROGRESS_COMMENT_ID) || 0;
+
+  const { data: comment } = progressCommentId
+    ? await octokit.rest.issues.updateComment({
+        owner,
+        repo,
+        comment_id: progressCommentId,
+        body: issueCommentBody,
+      })
+    : await octokit.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number: issueNumber,
+        body: issueCommentBody,
+      });
 
   return {
     status: "implemented",

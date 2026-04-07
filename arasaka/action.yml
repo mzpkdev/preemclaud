@@ -72,6 +72,10 @@ inputs:
     description: "Stale label used by maintain artifact publishing"
     required: false
     default: ""
+  artifact_progress_comment_id:
+    description: "Comment ID to update with final results instead of creating a new comment"
+    required: false
+    default: ""
   artifact_dry_run:
     description: "If true, maintain mode reports planned actions without executing"
     required: false
@@ -264,6 +268,7 @@ runs:
         ARTIFACT_READY_LABEL: ${{ inputs.artifact_ready_label }}
         ARTIFACT_STALE_LABEL: ${{ inputs.artifact_stale_label }}
         ARTIFACT_DRY_RUN: ${{ inputs.artifact_dry_run }}
+        ARTIFACT_PROGRESS_COMMENT_ID: ${{ inputs.artifact_progress_comment_id }}
         ARTIFACT_MAX_ACTIONS: ${{ inputs.artifact_max_actions }}
         TRIGGER_PHRASE: ${{ inputs.trigger_phrase }}
         ASSIGNEE_TRIGGER: ${{ inputs.assignee_trigger }}

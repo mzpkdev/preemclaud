@@ -11,6 +11,10 @@ inputs:
   base_branch:
     description: "Base branch for the pull request"
     required: true
+  run_url:
+    description: "URL of the workflow run for the in-progress comment"
+    required: false
+    default: ""
 outputs:
   prompt:
     description: "Issue implementation prompt"
@@ -21,10 +25,54 @@ outputs:
   claude_args:
     description: "Claude CLI arguments for issue implementation"
     value: ${{ steps.preset.outputs.claude_args }}
+  progress_comment_id:
+    description: "Comment ID of the in-progress comment posted on the issue"
+    value: ${{ steps.progress.outputs.comment_id }}
 
 runs:
   using: "composite"
   steps:
+    - id: draft-pr
+      if: inputs.run_url != ''
+      shell: bash
+      env:
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+        BASE_BRANCH: ${{ inputs.base_branch }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        git commit --allow-empty -m "wip: implementation in progress for #${ISSUE_NUMBER}"
+        git push --set-upstream origin "$BRANCH_NAME"
+        PR_URL=$(gh pr create \
+          --repo "$GITHUB_REPOSITORY" \
+          --head "$BRANCH_NAME" \
+          --base "$BASE_BRANCH" \
+          --title "wip: implement #${ISSUE_NUMBER}" \
+          --body "Implementation in progress." \
+          --draft)
+        echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+    - id: progress
+      if: inputs.run_url != ''
+      shell: bash
+      env:
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        RUN_URL: ${{ inputs.run_url }}
+        PR_URL: ${{ steps.draft-pr.outputs.pr_url }}
+        GH_TOKEN: ${{ github.token }}
+        ARASAKA_ROOT: ${{ github.action_path }}/../..
+      run: |
+        TEMPLATE="${ARASAKA_ROOT}/content/artifacts/issue-comment/templates/in-progress.md"
+        CONTENT=$(sed "s|{run_url}|${RUN_URL}|g; s|{pr_url}|${PR_URL}|g" "$TEMPLATE")
+        ASSET_BASE="https://raw.githubusercontent.com/mzpkdev/preemclaud/main/arasaka/assets"
+        BODY=$(printf '<img src="%s/banner.svg" />\n<img src="%s/issue-in-progress.svg" />\n\n<img src="%s/divider.svg" />\n\n%s\n\n<img src="%s/footer.svg" />' \
+          "$ASSET_BASE" "$ASSET_BASE" "$ASSET_BASE" "$CONTENT" "$ASSET_BASE")
+        COMMENT_URL=$(gh issue comment "$ISSUE_NUMBER" \
+          --repo "$GITHUB_REPOSITORY" \
+          --body "$BODY")
+        COMMENT_ID=$(echo "$COMMENT_URL" | grep -o '[0-9]*$')
+        echo "comment_id=$COMMENT_ID" >> "$GITHUB_OUTPUT"
+
     - id: preset
       shell: bash
       env:
