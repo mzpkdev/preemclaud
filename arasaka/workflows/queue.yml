@@ -10,7 +10,7 @@ on:
       queue_max_issues:
         type: string
         required: false
-        default: "1"
+        default: "7"
       base_branch:
         type: string
         required: false

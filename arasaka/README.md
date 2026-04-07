@@ -126,7 +126,7 @@ author (`github-actions[bot]`) — no label handoff required.
 name: Queue
 on:
   schedule:
-    - cron: "0 6 * * 1" # Monday 6am
+    - cron: "0 6 * * *" # daily 6am
   workflow_dispatch:
 
 jobs:
@@ -137,7 +137,7 @@ jobs:
 
 | Input              | Default        | Purpose                                    |
 | ------------------ | -------------- | ------------------------------------------ |
-| `queue_max_issues` | `1`            | Max issues the queue planner opens per run |
+| `queue_max_issues` | `7`            | Max issues the queue planner opens per run |
 | `base_branch`      | _repo default_ | Base branch override                       |
 
 ### Develop
