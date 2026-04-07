@@ -3,6 +3,10 @@ name: Arasaka Maintain
 on:
   workflow_call:
     inputs:
+      model:
+        type: string
+        required: false
+        default: ""
       stale_days:
         type: string
         required: false
@@ -61,6 +65,7 @@ jobs:
           prompt: ${{ steps.preset.outputs.prompt }}
           system_prompt: ${{ steps.preset.outputs.system_prompt }}
           claude_args: ${{ steps.preset.outputs.claude_args }}
+          model: ${{ inputs.model }}
           artifact_mode: "maintain"
           artifact_stale_label: ${{ inputs.stale_label }}
           artifact_dry_run: ${{ inputs.dry_run }}

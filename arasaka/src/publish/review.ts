@@ -4,7 +4,7 @@ import { reviewOutputSchema, type ReviewOutput } from "./contracts.ts";
 import { renderReviewComment } from "../render/review.ts";
 
 const REVIEW_CHECK_NAME = "arasaka/review";
-const DEFAULT_MAX_REVISIONS = 1;
+const DEFAULT_MAX_REVISIONS = 0;
 const CLOSING_ISSUE_RE = /Closes\s+#(\d+)/i;
 
 export function getReviewEvent(

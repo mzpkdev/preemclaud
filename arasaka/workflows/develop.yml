@@ -3,6 +3,10 @@ name: Arasaka Develop
 on:
   workflow_call:
     inputs:
+      model:
+        type: string
+        required: false
+        default: ""
       trigger_phrase:
         type: string
         required: false
@@ -141,6 +145,7 @@ jobs:
           prompt: ${{ steps.preset.outputs.prompt }}
           system_prompt: ${{ steps.preset.outputs.system_prompt }}
           claude_args: ${{ steps.preset.outputs.claude_args }}
+          model: ${{ inputs.model }}
           artifact_mode: "develop"
           artifact_issue_number: ${{ needs.discover.outputs.issue_number }}
           artifact_progress_comment_id: ${{ steps.preset.outputs.progress_comment_id }}
@@ -173,6 +178,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          model: ${{ inputs.model }}
           trigger_phrase: ${{ inputs.trigger_phrase }}
           base_branch: ${{ inputs.base_branch }}
           branch_prefix: ${{ inputs.branch_prefix }}
@@ -218,6 +224,7 @@ jobs:
           prompt: ${{ steps.preset.outputs.prompt }}
           system_prompt: ${{ steps.preset.outputs.system_prompt }}
           claude_args: ${{ steps.preset.outputs.claude_args }}
+          model: ${{ inputs.model }}
           artifact_mode: "develop"
           artifact_issue_number: ${{ github.event.client_payload.issue_number }}
           base_branch: ${{ github.event.client_payload.base_branch }}

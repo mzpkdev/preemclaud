@@ -3,10 +3,14 @@ name: Arasaka Review
 on:
   workflow_call:
     inputs:
+      model:
+        type: string
+        required: false
+        default: ""
       max_revisions:
         type: string
         required: false
-        default: "1"
+        default: "0"
     secrets:
       ANTHROPIC_API_KEY:
         required: false
@@ -53,6 +57,7 @@ jobs:
           prompt: ${{ steps.preset.outputs.prompt }}
           system_prompt: ${{ steps.preset.outputs.system_prompt }}
           claude_args: ${{ steps.preset.outputs.claude_args }}
+          model: ${{ inputs.model }}
           artifact_mode: "review"
           artifact_pr_number: ${{ github.event.pull_request.number }}
           artifact_max_revisions: ${{ inputs.max_revisions }}

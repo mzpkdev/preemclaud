@@ -89,6 +89,12 @@ inputs:
     required: false
     default: ""
 
+  # Model
+  model:
+    description: "Anthropic model ID (e.g. claude-sonnet-4-6, claude-haiku-4-5-20251001)"
+    required: false
+    default: ""
+
   # Auth
   anthropic_api_key:
     description: "Anthropic API key"
@@ -259,6 +265,8 @@ runs:
       run: |
         bun run ${GITHUB_ACTION_PATH}/src/entrypoints/run.ts
       env:
+        # Model
+        ANTHROPIC_MODEL: ${{ inputs.model }}
         # Standard inputs
         PROMPT: ${{ inputs.prompt }}
         SYSTEM_PROMPT: ${{ inputs.system_prompt }}
