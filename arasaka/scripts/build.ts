@@ -6,7 +6,7 @@
  *
  * Output layout matches the published v1 branch:
  *   dist/arasaka/<raw action files>
- *   dist/.github/workflows/arasaka.yml
+ *   dist/.github/workflows/{develop,queue,review}.yml
  */
 
 import { $ } from "bun";
@@ -130,13 +130,17 @@ actionYml = actionYml.replace(
 
 await writeFile(`${DIST_ARASAKA}/action.yml`, actionYml);
 
-// 9. Generate reusable workflow entrypoint for v1 consumers
-console.log("Generating reusable workflow...");
-let workflowYml = await readFile("./workflows/arasaka.yml", "utf-8");
-workflowYml = workflowYml
-  .replace(/__ARASAKA_OWNER_REPO__/g, "mzpkdev/preemclaud")
-  .replace(/__ARASAKA_REF__/g, "v1");
-await writeFile(`${DIST}/.github/workflows/arasaka.yml`, workflowYml);
+// 9. Generate reusable workflow entrypoints for v1 consumers
+console.log("Generating reusable workflows...");
+const workflows = ["develop.yml", "queue.yml", "review.yml"];
+
+for (const workflow of workflows) {
+  let workflowYml = await readFile(`./workflows/${workflow}`, "utf-8");
+  workflowYml = workflowYml
+    .replace(/__ARASAKA_OWNER_REPO__/g, "mzpkdev/preemclaud")
+    .replace(/__ARASAKA_REF__/g, "v1");
+  await writeFile(`${DIST}/.github/workflows/${workflow}`, workflowYml);
+}
 
 // 10. Minimal package.json
 await writeFile(`${DIST_ARASAKA}/package.json`, '{"private":true}\n');
