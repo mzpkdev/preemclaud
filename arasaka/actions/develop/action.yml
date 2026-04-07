@@ -41,6 +41,8 @@ runs:
         BASE_BRANCH: ${{ inputs.base_branch }}
         GH_TOKEN: ${{ github.token }}
       run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git commit --allow-empty -m "wip: implementation in progress for #${ISSUE_NUMBER}"
         git push --set-upstream origin "$BRANCH_NAME"
         PR_URL=$(gh pr create \
