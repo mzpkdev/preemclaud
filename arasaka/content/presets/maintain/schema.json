@@ -6,7 +6,7 @@
       "items": {
         "type": "object",
         "properties": {
-          "type": { "type": "string", "enum": ["warn_stale", "close_stale", "reply_question", "add_labels"] },
+          "type": { "type": "string", "enum": ["warn_stale", "close_stale", "reply_question", "add_labels", "report_failure"] },
           "entity": { "type": "string", "enum": ["issue", "pull_request"] },
           "number": { "type": "integer" },
           "title": { "type": "string" },
@@ -19,9 +19,12 @@
           "labels_to_remove": {
             "type": "array",
             "items": { "type": "string" }
-          }
+          },
+          "run_id": { "type": "integer" },
+          "run_url": { "type": "string" },
+          "workflow_name": { "type": "string" }
         },
-        "required": ["type", "entity", "number", "title", "reason"],
+        "required": ["type", "entity", "title", "reason"],
         "additionalProperties": false
       }
     },

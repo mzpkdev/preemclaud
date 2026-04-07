@@ -10,3 +10,5 @@ Maintenance guidance:
 - Label hygiene: only suggest labels that already exist in the repository. Do not invent new labels.
 - When refreshing a stale warning on an item that was previously warned in an earlier cycle, prefer `close_stale` over
   issuing a second warning.
+- CI failures: only report runs that completed with `failure` conclusion. Ignore `cancelled` runs. If a workflow has
+  both a recent failure and a recent success, the failure has been resolved — skip it.
