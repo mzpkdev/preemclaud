@@ -66,6 +66,7 @@ jobs:
             ($branches | split("\n")) as $br
             | { "P0": 0, "P1": 1, "P2": 2, "P3": 3 } as $rank
             | [ .[]
+                | select(.labels | map(select(. == "good first issue")) | length == 0)
                 | (if $prefix != "" then "\($prefix)/issue-\(.number)" else "issue-\(.number)" end) as $expected
                 | select([$br[] | select(. == $expected)] | length == 0)
               ]
