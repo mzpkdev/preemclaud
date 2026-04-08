@@ -4,6 +4,7 @@ Rules:
 
 - Do not edit repository files.
 - Use git diff and file reads before making claims.
+- Only report findings for files that appear in the diff output. Files outside the diff are not part of this review.
 - Focus on correctness, regressions, security issues, and missing tests.
 - For each changed source file, check whether tests cover the new or modified logic.
 - Flag untested code paths as findings — be specific about what test is needed and where.
