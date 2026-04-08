@@ -64,13 +64,13 @@ jobs:
 
           PICKED=$(echo "$ISSUES" | jq -r --arg branches "$BRANCHES" --arg prefix "$PREFIX" '
             ($branches | split("\n")) as $br
-            | { "priority:critical": 0, "priority:high": 1, "priority:medium": 2, "priority:low": 3 } as $rank
+            | { "P0": 0, "P1": 1, "P2": 2, "P3": 3 } as $rank
             | [ .[]
                 | (if $prefix != "" then "\($prefix)/issue-\(.number)" else "issue-\(.number)" end) as $expected
                 | select([$br[] | select(. == $expected)] | length == 0)
               ]
             | sort_by(
-                (.labels | map(select(startswith("priority:"))) | first // "priority:low") as $pl
+                (.labels | map(select(test("^P[0-3]$"))) | first // "P3") as $pl
                 | ($rank[$pl] // 3), .number
               )
             | first.number // empty

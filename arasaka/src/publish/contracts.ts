@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const priorityValues = ["critical", "high", "medium", "low"] as const;
+export const priorityValues = ["P0", "P1", "P2", "P3"] as const;
 export type Priority = (typeof priorityValues)[number];
 
 export const issuePublicationSchema = z.object({

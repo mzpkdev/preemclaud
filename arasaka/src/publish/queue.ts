@@ -4,11 +4,15 @@ import { queueOutputSchema, type QueueOutput, type Priority } from "./contracts.
 import { renderIssueBody } from "../render/issue.ts";
 
 const PRIORITY_LABELS: Record<Priority, { name: string; color: string }> = {
-  critical: { name: "priority:critical", color: "b60205" },
-  high: { name: "priority:high", color: "d93f0b" },
-  medium: { name: "priority:medium", color: "fbca04" },
-  low: { name: "priority:low", color: "0e8a16" },
+  P0: { name: "P0", color: "b60205" },
+  P1: { name: "P1", color: "d93f0b" },
+  P2: { name: "P2", color: "fbca04" },
+  P3: { name: "P3", color: "0e8a16" },
 };
+
+const WELL_KNOWN_LABELS: Array<{ name: string; color: string }> = [
+  { name: "tech debt", color: "795548" },
+];
 
 type QueuePublishResult = {
   issues: Array<{
@@ -38,13 +42,17 @@ async function getExistingLabels(
   return labels;
 }
 
-async function ensurePriorityLabels(
+async function ensureBuiltInLabels(
   octokit: Octokits,
   owner: string,
   repo: string,
   existingLabels: Set<string>,
 ): Promise<void> {
-  for (const { name, color } of Object.values(PRIORITY_LABELS)) {
+  const allLabels = [
+    ...Object.values(PRIORITY_LABELS),
+    ...WELL_KNOWN_LABELS,
+  ];
+  for (const { name, color } of allLabels) {
     if (!existingLabels.has(name)) {
       await octokit.rest.issues.createLabel({ owner, repo, name, color });
       existingLabels.add(name);
@@ -63,7 +71,7 @@ export async function publishQueueOutput(params: {
   );
   const { owner, repo } = context.repository;
   const existingLabels = await getExistingLabels(octokit, owner, repo);
-  await ensurePriorityLabels(octokit, owner, repo, existingLabels);
+  await ensureBuiltInLabels(octokit, owner, repo, existingLabels);
   const issues: QueuePublishResult["issues"] = [];
 
   for (const item of parsed.issues) {
