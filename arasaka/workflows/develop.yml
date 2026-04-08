@@ -48,7 +48,7 @@ jobs:
         run: |
           ISSUES=$(gh issue list \
             --repo "$GITHUB_REPOSITORY" \
-            --author "app/arasaka-net" \
+            --author "arasaka-net[bot]" \
             --state open \
             --json number,labels \
             --limit 50 \
@@ -56,6 +56,10 @@ jobs:
               number,
               labels: [.labels[].name]
             } ]')
+
+          echo "::group::Discovered issues"
+          echo "$ISSUES" | jq .
+          echo "::endgroup::"
 
           if [ "$ISSUES" = "[]" ] || [ -z "$ISSUES" ]; then
             exit 0
