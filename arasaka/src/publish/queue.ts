@@ -79,9 +79,10 @@ export async function publishQueueOutput(params: {
     const body = item.body
       ? wrapArtifactBody({ body: item.body })
       : renderIssueBody({
-          summary: item.summary,
-          problem: item.problem,
-          acceptanceCriteria: item.acceptance_criteria,
+          description: item.description,
+          affectedFiles: item.affected_files,
+          requirements: item.requirements,
+          notInScope: item.not_in_scope,
           evidence: item.evidence,
         });
     const priorityLabel = PRIORITY_LABELS[item.priority].name;

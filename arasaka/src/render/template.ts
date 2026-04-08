@@ -16,3 +16,14 @@ export function renderBulletList(items: string[], emptyText: string): string {
 
   return items.map((item) => `- ${item}`).join("\n");
 }
+
+export function renderCheckboxList(
+  items: string[],
+  emptyText: string,
+): string {
+  if (items.length === 0) {
+    return emptyText;
+  }
+
+  return items.map((item) => `- [ ] ${item}`).join("\n");
+}

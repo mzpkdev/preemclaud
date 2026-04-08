@@ -1,21 +1,33 @@
 import issueBodyMd from "../../content/artifacts/issue/templates/body.md";
 import { wrapArtifactBody } from "./chrome.ts";
-import { renderBulletList, renderTemplate } from "./template.ts";
+import {
+  renderBulletList,
+  renderCheckboxList,
+  renderTemplate,
+} from "./template.ts";
 
 export type IssueRenderInput = {
-  summary: string;
-  problem: string;
-  acceptanceCriteria: string[];
+  description: string;
+  affectedFiles: string[];
+  requirements: string[];
+  notInScope: string[];
   evidence: string[];
 };
 
 export function renderIssueBody(input: IssueRenderInput): string {
   const body = renderTemplate(issueBodyMd, {
-    summary: input.summary.trim(),
-    problem: input.problem.trim(),
-    acceptance_criteria: renderBulletList(
-      input.acceptanceCriteria,
-      "- No acceptance criteria were supplied.",
+    description: input.description.trim(),
+    affected_files: renderBulletList(
+      input.affectedFiles,
+      "- No affected files were identified.",
+    ),
+    requirements: renderCheckboxList(
+      input.requirements,
+      "- No requirements were supplied.",
+    ),
+    not_in_scope: renderBulletList(
+      input.notInScope,
+      "- No scope exclusions were specified.",
     ),
     evidence: renderBulletList(
       input.evidence,

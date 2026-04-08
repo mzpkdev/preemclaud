@@ -23,6 +23,12 @@ Requirements:
 - Assign a priority to each issue: `P0` (broken functionality, security), `P1` (blocks other work, significant gap, or
   tightens the LLM feedback loop), `P2` (clear improvement, moderate impact), `P3` (nice-to-have, minor polish).
 - If the repository already appears to use the label "${BACKLOG_LABEL}", you may include it in labels. If not, omit it.
+- Every issue must include `affected_files` listing the repository-relative paths that need modification, with a brief
+  note on each explaining what changes there.
+- Every issue must include at least one `not_in_scope` item that prevents the implementer from expanding beyond the
+  intended work.
+- Write `requirements` as verifiable outcomes. Prefer items checkable by a shell command where possible.
+- Write `evidence` as specific `file:line` references or issue numbers, not prose descriptions.
 - If `.github/ISSUE_TEMPLATE/` exists, read its templates. When a template is relevant to an issue, fill it in and
   return the completed markdown as the `body` field. For YAML issue forms (`.yml`), render the form's labeled sections
   as markdown. Omit `body` when no repository template applies.

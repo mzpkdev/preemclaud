@@ -1,13 +1,13 @@
-The family has identified a bounded piece of repository work that warrants attention.
+{description}
 
-**Summary**
-{summary}
+**Affected Files**
+{affected_files}
 
-**Problem**
-{problem}
+**Requirements**
+{requirements}
 
-**Acceptance Criteria**
-{acceptance_criteria}
+**Not In Scope**
+{not_in_scope}
 
 **Evidence**
 {evidence}

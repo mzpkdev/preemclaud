@@ -5,9 +5,10 @@ export type Priority = (typeof priorityValues)[number];
 
 export const issuePublicationSchema = z.object({
   title: z.string().min(1),
-  summary: z.string().min(1),
-  problem: z.string().min(1),
-  acceptance_criteria: z.array(z.string().min(1)),
+  description: z.string().min(1),
+  affected_files: z.array(z.string().min(1)),
+  requirements: z.array(z.string().min(1)),
+  not_in_scope: z.array(z.string().min(1)),
   evidence: z.array(z.string().min(1)),
   labels: z.array(z.string().min(1)),
   priority: z.enum(priorityValues),

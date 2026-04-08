@@ -9,9 +9,16 @@
           "action": { "type": "string", "enum": ["create", "update"] },
           "existing_issue_number": { "type": "integer" },
           "title": { "type": "string" },
-          "summary": { "type": "string" },
-          "problem": { "type": "string" },
-          "acceptance_criteria": {
+          "description": { "type": "string" },
+          "affected_files": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "requirements": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "not_in_scope": {
             "type": "array",
             "items": { "type": "string" }
           },
@@ -32,9 +39,10 @@
         "required": [
           "action",
           "title",
-          "summary",
-          "problem",
-          "acceptance_criteria",
+          "description",
+          "affected_files",
+          "requirements",
+          "not_in_scope",
           "evidence",
           "labels",
           "priority"

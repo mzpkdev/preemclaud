@@ -6,17 +6,23 @@ import { renderIssueCommentBody } from "./issue-comment.ts";
 import { renderMaintainComment } from "./maintain.ts";
 
 describe("artifact renderers", () => {
-  it("renders issue bodies with criteria and evidence lists", () => {
+  it("renders issue bodies with structured sections", () => {
     const body = renderIssueBody({
-      summary: "Tighten queue publication behavior.",
-      problem: "Queue output is currently freeform and drifts between runs.",
-      acceptanceCriteria: ["Structured contract is enforced", "Published issue body is templated"],
-      evidence: ["arasaka/actions/queue/action.yml", "arasaka/workflows/arasaka.yml"],
+      description: "Queue output is currently freeform and drifts between runs.",
+      affectedFiles: [
+        "`arasaka/actions/queue/action.yml` — preset assembly logic",
+        "`arasaka/src/publish/queue.ts` — publication entry point",
+      ],
+      requirements: ["Structured contract is enforced", "Published issue body is templated"],
+      notInScope: ["Do not refactor the review workflow"],
+      evidence: ["`arasaka/workflows/arasaka.yml:12` — queue job references unvalidated output"],
     });
 
-    expect(body).toContain("The family has identified");
-    expect(body).toContain("- Structured contract is enforced");
-    expect(body).toContain("- arasaka/workflows/arasaka.yml");
+    expect(body).toContain("Queue output is currently freeform");
+    expect(body).toContain("- `arasaka/actions/queue/action.yml` — preset assembly logic");
+    expect(body).toContain("- [ ] Structured contract is enforced");
+    expect(body).toContain("- Do not refactor the review workflow");
+    expect(body).toContain("- `arasaka/workflows/arasaka.yml:12`");
     expect(body).toContain("banner.svg");
     expect(body).toContain("issue-reply.svg");
     expect(body).toContain("footer.svg");
