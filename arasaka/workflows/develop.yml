@@ -43,7 +43,6 @@ jobs:
         id: pick
         shell: bash
         env:
-          BRANCH_PREFIX: ${{ inputs.branch_prefix }}
           GH_TOKEN: ${{ secrets.GH_APP_TOKEN || github.token }}
         run: |
           ISSUES=$(gh issue list \
@@ -65,16 +64,10 @@ jobs:
             exit 0
           fi
 
-          BRANCHES=$(git ls-remote --heads origin | awk '{print $2}' | sed 's|refs/heads/||')
-          PREFIX="${BRANCH_PREFIX%/}"
-
-          PICKED=$(echo "$ISSUES" | jq -r --arg branches "$BRANCHES" --arg prefix "$PREFIX" '
-            ($branches | split("\n")) as $br
-            | { "P0": 0, "P1": 1, "P2": 2, "P3": 3 } as $rank
+          PICKED=$(echo "$ISSUES" | jq -r '
+            { "P0": 0, "P1": 1, "P2": 2, "P3": 3 } as $rank
             | [ .[]
                 | select(.labels | map(select(. == "good first issue")) | length == 0)
-                | (if $prefix != "" then "\($prefix)/issue-\(.number)" else "issue-\(.number)" end) as $expected
-                | select([$br[] | select(. == $expected)] | length == 0)
               ]
             | sort_by(
                 (.labels | map(select(test("^P[0-3]$"))) | first // "P3") as $pl
