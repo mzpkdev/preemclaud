@@ -38,5 +38,5 @@ export function renderMaintainComment(input: MaintainCommentInput): string {
     run_url: input.runUrl || "",
   }).trim();
 
-  return wrapArtifactBody({ body });
+  return wrapArtifactBody({ body, banner: false, replyAsset: "issue-reply.svg" });
 }

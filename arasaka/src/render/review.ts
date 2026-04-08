@@ -35,8 +35,5 @@ export function renderReviewComment(input: {
     ),
   }).trim();
 
-  return wrapArtifactBody({
-    body,
-    replyAsset: input.verdict === "findings" ? "error-reply.svg" : "issue-reply.svg",
-  });
+  return wrapArtifactBody({ body });
 }

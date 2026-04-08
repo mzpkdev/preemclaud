@@ -1,4 +1,3 @@
-<img src="{{ASSET_BASE}}/banner.svg" />
 <img src="{{ASSET_BASE}}/{reply_asset}" />
 
 {header}

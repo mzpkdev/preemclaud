@@ -21,5 +21,5 @@ export function renderIssueCommentBody(input: {
     pr_link: `[View pull request](${input.prUrl})`,
   }).trim();
 
-  return wrapArtifactBody({ body });
+  return wrapArtifactBody({ body, banner: false, replyAsset: "issue-reply.svg" });
 }
