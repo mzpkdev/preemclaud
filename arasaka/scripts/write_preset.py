@@ -78,16 +78,21 @@ def queue_payload() -> dict[str, str]:
 
 
 def develop_payload() -> dict[str, str]:
+    pr_number = os.environ.get("PR_NUMBER", "")
+    prompt = build_prompt(
+        "develop",
+        {
+            "ISSUE_NUMBER": os.environ["ISSUE_NUMBER"],
+            "GITHUB_REPOSITORY": os.environ["GITHUB_REPOSITORY"],
+            "BRANCH_NAME": os.environ["BRANCH_NAME"],
+            "BASE_BRANCH": os.environ["BASE_BRANCH"],
+        },
+    )
+    if pr_number:
+        revision_block = read_text(ROOT / "content" / "presets" / "develop" / "revision.md")
+        prompt += "\n\n" + render_text(revision_block, {"PR_NUMBER": pr_number})
     return {
-        "prompt": build_prompt(
-            "develop",
-            {
-                "ISSUE_NUMBER": os.environ["ISSUE_NUMBER"],
-                "GITHUB_REPOSITORY": os.environ["GITHUB_REPOSITORY"],
-                "BRANCH_NAME": os.environ["BRANCH_NAME"],
-                "BASE_BRANCH": os.environ["BASE_BRANCH"],
-            },
-        ),
+        "prompt": prompt,
         "system_prompt": build_system_prompt("develop"),
         "claude_args": build_claude_args("develop"),
     }

@@ -15,6 +15,10 @@ inputs:
     description: "URL of the workflow run for the in-progress comment"
     required: false
     default: ""
+  pr_number:
+    description: "PR number for revision context (omit for fresh implementations)"
+    required: false
+    default: ""
   github_token:
     description: "GitHub token override for API calls (defaults to github.token)"
     required: false
@@ -48,8 +52,8 @@ runs:
         TEMPLATE="${ARASAKA_ROOT}/content/artifacts/issue-comment/templates/in-progress.md"
         CONTENT=$(sed "s|{run_url}|${RUN_URL}|g" "$TEMPLATE")
         ASSET_BASE="https://raw.githubusercontent.com/mzpkdev/preemclaud/main/arasaka/assets"
-        BODY=$(printf '<img src="%s/banner.svg" />\n<img src="%s/issue-in-progress.svg" />\n\n<img src="%s/divider.svg" />\n\n%s\n\n<img src="%s/footer.svg" />' \
-          "$ASSET_BASE" "$ASSET_BASE" "$ASSET_BASE" "$CONTENT" "$ASSET_BASE")
+        BODY=$(printf '<img src="%s/issue-in-progress.svg" />\n\n<img src="%s/divider.svg" />\n\n%s\n\n<img src="%s/footer.svg" />' \
+          "$ASSET_BASE" "$ASSET_BASE" "$CONTENT" "$ASSET_BASE")
         COMMENT_URL=$(gh issue comment "$ISSUE_NUMBER" \
           --repo "$GITHUB_REPOSITORY" \
           --body "$BODY")
@@ -62,5 +66,6 @@ runs:
         ISSUE_NUMBER: ${{ inputs.issue_number }}
         BRANCH_NAME: ${{ inputs.branch_name }}
         BASE_BRANCH: ${{ inputs.base_branch }}
+        PR_NUMBER: ${{ inputs.pr_number }}
       run: |
         python3 "${GITHUB_ACTION_PATH}/../../scripts/write_preset.py" develop

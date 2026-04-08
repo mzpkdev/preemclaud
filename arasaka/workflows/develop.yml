@@ -263,3 +263,108 @@ jobs:
           additional_permissions: |
             workflows: write
           allowed_bots: "github-actions[bot],arasaka-net[bot]"
+
+  develop_from_pr_feedback:
+    if: >
+      github.event_name == 'pull_request_review' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        !contains(github.event.comment.body, inputs.trigger_phrase)
+      )
+    concurrency:
+      group: arasaka-develop-pr-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Extract PR context
+        id: context
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GH_APP_TOKEN || github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request_review" ]; then
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+            BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+            PR_BODY=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json body --jq '.body')
+          else
+            PR_NUMBER="${{ github.event.issue.number }}"
+            PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefName,baseRefName,body)
+            BRANCH_NAME=$(echo "$PR_DATA" | jq -r '.headRefName')
+            BASE_BRANCH=$(echo "$PR_DATA" | jq -r '.baseRefName')
+            PR_BODY=$(echo "$PR_DATA" | jq -r '.body')
+          fi
+
+          ISSUE_NUMBER=$(echo "$PR_BODY" | grep -oiP 'Closes\s+#\K\d+' | head -1)
+
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "::warning::No linked issue found in PR body, skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+          echo "base_branch=$BASE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Generate app token
+        if: steps.context.outputs.skip != 'true'
+        id: app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: "3218980"
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        if: steps.context.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.context.outputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Build develop preset
+        if: steps.context.outputs.skip != 'true'
+        id: preset
+        uses: __ARASAKA_OWNER_REPO__/arasaka/actions/develop@__ARASAKA_REF__
+        with:
+          issue_number: ${{ steps.context.outputs.issue_number }}
+          branch_name: ${{ steps.context.outputs.branch_name }}
+          base_branch: ${{ steps.context.outputs.base_branch }}
+          pr_number: ${{ steps.context.outputs.pr_number }}
+          run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          github_token: ${{ steps.app-token.outputs.token || secrets.GH_APP_TOKEN }}
+
+      - name: Run revision from PR feedback
+        if: steps.context.outputs.skip != 'true'
+        id: run
+        uses: __ARASAKA_OWNER_REPO__/arasaka@__ARASAKA_REF__
+        env:
+          CLAUDE_BRANCH: ${{ steps.context.outputs.branch_name }}
+          BASE_BRANCH: ${{ steps.context.outputs.base_branch }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token || secrets.GH_APP_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          model: ${{ inputs.model }}
+          artifact_mode: "develop"
+          artifact_issue_number: ${{ steps.context.outputs.issue_number }}
+          artifact_progress_comment_id: ${{ steps.preset.outputs.progress_comment_id }}
+          base_branch: ${{ steps.context.outputs.base_branch }}
+          branch_prefix: ${{ inputs.branch_prefix }}
+          additional_permissions: |
+            workflows: write
+          allowed_bots: "github-actions[bot],arasaka-net[bot]"
