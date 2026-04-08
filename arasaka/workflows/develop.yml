@@ -95,8 +95,8 @@ jobs:
       actions: read
     steps:
       - name: Generate app token
-        if: secrets.GH_APP_PRIVATE_KEY != ''
         id: app-token
+        continue-on-error: true
         uses: actions/create-github-app-token@v1
         with:
           app-id: "3218980"
@@ -183,8 +183,8 @@ jobs:
       actions: read
     steps:
       - name: Generate app token
-        if: secrets.GH_APP_PRIVATE_KEY != ''
         id: app-token
+        continue-on-error: true
         uses: actions/create-github-app-token@v1
         with:
           app-id: "3218980"
@@ -222,8 +222,8 @@ jobs:
       actions: read
     steps:
       - name: Generate app token
-        if: secrets.GH_APP_PRIVATE_KEY != ''
         id: app-token
+        continue-on-error: true
         uses: actions/create-github-app-token@v1
         with:
           app-id: "3218980"
