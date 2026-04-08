@@ -1,5 +1,6 @@
 import pullRequestBodyMd from "../../content/artifacts/pull-request/templates/body.md";
 import { wrapArtifactBody } from "./chrome.ts";
+import { ASSET_BASE } from "../config/assets.ts";
 import { renderBulletList, renderTemplate } from "./template.ts";
 
 export type PullRequestRenderInput = {
@@ -13,7 +14,10 @@ export type PullRequestRenderInput = {
 export function renderPullRequestBody(
   input: PullRequestRenderInput,
 ): string {
+  const divider = `<img src="${ASSET_BASE}/divider.svg" />`;
+
   const body = renderTemplate(pullRequestBodyMd, {
+    divider,
     summary: input.summary.trim(),
     changes: renderBulletList(input.changes, "- No implementation changes listed."),
     verification: renderBulletList(

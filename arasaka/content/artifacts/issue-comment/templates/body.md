@@ -3,6 +3,8 @@ Work has been prepared and recorded for this issue.
 **Summary**
 {summary}
 
+{divider}
+
 **Verification**
 {verification}
 

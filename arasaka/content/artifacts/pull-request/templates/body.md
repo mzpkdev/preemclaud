@@ -6,6 +6,8 @@ This change has been prepared for integration into the family's asset record.
 **Changes**
 {changes}
 
+{divider}
+
 **Verification**
 {verification}
 

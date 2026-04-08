@@ -1,5 +1,6 @@
 import issueBodyMd from "../../content/artifacts/issue/templates/body.md";
 import { wrapArtifactBody } from "./chrome.ts";
+import { ASSET_BASE } from "../config/assets.ts";
 import {
   type AffectedFile,
   type Evidence,
@@ -23,7 +24,10 @@ export type IssueRenderInput = {
 };
 
 export function renderIssueBody(input: IssueRenderInput): string {
+  const divider = `<img src="${ASSET_BASE}/divider.svg" />`;
+
   const body = renderTemplate(issueBodyMd, {
+    divider,
     description: input.description.trim(),
     context: input.context.trim(),
     affected_files: renderAffectedFileList(

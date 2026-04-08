@@ -9,6 +9,8 @@
 **Requirements**
 {requirements}
 
+{divider}
+
 **Verification**
 {verification_commands}
 
