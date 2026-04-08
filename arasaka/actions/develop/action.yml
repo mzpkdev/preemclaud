@@ -15,6 +15,10 @@ inputs:
     description: "URL of the workflow run for the in-progress comment"
     required: false
     default: ""
+  github_token:
+    description: "GitHub token override for API calls (defaults to github.token)"
+    required: false
+    default: ""
 outputs:
   prompt:
     description: "Issue implementation prompt"
@@ -38,7 +42,7 @@ runs:
       env:
         ISSUE_NUMBER: ${{ inputs.issue_number }}
         RUN_URL: ${{ inputs.run_url }}
-        GH_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ inputs.github_token || github.token }}
         ARASAKA_ROOT: ${{ github.action_path }}/../..
       run: |
         TEMPLATE="${ARASAKA_ROOT}/content/artifacts/issue-comment/templates/in-progress.md"

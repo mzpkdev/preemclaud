@@ -16,6 +16,8 @@ on:
         required: false
       CLAUDE_CODE_OAUTH_TOKEN:
         required: false
+      GH_APP_TOKEN:
+        required: false
 
 jobs:
   review:
@@ -54,6 +56,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GH_APP_TOKEN }}
           prompt: ${{ steps.preset.outputs.prompt }}
           system_prompt: ${{ steps.preset.outputs.system_prompt }}
           claude_args: ${{ steps.preset.outputs.claude_args }}
@@ -62,4 +65,4 @@ jobs:
           artifact_pr_number: ${{ github.event.pull_request.number }}
           artifact_max_revisions: ${{ inputs.max_revisions }}
           base_branch: ${{ github.event.pull_request.base.ref }}
-          allowed_bots: "claude[bot]"
+          allowed_bots: "claude[bot],arasaka-net[bot]"
