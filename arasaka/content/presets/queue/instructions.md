@@ -23,7 +23,9 @@ Rules:
   (e.g., "Do not refactor adjacent parsing utilities").
 - `evidence` must be an array of objects, each with a `location` (file path, line number, or issue number) and an
   `observation` explaining what was found there (e.g.,
-  `{ "location": "src/config.ts:82", "observation": "catch block returns undefined without logging" }`).
+  `{ "location": "src/config.ts:82", "observation": "catch block returns undefined without logging" }`). Evidence must
+  point to code, config, or issues — never to spec documents. Specs inform which issues to create, but the evidence for
+  each issue must come from the repository itself.
 - `depends_on` is an optional array of existing issue numbers that must be resolved before this issue can be started.
   Only reference open issues that genuinely block this work.
 - `labels` should only include labels that are likely already present in the repository.

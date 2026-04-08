@@ -9,7 +9,8 @@ Requirements:
 - Create at most ${QUEUE_MAX_ISSUES} new issues or issue updates.
 - Prefer bounded work that fits in one pull request.
 - If a `spec/` directory exists, read its `.md` files first. These are product specifications — create issues that
-  implement what they describe.
+  implement what they describe. Use specs to decide *what* issues to create, but do not cite spec files in `evidence` or
+  `context`. Team members already know the principles — tickets should stand on code-level observations alone.
 - Beyond specs, good candidates include: missing tests, broken docs, clear bugs, consistency fixes, automation gaps, or
   small follow-up work.
 - Actively look for technical debt that tightens the LLM feedback loop — the faster and more precisely an LLM can verify
