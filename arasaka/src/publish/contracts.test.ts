@@ -15,10 +15,16 @@ describe("structured publication contracts", () => {
           action: "create",
           title: "Add queue publisher tests",
           description: "Queue issues are not validated after publication.",
-          affected_files: ["`arasaka/src/publish/queue.ts` — publication entry point"],
+          context: "The queue publisher creates GitHub issues but has no post-publish validation, so malformed output silently produces broken issues.",
+          affected_files: [
+            { path: "arasaka/src/publish/queue.ts", line: 64, note: "publication entry point" },
+          ],
           requirements: ["Renderer tests cover issue body output"],
+          verification_commands: ["bun test"],
           not_in_scope: ["Do not modify the review publisher"],
-          evidence: ["`arasaka/src/publish/queue.ts:64` — no post-publish validation"],
+          evidence: [
+            { location: "arasaka/src/publish/queue.ts:64", observation: "no post-publish validation" },
+          ],
           labels: ["auto-generated"],
           priority: "P1",
         },
@@ -35,10 +41,16 @@ describe("structured publication contracts", () => {
           action: "create",
           title: "Fix login timeout",
           description: "Login request has no timeout handling, causing hangs on slow connections.",
-          affected_files: ["`src/auth/login.ts` — missing timeout parameter"],
+          context: "Users on slow connections experience indefinite hangs because the login fetch has no timeout.",
+          affected_files: [
+            { path: "src/auth/login.ts", line: 30, note: "missing timeout parameter" },
+          ],
           requirements: ["Timeout is configurable"],
+          verification_commands: ["bun test src/auth/login.test.ts"],
           not_in_scope: ["Do not change the auth flow"],
-          evidence: ["`src/auth/login.ts:30` — no timeout on fetch call"],
+          evidence: [
+            { location: "src/auth/login.ts:30", observation: "no timeout on fetch call" },
+          ],
           labels: ["bug"],
           priority: "P1",
           body: "## Bug Report\n\n**Description**\nLogin hangs on slow connections.\n\n**Steps to Reproduce**\n1. Throttle network\n2. Attempt login\n",
@@ -56,10 +68,16 @@ describe("structured publication contracts", () => {
           action: "create",
           title: "Add tests",
           description: "No tests exist for the core module.",
-          affected_files: ["`src/index.ts` — untested entry point"],
+          context: "The core module has zero test coverage, making regressions invisible.",
+          affected_files: [
+            { path: "src/index.ts", note: "untested entry point" },
+          ],
           requirements: ["`bun test` exits clean"],
+          verification_commands: ["bun test"],
           not_in_scope: ["Do not refactor existing code"],
-          evidence: ["`src/index.ts` — zero test coverage"],
+          evidence: [
+            { location: "src/index.ts", observation: "zero test coverage" },
+          ],
           labels: [],
           priority: "P2",
         },
@@ -67,6 +85,33 @@ describe("structured publication contracts", () => {
     });
 
     expect(parsed.issues[0]!.body).toBeUndefined();
+  });
+
+  it("accepts queue output with depends_on", () => {
+    const parsed = queueOutputSchema.parse({
+      issues: [
+        {
+          action: "create",
+          title: "Add integration tests",
+          description: "Integration tests are missing for the publish pipeline.",
+          context: "Unit tests exist but no integration tests verify end-to-end issue creation against the GitHub API.",
+          affected_files: [
+            { path: "src/publish/queue.test.ts", note: "new integration test file" },
+          ],
+          requirements: ["Integration tests pass"],
+          verification_commands: ["bun test src/publish/"],
+          not_in_scope: ["Do not modify production code"],
+          evidence: [
+            { location: "src/publish/queue.ts", observation: "no integration test coverage" },
+          ],
+          labels: ["tech debt"],
+          priority: "P1",
+          depends_on: [42, 57],
+        },
+      ],
+    });
+
+    expect(parsed.issues[0]!.depends_on).toEqual([42, 57]);
   });
 
   it("rejects queue updates without a target issue number", () => {
@@ -77,10 +122,16 @@ describe("structured publication contracts", () => {
             action: "update",
             title: "Refresh an existing issue",
             description: "Issue body text is stale and needs tighter requirements.",
-            affected_files: ["#12"],
+            context: "The existing issue references files that have been removed and needs updated requirements.",
+            affected_files: [
+              { path: "src/config.ts", note: "referenced in stale issue" },
+            ],
             requirements: ["Updated body is published"],
+            verification_commands: ["gh issue view 12 --json body"],
             not_in_scope: ["Do not change the issue title"],
-            evidence: ["#12 — body references removed files"],
+            evidence: [
+              { location: "#12", observation: "body references removed files" },
+            ],
             labels: [],
             priority: "P0",
           },

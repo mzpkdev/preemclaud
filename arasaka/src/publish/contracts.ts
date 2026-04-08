@@ -3,13 +3,26 @@ import { z } from "zod";
 export const priorityValues = ["P0", "P1", "P2", "P3"] as const;
 export type Priority = (typeof priorityValues)[number];
 
+export const affectedFileSchema = z.object({
+  path: z.string().min(1),
+  line: z.number().int().positive().optional(),
+  note: z.string().min(1),
+});
+
+export const evidenceSchema = z.object({
+  location: z.string().min(1),
+  observation: z.string().min(1),
+});
+
 export const issuePublicationSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
-  affected_files: z.array(z.string().min(1)),
+  context: z.string().min(1),
+  affected_files: z.array(affectedFileSchema),
   requirements: z.array(z.string().min(1)),
+  verification_commands: z.array(z.string().min(1)),
   not_in_scope: z.array(z.string().min(1)),
-  evidence: z.array(z.string().min(1)),
+  evidence: z.array(evidenceSchema),
   labels: z.array(z.string().min(1)),
   priority: z.enum(priorityValues),
   body: z.string().min(1).optional(),
@@ -19,6 +32,7 @@ export const queueIssueSchema = issuePublicationSchema
   .extend({
     action: z.enum(["create", "update"]),
     existing_issue_number: z.number().int().positive().optional(),
+    depends_on: z.array(z.number().int().positive()).optional(),
   })
   .superRefine((value, ctx) => {
     if (value.action === "update" && value.existing_issue_number === undefined) {

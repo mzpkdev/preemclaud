@@ -9,23 +9,66 @@ describe("artifact renderers", () => {
   it("renders issue bodies with structured sections", () => {
     const body = renderIssueBody({
       description: "Queue output is currently freeform and drifts between runs.",
+      context: "The queue workflow produces issues with inconsistent formatting because there is no enforced contract on the structured output. This makes it harder for automated agents to parse and act on the issues.",
       affectedFiles: [
-        "`arasaka/actions/queue/action.yml` — preset assembly logic",
-        "`arasaka/src/publish/queue.ts` — publication entry point",
+        { path: "arasaka/actions/queue/action.yml", note: "preset assembly logic" },
+        { path: "arasaka/src/publish/queue.ts", line: 64, note: "publication entry point" },
       ],
       requirements: ["Structured contract is enforced", "Published issue body is templated"],
+      verificationCommands: ["bun test", "bun run typecheck"],
       notInScope: ["Do not refactor the review workflow"],
-      evidence: ["`arasaka/workflows/arasaka.yml:12` — queue job references unvalidated output"],
+      evidence: [
+        { location: "arasaka/workflows/arasaka.yml:12", observation: "queue job references unvalidated output" },
+      ],
     });
 
     expect(body).toContain("Queue output is currently freeform");
+    expect(body).toContain("inconsistent formatting");
     expect(body).toContain("- `arasaka/actions/queue/action.yml` — preset assembly logic");
+    expect(body).toContain("- `arasaka/src/publish/queue.ts:64` — publication entry point");
     expect(body).toContain("- [ ] Structured contract is enforced");
+    expect(body).toContain("- bun test");
+    expect(body).toContain("- bun run typecheck");
     expect(body).toContain("- Do not refactor the review workflow");
-    expect(body).toContain("- `arasaka/workflows/arasaka.yml:12`");
+    expect(body).toContain("- `arasaka/workflows/arasaka.yml:12` — queue job references unvalidated output");
     expect(body).toContain("banner.svg");
     expect(body).toContain("issue-reply.svg");
     expect(body).toContain("footer.svg");
+  });
+
+  it("renders depends_on as issue links", () => {
+    const body = renderIssueBody({
+      description: "Add integration tests for the queue publisher.",
+      context: "Unit tests exist but no integration tests verify end-to-end issue creation.",
+      affectedFiles: [
+        { path: "arasaka/src/publish/queue.test.ts", note: "new test file" },
+      ],
+      requirements: ["Integration tests pass"],
+      verificationCommands: ["bun test"],
+      notInScope: ["Do not modify production code"],
+      evidence: [
+        { location: "arasaka/src/publish/queue.ts", observation: "no integration test coverage" },
+      ],
+      dependsOn: [42, 57],
+    });
+
+    expect(body).toContain("**Dependencies**");
+    expect(body).toContain("#42");
+    expect(body).toContain("#57");
+  });
+
+  it("omits dependencies section when depends_on is empty", () => {
+    const body = renderIssueBody({
+      description: "Fix a minor typo.",
+      context: "Documentation has a spelling error that could confuse readers.",
+      affectedFiles: [{ path: "README.md", note: "fix typo in setup section" }],
+      requirements: ["Typo is corrected"],
+      verificationCommands: ["grep -c 'teh' README.md | grep '^0$'"],
+      notInScope: ["Do not rewrite the README"],
+      evidence: [{ location: "README.md:5", observation: "'teh' should be 'the'" }],
+    });
+
+    expect(body).not.toContain("**Dependencies**");
   });
 
   it("renders pull request bodies with closing issue marker", () => {

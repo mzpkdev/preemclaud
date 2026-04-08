@@ -1,23 +1,32 @@
 import issueBodyMd from "../../content/artifacts/issue/templates/body.md";
 import { wrapArtifactBody } from "./chrome.ts";
 import {
+  type AffectedFile,
+  type Evidence,
+  renderAffectedFileList,
   renderBulletList,
   renderCheckboxList,
+  renderDependsOn,
+  renderEvidenceList,
   renderTemplate,
 } from "./template.ts";
 
 export type IssueRenderInput = {
   description: string;
-  affectedFiles: string[];
+  context: string;
+  affectedFiles: AffectedFile[];
   requirements: string[];
+  verificationCommands: string[];
   notInScope: string[];
-  evidence: string[];
+  evidence: Evidence[];
+  dependsOn?: number[];
 };
 
 export function renderIssueBody(input: IssueRenderInput): string {
   const body = renderTemplate(issueBodyMd, {
     description: input.description.trim(),
-    affected_files: renderBulletList(
+    context: input.context.trim(),
+    affected_files: renderAffectedFileList(
       input.affectedFiles,
       "- No affected files were identified.",
     ),
@@ -25,14 +34,19 @@ export function renderIssueBody(input: IssueRenderInput): string {
       input.requirements,
       "- No requirements were supplied.",
     ),
+    verification_commands: renderBulletList(
+      input.verificationCommands,
+      "- No verification commands were supplied.",
+    ),
     not_in_scope: renderBulletList(
       input.notInScope,
       "- No scope exclusions were specified.",
     ),
-    evidence: renderBulletList(
+    evidence: renderEvidenceList(
       input.evidence,
       "- No repository evidence was supplied.",
     ),
+    depends_on: renderDependsOn(input.dependsOn),
   }).trim();
 
   return wrapArtifactBody({ body });

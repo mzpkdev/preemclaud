@@ -23,12 +23,19 @@ Requirements:
 - Assign a priority to each issue: `P0` (broken functionality, security), `P1` (blocks other work, significant gap, or
   tightens the LLM feedback loop), `P2` (clear improvement, moderate impact), `P3` (nice-to-have, minor polish).
 - If the repository already appears to use the label "${BACKLOG_LABEL}", you may include it in labels. If not, omit it.
-- Every issue must include `affected_files` listing the repository-relative paths that need modification, with a brief
-  note on each explaining what changes there.
+- Every issue must include a `context` field that explains the broader motivation — what is currently broken, missing,
+  or suboptimal, and why fixing it matters. Write enough that an implementer unfamiliar with the repository can
+  understand the problem.
+- Every issue must include `affected_files` as an array of objects with `path`, optional `line`, and `note` fields
+  listing the repository-relative paths that need modification.
 - Every issue must include at least one `not_in_scope` item that prevents the implementer from expanding beyond the
   intended work.
-- Write `requirements` as verifiable outcomes. Prefer items checkable by a shell command where possible.
-- Write `evidence` as specific `file:line` references or issue numbers, not prose descriptions.
+- Write `requirements` as acceptance criteria describing what must be true when the work is done.
+- Write `verification_commands` as shell commands that prove the requirements are met. Every issue should have at least
+  one verification command.
+- Write `evidence` as an array of objects with `location` (specific `file:line` references or issue numbers) and
+  `observation` (what was found there), not prose descriptions.
+- If an issue depends on another open issue being resolved first, include those issue numbers in `depends_on`.
 - If `.github/ISSUE_TEMPLATE/` exists, read its templates. When a template is relevant to an issue, fill it in and
   return the completed markdown as the `body` field. For YAML issue forms (`.yml`), render the form's labeled sections
   as markdown. Omit `body` when no repository template applies.

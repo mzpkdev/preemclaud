@@ -10,11 +10,25 @@
           "existing_issue_number": { "type": "integer" },
           "title": { "type": "string" },
           "description": { "type": "string" },
+          "context": { "type": "string" },
           "affected_files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": { "type": "string" },
+                "line": { "type": "integer" },
+                "note": { "type": "string" }
+              },
+              "required": ["path", "note"],
+              "additionalProperties": false
+            }
+          },
+          "requirements": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "requirements": {
+          "verification_commands": {
             "type": "array",
             "items": { "type": "string" }
           },
@@ -24,7 +38,19 @@
           },
           "evidence": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": { "type": "string" },
+                "observation": { "type": "string" }
+              },
+              "required": ["location", "observation"],
+              "additionalProperties": false
+            }
+          },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "integer" }
           },
           "labels": {
             "type": "array",
@@ -40,8 +66,10 @@
           "action",
           "title",
           "description",
+          "context",
           "affected_files",
           "requirements",
+          "verification_commands",
           "not_in_scope",
           "evidence",
           "labels",

@@ -9,15 +9,23 @@ Rules:
 - Use `action: "create"` for genuinely new work.
 - If no worthwhile work exists, return an empty `issues` array.
 - `description` is one to two sentences: what the issue proposes and why it matters. Do not repeat the title.
-- `affected_files` must list repository-relative paths that need modification, each with a brief note explaining what
-  changes there (e.g., `` `src/config.ts:82` — `parseConfig()` swallows errors silently ``).
-- `requirements` must be concrete and verifiable. Prefer items that can be checked by running a shell command (e.g.,
-  "`ruff check src/config.py` exits clean" rather than "code follows linting rules"). Each requirement should describe a
-  single testable outcome.
+- `context` explains the broader motivation behind the issue — what is currently broken, missing, or suboptimal, and why
+  fixing it matters. Write enough that an implementer who has never seen the repository can understand the problem
+  without reading the code first.
+- `affected_files` must be an array of objects, each with a `path` (repository-relative), an optional `line` number, and
+  a `note` explaining what changes there (e.g.,
+  `{ "path": "src/config.ts", "line": 82, "note": "parseConfig() swallows errors silently" }`).
+- `requirements` must be concrete acceptance criteria. Each requirement should describe a single testable outcome.
+- `verification_commands` must list shell commands that prove the requirements are met (e.g.,
+  `ruff check src/config.py`, `bun test`, `grep -r 'TODO' src/ | wc -l`). Every issue should have at least one
+  verification command.
 - `not_in_scope` must list at least one boundary that prevents the implementer from expanding beyond the intended work
   (e.g., "Do not refactor adjacent parsing utilities").
-- `evidence` must reference specific files, line numbers, or issue numbers that justify the task (e.g.,
-  `` `src/config.ts:82` — catch block returns `undefined` without logging ``).
+- `evidence` must be an array of objects, each with a `location` (file path, line number, or issue number) and an
+  `observation` explaining what was found there (e.g.,
+  `{ "location": "src/config.ts:82", "observation": "catch block returns undefined without logging" }`).
+- `depends_on` is an optional array of existing issue numbers that must be resolved before this issue can be started.
+  Only reference open issues that genuinely block this work.
 - `labels` should only include labels that are likely already present in the repository.
 - If `.github/ISSUE_TEMPLATE/` exists, read its templates (`.md` and `.yml` files). When a template is relevant to an
   issue you are creating, fill in its sections and return the completed markdown as the `body` field. Omit `body` when
