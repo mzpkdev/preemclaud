@@ -1,9 +1,9 @@
-The pipeline found no actionable defects in this pull request.
+No actionable defects identified.
 
-**Summary**
-{summary}
+> {summary}
 
-**Residual Risk**
+### Residual Risk
+
 {residual_risks}
 
 <sub>Arasaka Code Quality Assurance Division.</sub>

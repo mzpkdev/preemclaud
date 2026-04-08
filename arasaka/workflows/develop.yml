@@ -342,7 +342,6 @@ jobs:
           branch_name: ${{ steps.context.outputs.branch_name }}
           base_branch: ${{ steps.context.outputs.base_branch }}
           pr_number: ${{ steps.context.outputs.pr_number }}
-          run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           github_token: ${{ steps.app-token.outputs.token || secrets.GH_APP_TOKEN }}
 
       - name: Run revision from PR feedback

@@ -32,7 +32,6 @@ describe("artifact renderers", () => {
     expect(body).toContain("- Do not refactor the review workflow");
     expect(body).toContain("- `arasaka/workflows/arasaka.yml:12` — queue job references unvalidated output");
     expect(body).toContain("banner.svg");
-    expect(body).toContain("issue-reply.svg");
     expect(body).toContain("footer.svg");
   });
 
@@ -83,7 +82,6 @@ describe("artifact renderers", () => {
     expect(body).toContain("Closes #17");
     expect(body).toContain("- npm run typecheck");
     expect(body).toContain("Arasaka Implementation Pipeline");
-    expect(body).toContain("divider.svg");
   });
 
   it("renders review comments for findings and no-findings cases", () => {
@@ -109,11 +107,15 @@ describe("artifact renderers", () => {
       residualRisks: [],
     });
 
-    expect(findingsBody).toContain("[HIGH] `src/run.ts:42`");
+    expect(findingsBody).toContain("HIGH");
+    expect(findingsBody).toContain("`src/run.ts:42`");
+    expect(findingsBody).toContain("Missing null guard");
     expect(findingsBody).toContain("Residual Risk");
     expect(findingsBody).toContain("error-reply.svg");
-    expect(cleanBody).toContain("The pipeline found no actionable defects");
+    expect(findingsBody).not.toContain("banner.svg");
+    expect(cleanBody).toContain("No actionable defects identified");
     expect(cleanBody).toContain("issue-reply.svg");
+    expect(cleanBody).not.toContain("banner.svg");
   });
 
   it("renders issue comments with PR links", () => {
@@ -126,7 +128,8 @@ describe("artifact renderers", () => {
 
     expect(body).toContain("[View pull request](https://github.com/example/repo/pull/12)");
     expect(body).toContain("Arasaka Repository Integrity Monitor");
-    expect(body).toContain("banner.svg");
+    expect(body).toContain("issue-reply.svg");
+    expect(body).not.toContain("banner.svg");
     expect(body).toContain("footer.svg");
   });
 
@@ -142,7 +145,8 @@ describe("artifact renderers", () => {
     expect(body).toContain("No activity for 35 days.");
     expect(body).toContain("no updates since March");
     expect(body).toContain("Arasaka Repository Maintenance Division");
-    expect(body).toContain("banner.svg");
+    expect(body).toContain("issue-reply.svg");
+    expect(body).not.toContain("banner.svg");
     expect(body).toContain("footer.svg");
   });
 
@@ -157,7 +161,8 @@ describe("artifact renderers", () => {
     expect(body).toContain("closed due to sustained inactivity");
     expect(body).toContain("pull request");
     expect(body).toContain("may be reopened");
-    expect(body).toContain("banner.svg");
+    expect(body).toContain("issue-reply.svg");
+    expect(body).not.toContain("banner.svg");
     expect(body).toContain("footer.svg");
   });
 
@@ -186,7 +191,8 @@ describe("artifact renderers", () => {
     expect(body).toContain("`auth`");
     expect(body).toContain("`enhancement`");
     expect(body).toContain("content analysis");
-    expect(body).toContain("banner.svg");
+    expect(body).toContain("issue-reply.svg");
+    expect(body).not.toContain("banner.svg");
     expect(body).toContain("footer.svg");
   });
 
@@ -204,7 +210,8 @@ describe("artifact renderers", () => {
     expect(body).toContain("https://github.com/owner/repo/actions/runs/12345678");
     expect(body).toContain("TypeScript compilation failed");
     expect(body).toContain("Arasaka Repository Maintenance Division");
-    expect(body).toContain("banner.svg");
+    expect(body).toContain("issue-reply.svg");
+    expect(body).not.toContain("banner.svg");
     expect(body).toContain("footer.svg");
   });
 

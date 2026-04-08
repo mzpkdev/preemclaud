@@ -76,6 +76,10 @@ inputs:
     description: "Max review→develop revision cycles before stopping (0 disables, default 1)"
     required: false
     default: ""
+  artifact_max_reviews:
+    description: "Max bot reviews before auto-passing the check (default 2)"
+    required: false
+    default: ""
   artifact_dry_run:
     description: "If true, maintain mode reports planned actions without executing"
     required: false
@@ -274,6 +278,7 @@ runs:
         ARTIFACT_ISSUE_NUMBER: ${{ inputs.artifact_issue_number }}
         ARTIFACT_PR_NUMBER: ${{ inputs.artifact_pr_number }}
         ARTIFACT_MAX_REVISIONS: ${{ inputs.artifact_max_revisions }}
+        ARTIFACT_MAX_REVIEWS: ${{ inputs.artifact_max_reviews }}
         ARTIFACT_STALE_LABEL: ${{ inputs.artifact_stale_label }}
         ARTIFACT_DRY_RUN: ${{ inputs.artifact_dry_run }}
         ARTIFACT_PROGRESS_COMMENT_ID: ${{ inputs.artifact_progress_comment_id }}

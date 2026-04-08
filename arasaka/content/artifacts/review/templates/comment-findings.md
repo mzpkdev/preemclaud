@@ -1,12 +1,15 @@
-The pipeline reviewed this pull request and identified matters that should be addressed before the family extends further trust to this change.
+Review identified matters requiring attention.
 
-**Summary**
-{summary}
+> {summary}
 
-**Findings**
+### Findings
+
 {findings}
 
-**Residual Risk**
+{divider}
+
+### Residual Risk
+
 {residual_risks}
 
 <sub>Arasaka Code Quality Assurance Division.</sub>

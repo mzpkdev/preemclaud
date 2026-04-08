@@ -1,10 +1,15 @@
 import type { Octokits } from "../../upstream/src/github/api/client.ts";
 import type { ParsedGitHubContext } from "../../upstream/src/github/context.ts";
-import { reviewOutputSchema, type ReviewOutput } from "./contracts.ts";
+import {
+  reviewOutputSchema,
+  type ReviewOutput,
+  type ReviewFinding,
+} from "./contracts.ts";
 import { renderReviewComment } from "../render/review.ts";
 
 const REVIEW_CHECK_NAME = "arasaka/review";
 const DEFAULT_MAX_REVISIONS = 0;
+const DEFAULT_MAX_REVIEWS = 1;
 const CLOSING_ISSUE_RE = /Closes\s+#(\d+)/i;
 
 export function getReviewEvent(
@@ -13,10 +18,16 @@ export function getReviewEvent(
   return "COMMENT";
 }
 
+export function hasHighSeverityFindings(findings: ReviewFinding[]): boolean {
+  return findings.some((f) => f.severity === "high");
+}
+
 export function getReviewCheckConclusion(
   verdict: ReviewOutput["verdict"],
+  findings: ReviewFinding[] = [],
 ): "success" | "failure" {
-  return verdict === "findings" ? "failure" : "success";
+  if (verdict !== "findings") return "success";
+  return hasHighSeverityFindings(findings) ? "failure" : "success";
 }
 
 type PullRequestPayload = {
@@ -123,8 +134,25 @@ export async function publishReviewOutput(params: {
   });
   const { owner, repo } = context.repository;
   const event = getReviewEvent(parsed.verdict);
-  const checkConclusion = getReviewCheckConclusion(parsed.verdict);
   const headSha = getPullRequestHeadSha(context);
+
+  // Cap: after N reviews on the same PR, auto-pass the check
+  const maxReviews =
+    Number(process.env.ARTIFACT_MAX_REVIEWS) || DEFAULT_MAX_REVIEWS;
+  const { data: existingReviews } = await octokit.rest.pulls.listReviews({
+    owner,
+    repo,
+    pull_number: prNumber,
+    per_page: 100,
+  });
+  const botReviewCount = existingReviews.filter(
+    (r) => r.user?.type === "Bot",
+  ).length;
+  const capReached = botReviewCount >= maxReviews;
+
+  const checkConclusion = capReached
+    ? "success"
+    : getReviewCheckConclusion(parsed.verdict, parsed.findings);
 
   const { data: review } = await octokit.rest.pulls.createReview({
     owner,
@@ -144,6 +172,12 @@ export async function publishReviewOutput(params: {
           )
           .join("\n");
 
+  const checkTitle = capReached
+    ? "Arasaka review — advisory only (review cap reached)"
+    : checkConclusion === "failure"
+      ? "Arasaka review found issues"
+      : "Arasaka review found no actionable issues";
+
   const { data: checkRun } = await octokit.rest.checks.create({
     owner,
     repo,
@@ -153,10 +187,7 @@ export async function publishReviewOutput(params: {
     conclusion: checkConclusion,
     details_url: review.html_url,
     output: {
-      title:
-        parsed.verdict === "findings"
-          ? "Arasaka review found issues"
-          : "Arasaka review found no actionable issues",
+      title: checkTitle,
       summary: parsed.summary,
       text: [findingsSummary, "", body].join("\n").trim(),
     },

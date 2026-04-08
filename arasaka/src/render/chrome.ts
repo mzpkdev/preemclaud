@@ -17,8 +17,6 @@ export function wrapArtifactBody(params: {
 
   parts.push(
     "",
-    `<img src="${ASSET_BASE}/divider.svg" />`,
-    "",
     content,
     "",
     `<img src="${ASSET_BASE}/footer.svg" />`,
