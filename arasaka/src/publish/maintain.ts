@@ -96,7 +96,7 @@ async function executeAction(
       if (existing.total_count > 0) {
         return {
           ...base,
-          number: existing.items[0].number,
+          number: existing.items[0]!.number,
           executed: false,
         };
       }
@@ -140,14 +140,14 @@ async function executeAction(
       const { data: comment } = await octokit.rest.issues.createComment({
         owner,
         repo,
-        issue_number: action.number,
+        issue_number: action.number!,
         body,
       });
       await ensureLabelExists(octokit, owner, repo, staleLabel, existingLabels);
       await octokit.rest.issues.addLabels({
         owner,
         repo,
-        issue_number: action.number,
+        issue_number: action.number!,
         labels: [staleLabel],
       });
       return { ...base, result_url: comment.html_url };
@@ -163,21 +163,21 @@ async function executeAction(
       const { data: comment } = await octokit.rest.issues.createComment({
         owner,
         repo,
-        issue_number: action.number,
+        issue_number: action.number!,
         body,
       });
       if (action.entity === "pull_request") {
         await octokit.rest.pulls.update({
           owner,
           repo,
-          pull_number: action.number,
+          pull_number: action.number!,
           state: "closed",
         });
       } else {
         await octokit.rest.issues.update({
           owner,
           repo,
-          issue_number: action.number,
+          issue_number: action.number!,
           state: "closed",
         });
       }
@@ -194,7 +194,7 @@ async function executeAction(
       const { data: comment } = await octokit.rest.issues.createComment({
         owner,
         repo,
-        issue_number: action.number,
+        issue_number: action.number!,
         body,
       });
       return { ...base, result_url: comment.html_url };
@@ -208,7 +208,7 @@ async function executeAction(
       await octokit.rest.issues.addLabels({
         owner,
         repo,
-        issue_number: action.number,
+        issue_number: action.number!,
         labels: validLabels,
       });
       const body = renderMaintainComment({
@@ -221,7 +221,7 @@ async function executeAction(
       const { data: comment } = await octokit.rest.issues.createComment({
         owner,
         repo,
-        issue_number: action.number,
+        issue_number: action.number!,
         body,
       });
       return { ...base, result_url: comment.html_url };

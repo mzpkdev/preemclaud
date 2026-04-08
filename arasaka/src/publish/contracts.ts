@@ -11,6 +11,7 @@ export const issuePublicationSchema = z.object({
   evidence: z.array(z.string().min(1)),
   labels: z.array(z.string().min(1)),
   priority: z.enum(priorityValues),
+  body: z.string().min(1).optional(),
 });
 
 export const queueIssueSchema = issuePublicationSchema
@@ -39,6 +40,7 @@ export const developImplementedOutputSchema = z.object({
     changes: z.array(z.string().min(1)),
     verification: z.array(z.string().min(1)),
     assumptions: z.array(z.string().min(1)),
+    body: z.string().min(1).optional(),
   }),
   issue_comment: z.object({
     summary: z.string().min(1),

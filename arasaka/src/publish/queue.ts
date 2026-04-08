@@ -2,6 +2,7 @@ import type { Octokits } from "../../upstream/src/github/api/client.ts";
 import type { AutomationContext } from "../../upstream/src/github/context.ts";
 import { queueOutputSchema, type QueueOutput, type Priority } from "./contracts.ts";
 import { renderIssueBody } from "../render/issue.ts";
+import { wrapArtifactBody } from "../render/chrome.ts";
 
 const PRIORITY_LABELS: Record<Priority, { name: string; color: string }> = {
   P0: { name: "P0", color: "b60205" },
@@ -75,12 +76,14 @@ export async function publishQueueOutput(params: {
   const issues: QueuePublishResult["issues"] = [];
 
   for (const item of parsed.issues) {
-    const body = renderIssueBody({
-      summary: item.summary,
-      problem: item.problem,
-      acceptanceCriteria: item.acceptance_criteria,
-      evidence: item.evidence,
-    });
+    const body = item.body
+      ? wrapArtifactBody({ body: item.body })
+      : renderIssueBody({
+          summary: item.summary,
+          problem: item.problem,
+          acceptanceCriteria: item.acceptance_criteria,
+          evidence: item.evidence,
+        });
     const priorityLabel = PRIORITY_LABELS[item.priority].name;
     const labels = [
       ...item.labels.filter((label) => existingLabels.has(label)),

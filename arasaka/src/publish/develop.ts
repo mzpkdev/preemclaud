@@ -5,6 +5,7 @@ import type { AutomationContext } from "../../upstream/src/github/context.ts";
 import { developOutputSchema, type DevelopOutput } from "./contracts.ts";
 import { renderPullRequestBody } from "../render/pull-request.ts";
 import { renderIssueCommentBody } from "../render/issue-comment.ts";
+import { wrapArtifactBody } from "../render/chrome.ts";
 
 type DevelopImplementedPublishResult = {
   status: "implemented";
@@ -84,13 +85,17 @@ export async function publishDevelopOutput(params: {
 
   ensureRemoteBranch(branchName);
 
-  const body = renderPullRequestBody({
-    summary: parsed.pull_request.summary,
-    changes: parsed.pull_request.changes,
-    verification: parsed.pull_request.verification,
-    assumptions: parsed.pull_request.assumptions,
-    closingIssueNumber: issueNumber,
-  });
+  const body = parsed.pull_request.body
+    ? wrapArtifactBody({
+        body: `${parsed.pull_request.body.trim()}\n\nCloses #${issueNumber}`,
+      })
+    : renderPullRequestBody({
+        summary: parsed.pull_request.summary,
+        changes: parsed.pull_request.changes,
+        verification: parsed.pull_request.verification,
+        assumptions: parsed.pull_request.assumptions,
+        closingIssueNumber: issueNumber,
+      });
 
   const { data: existingPullRequests } = await octokit.rest.pulls.list({
     owner,

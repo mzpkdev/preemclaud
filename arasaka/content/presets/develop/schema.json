@@ -21,7 +21,8 @@
         "assumptions": {
           "type": "array",
           "items": { "type": "string" }
-        }
+        },
+        "body": { "type": "string" }
       },
       "required": ["title", "summary", "changes", "verification", "assumptions"],
       "additionalProperties": false

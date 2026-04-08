@@ -13,3 +13,6 @@ Rules:
 - `acceptance_criteria` must be concrete and testable.
 - `evidence` must reference repo files, docs, or issue numbers that justify the task.
 - `labels` should only include labels that are likely already present in the repository.
+- If `.github/ISSUE_TEMPLATE/` exists, read its templates (`.md` and `.yml` files). When a template is relevant to an
+  issue you are creating, fill in its sections and return the completed markdown as the `body` field. Omit `body` when
+  no repository template applies — the standard structured fields will be rendered into a default layout.

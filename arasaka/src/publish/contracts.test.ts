@@ -19,11 +19,51 @@ describe("structured publication contracts", () => {
           acceptance_criteria: ["Renderer tests cover issue body output"],
           evidence: ["arasaka/src/publish/queue.ts"],
           labels: ["auto-generated"],
+          priority: "P1",
         },
       ],
     });
 
     expect(parsed.issues).toHaveLength(1);
+  });
+
+  it("accepts queue output with a filled template body", () => {
+    const parsed = queueOutputSchema.parse({
+      issues: [
+        {
+          action: "create",
+          title: "Fix login timeout",
+          summary: "Resolves login timeout on slow connections.",
+          problem: "Login request has no timeout handling.",
+          acceptance_criteria: ["Timeout is configurable"],
+          evidence: ["src/auth/login.ts"],
+          labels: ["bug"],
+          priority: "P1",
+          body: "## Bug Report\n\n**Description**\nLogin hangs on slow connections.\n\n**Steps to Reproduce**\n1. Throttle network\n2. Attempt login\n",
+        },
+      ],
+    });
+
+    expect(parsed.issues[0]!.body).toContain("Bug Report");
+  });
+
+  it("accepts queue output without body (fallback to default template)", () => {
+    const parsed = queueOutputSchema.parse({
+      issues: [
+        {
+          action: "create",
+          title: "Add tests",
+          summary: "Adds unit tests.",
+          problem: "No tests exist.",
+          acceptance_criteria: ["Tests pass"],
+          evidence: ["src/index.ts"],
+          labels: [],
+          priority: "P2",
+        },
+      ],
+    });
+
+    expect(parsed.issues[0]!.body).toBeUndefined();
   });
 
   it("rejects queue updates without a target issue number", () => {
@@ -38,6 +78,7 @@ describe("structured publication contracts", () => {
             acceptance_criteria: ["Updated body is published"],
             evidence: ["#12"],
             labels: [],
+            priority: "P0",
           },
         ],
       }),
@@ -66,6 +107,47 @@ describe("structured publication contracts", () => {
       throw new Error("expected implemented develop output");
     }
     expect(parsed.pull_request.title).toContain("Arasaka");
+  });
+
+  it("accepts develop output with a filled PR template body", () => {
+    const parsed = developOutputSchema.parse({
+      status: "implemented",
+      pull_request: {
+        title: "Fix login timeout",
+        summary: "Adds timeout handling to login flow.",
+        changes: ["Adds configurable timeout"],
+        verification: ["bun test"],
+        assumptions: [],
+        body: "## Summary\n\nAdds timeout handling.\n\n## Test Plan\n\n- [x] Unit tests pass\n",
+      },
+      issue_comment: {
+        summary: "Implemented timeout handling.",
+        verification: ["bun test"],
+        follow_ups: [],
+      },
+    });
+
+    expect(parsed.pull_request.body).toContain("Summary");
+  });
+
+  it("accepts develop output without body (fallback to default template)", () => {
+    const parsed = developOutputSchema.parse({
+      status: "implemented",
+      pull_request: {
+        title: "Fix login timeout",
+        summary: "Adds timeout handling.",
+        changes: ["Adds timeout"],
+        verification: ["bun test"],
+        assumptions: [],
+      },
+      issue_comment: {
+        summary: "Implemented.",
+        verification: ["bun test"],
+        follow_ups: [],
+      },
+    });
+
+    expect(parsed.pull_request.body).toBeUndefined();
   });
 
   it("rejects implemented output without status", () => {
@@ -115,7 +197,7 @@ describe("structured publication contracts", () => {
     });
 
     expect(parsed.actions).toHaveLength(1);
-    expect(parsed.actions[0].type).toBe("warn_stale");
+    expect(parsed.actions[0]!.type).toBe("warn_stale");
   });
 
   it("rejects warn_stale without comment", () => {
@@ -180,8 +262,8 @@ describe("structured publication contracts", () => {
     });
 
     expect(parsed.actions).toHaveLength(1);
-    expect(parsed.actions[0].type).toBe("report_failure");
-    expect(parsed.actions[0].number).toBeUndefined();
+    expect(parsed.actions[0]!.type).toBe("report_failure");
+    expect(parsed.actions[0]!.number).toBeUndefined();
   });
 
   it("rejects report_failure without run_id", () => {

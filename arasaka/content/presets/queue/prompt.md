@@ -23,6 +23,9 @@ Requirements:
 - Assign a priority to each issue: `P0` (broken functionality, security), `P1` (blocks other work, significant gap, or
   tightens the LLM feedback loop), `P2` (clear improvement, moderate impact), `P3` (nice-to-have, minor polish).
 - If the repository already appears to use the label "${BACKLOG_LABEL}", you may include it in labels. If not, omit it.
+- If `.github/ISSUE_TEMPLATE/` exists, read its templates. When a template is relevant to an issue, fill it in and
+  return the completed markdown as the `body` field. For YAML issue forms (`.yml`), render the form's labeled sections
+  as markdown. Omit `body` when no repository template applies.
 - If there is no worthwhile work to enqueue, return an empty issues array.
 
 Return only structured output matching the provided JSON schema.

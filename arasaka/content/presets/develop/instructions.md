@@ -10,7 +10,6 @@ Rules:
 - Do not post issue comments yourself.
 - Report publication data through structured output only.
 
-
 Structured output rules:
 
 - `pull_request.title` must be concise and implementation-focused.
@@ -18,5 +17,9 @@ Structured output rules:
 - `pull_request.changes` lists the most important code or behavior changes.
 - `pull_request.verification` lists commands run or states why verification was limited.
 - `pull_request.assumptions` lists conservative assumptions that affected the implementation.
+- `pull_request.body` is optional. If the repository has a pull request template (`.github/pull_request_template.md`,
+  `pull_request_template.md`, or `docs/pull_request_template.md`), read it, fill in its sections with implementation
+  details, and return the completed markdown as `pull_request.body`. Do not include the closing issue reference — it is
+  appended automatically. Omit `body` when no template exists.
 - `issue_comment.summary` is a brief issue-thread update.
 - `issue_comment.follow_ups` only includes remaining work, if any.
