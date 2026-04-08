@@ -18,6 +18,8 @@ on:
         required: false
       GH_APP_TOKEN:
         required: false
+      GH_APP_PRIVATE_KEY:
+        required: false
 
 jobs:
   review:
@@ -37,6 +39,14 @@ jobs:
       issues: write
       pull-requests: write
     steps:
+      - name: Generate app token
+        if: secrets.GH_APP_PRIVATE_KEY != ''
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: "3218980"
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -56,7 +66,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.GH_APP_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token || secrets.GH_APP_TOKEN }}
           prompt: ${{ steps.preset.outputs.prompt }}
           system_prompt: ${{ steps.preset.outputs.system_prompt }}
           claude_args: ${{ steps.preset.outputs.claude_args }}
