@@ -73,11 +73,11 @@ inputs:
     required: false
     default: ""
   artifact_max_revisions:
-    description: "Max review→develop revision cycles before stopping (0 disables, default 1)"
+    description: "Max review→develop revision cycles before stopping (0 disables, default 0)"
     required: false
     default: ""
   artifact_max_reviews:
-    description: "Max bot reviews before auto-passing the check (default 2)"
+    description: "Max bot reviews before auto-passing the check (default 1)"
     required: false
     default: ""
   artifact_dry_run:

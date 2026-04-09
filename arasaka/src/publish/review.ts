@@ -193,7 +193,9 @@ export async function publishReviewOutput(params: {
     },
   });
 
-  await dispatchRevisionIfNeeded(octokit, context, parsed.verdict, prNumber);
+  if (!capReached) {
+    await dispatchRevisionIfNeeded(octokit, context, parsed.verdict, prNumber);
+  }
 
   return {
     review_url: review.html_url ?? "",

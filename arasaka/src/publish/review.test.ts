@@ -165,6 +165,72 @@ describe("review publication", () => {
     }
   });
 
+  it("skips revision dispatch when review cap is reached", async () => {
+    const originalReviews = process.env.ARTIFACT_MAX_REVIEWS;
+    const originalRevisions = process.env.ARTIFACT_MAX_REVISIONS;
+    process.env.ARTIFACT_MAX_REVIEWS = "1";
+    process.env.ARTIFACT_MAX_REVISIONS = "1";
+
+    const createReview = mock(async () => ({
+      data: { html_url: "https://github.com/example/repo/pull/1#pullrequestreview-4" },
+    }));
+    const createCheck = mock(async () => ({
+      data: { html_url: "https://github.com/example/repo/runs/dispatch-test" },
+    }));
+    const listReviews = mock(async () => ({
+      data: [{ user: { type: "Bot" } }],
+    }));
+    const createDispatchEvent = mock(async () => ({}));
+
+    await publishReviewOutput({
+      octokit: {
+        rest: {
+          pulls: { createReview, listReviews },
+          checks: { create: createCheck },
+          repos: { createDispatchEvent },
+        },
+      } as any,
+      context: {
+        repository: { owner: "example", repo: "repo" },
+        payload: {
+          pull_request: {
+            head: { sha: "cap123", ref: "claude/issue-1" },
+            base: { ref: "main" },
+            body: "Closes #1",
+          },
+        },
+      } as any,
+      prNumber: 1,
+      rawStructuredOutput: JSON.stringify({
+        verdict: "findings",
+        summary: "Issues remain after revision.",
+        findings: [
+          {
+            severity: "high",
+            file: "src/index.ts",
+            line: 5,
+            title: "Bug",
+            detail: "Still broken.",
+          },
+        ],
+        residual_risks: [],
+      }),
+    });
+
+    expect(createDispatchEvent).not.toHaveBeenCalled();
+
+    if (originalReviews === undefined) {
+      delete process.env.ARTIFACT_MAX_REVIEWS;
+    } else {
+      process.env.ARTIFACT_MAX_REVIEWS = originalReviews;
+    }
+    if (originalRevisions === undefined) {
+      delete process.env.ARTIFACT_MAX_REVISIONS;
+    } else {
+      process.env.ARTIFACT_MAX_REVISIONS = originalRevisions;
+    }
+  });
+
   it("passes check for medium/low-only findings", async () => {
     const createReview = mock(async () => ({
       data: { html_url: "https://github.com/example/repo/pull/1#pullrequestreview-3" },
