@@ -116,7 +116,6 @@ export async function publishDevelopOutput(params: {
       owner,
       repo,
       pull_number: existingPullRequests[0].number,
-      title: parsed.pull_request.title,
       body,
       base: baseBranch,
     });

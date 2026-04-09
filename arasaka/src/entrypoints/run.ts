@@ -136,8 +136,8 @@ async function installClaudeCode(): Promise<void> {
 // ═══════════════════════════════════════════════════════════════════
 
 const TRANSIENT_ERROR_RE = /API Error: (?:429|529)\b|overloaded_error|rate_limit/i;
-const MAX_SDK_ATTEMPTS = 3;
-const SDK_RETRY_DELAYS = [30_000, 60_000];
+const MAX_SDK_ATTEMPTS = 5;
+const SDK_RETRY_DELAYS = [30_000, 60_000, 120_000, 180_000];
 
 async function runClaudeWithRetry(
   promptPath: string,
