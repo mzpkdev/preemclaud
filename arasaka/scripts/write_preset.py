@@ -81,6 +81,7 @@ def queue_payload() -> dict[str, str]:
 
 def develop_payload() -> dict[str, str]:
     pr_number = os.environ.get("PR_NUMBER", "")
+    ci_failure = os.environ.get("CI_FAILURE", "")
     prompt = build_prompt(
         "develop",
         {
@@ -90,7 +91,16 @@ def develop_payload() -> dict[str, str]:
             "BASE_BRANCH": os.environ["BASE_BRANCH"],
         },
     )
-    if pr_number:
+    if pr_number and ci_failure:
+        ci_block = read_text(ROOT / "content" / "presets" / "develop" / "ci-failure.md")
+        prompt += "\n\n" + render_text(
+            ci_block,
+            {
+                "PR_NUMBER": pr_number,
+                "GITHUB_REPOSITORY": os.environ["GITHUB_REPOSITORY"],
+            },
+        )
+    elif pr_number:
         revision_block = read_text(ROOT / "content" / "presets" / "develop" / "revision.md")
         prompt += "\n\n" + render_text(revision_block, {"PR_NUMBER": pr_number})
     return {

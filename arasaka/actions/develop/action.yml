@@ -19,6 +19,10 @@ inputs:
     description: "PR number for revision context (omit for fresh implementations)"
     required: false
     default: ""
+  ci_failure:
+    description: "Set to 'true' when triggered by CI check failure"
+    required: false
+    default: ""
   github_token:
     description: "GitHub token override for API calls (defaults to github.token)"
     required: false
@@ -67,5 +71,6 @@ runs:
         BRANCH_NAME: ${{ inputs.branch_name }}
         BASE_BRANCH: ${{ inputs.base_branch }}
         PR_NUMBER: ${{ inputs.pr_number }}
+        CI_FAILURE: ${{ inputs.ci_failure }}
       run: |
         python3 "${GITHUB_ACTION_PATH}/../../scripts/write_preset.py" develop
