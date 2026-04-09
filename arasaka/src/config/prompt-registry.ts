@@ -1,4 +1,5 @@
 import sharedPersonaMd from "../../content/shared/persona.md";
+import sharedFormattingMd from "../../content/shared/formatting.md";
 import commentFormatMd from "../../content/prompt/format.md";
 import commentInstructionsMd from "../../content/prompt/instructions.md";
 import commentScenariosMd from "../../content/prompt/scenarios.md";
@@ -10,6 +11,7 @@ export function getSystemPrompt(mode: PromptMode): string {
     case "comment":
       return [
         sharedPersonaMd,
+        sharedFormattingMd,
         commentFormatMd,
         commentScenariosMd,
         commentInstructionsMd,

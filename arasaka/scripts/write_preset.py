@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PERSONA_PATH = ROOT / "content" / "shared" / "persona.md"
+FORMATTING_PATH = ROOT / "content" / "shared" / "formatting.md"
 
 
 def read_text(path: Path) -> str:
@@ -29,6 +30,7 @@ def build_system_prompt(mode: str) -> str:
     preset_dir = ROOT / "content" / "presets" / mode
     parts = [
         read_text(PERSONA_PATH),
+        read_text(FORMATTING_PATH),
         read_text(preset_dir / "format.md"),
         read_text(preset_dir / "scenarios.md"),
         read_text(preset_dir / "instructions.md"),
