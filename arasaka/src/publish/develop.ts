@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import type { RestEndpointMethodTypes } from "@octokit/rest";
 import type { Octokits } from "../../upstream/src/github/api/client.ts";
-import type { AutomationContext } from "../../upstream/src/github/context.ts";
+import type { GitHubContext } from "../../upstream/src/github/context.ts";
 import { developOutputSchema, type DevelopOutput } from "./contracts.ts";
 import { renderPullRequestBody } from "../render/pull-request.ts";
 import { renderIssueCommentBody } from "../render/issue-comment.ts";
@@ -66,7 +66,7 @@ function ensureRemoteBranch(branchName: string): void {
 
 export async function publishDevelopOutput(params: {
   octokit: Octokits;
-  context: AutomationContext;
+  context: GitHubContext;
   rawStructuredOutput: string;
   issueNumber: number;
   branchName: string;

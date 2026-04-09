@@ -43,10 +43,6 @@ export async function publishStructuredOutput(params: {
   }
 
   if (mode === "develop") {
-    if (isEntityContext(context)) {
-      throw new Error("develop preset publishing requires automation context");
-    }
-
     return JSON.stringify(
       await publishDevelopOutput({
         octokit,
