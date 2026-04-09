@@ -266,10 +266,10 @@ jobs:
 
   develop_from_ci_failure:
     if: >
-      github.event_name == 'check_suite' &&
-      github.event.check_suite.conclusion == 'failure'
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'failure'
     concurrency:
-      group: arasaka-develop-ci-${{ github.event.check_suite.head_branch }}
+      group: arasaka-develop-ci-${{ github.event.workflow_run.head_branch }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     permissions:
@@ -285,7 +285,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_APP_TOKEN || github.token }}
           BRANCH_PREFIX: ${{ inputs.branch_prefix }}
-          HEAD_BRANCH: ${{ github.event.check_suite.head_branch }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           PREFIX="${BRANCH_PREFIX%/}"
           if [ -n "$PREFIX" ] && [[ ! "$HEAD_BRANCH" == "$PREFIX/"* ]]; then
