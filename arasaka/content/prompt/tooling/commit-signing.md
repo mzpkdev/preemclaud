@@ -1,0 +1,2 @@
+- Commit files: mcp__github_file_ops__commit_files
+- Delete files: mcp__github_file_ops__delete_files

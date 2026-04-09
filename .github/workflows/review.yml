@@ -1,0 +1,78 @@
+name: Arasaka Review
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        type: string
+        required: false
+        default: ""
+      max_revisions:
+        type: string
+        required: false
+        default: "0"
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+      GH_APP_TOKEN:
+        required: false
+      GH_APP_PRIVATE_KEY:
+        required: false
+
+jobs:
+  review:
+    if: >
+      (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') &&
+      (
+        github.event.action == 'opened' ||
+        github.event.action == 'synchronize' ||
+        github.event.action == 'ready_for_review' ||
+        github.event.action == 'reopened'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Generate app token
+        id: app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: "3218980"
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Build review preset
+        id: preset
+        uses: mzpkdev/preemclaud/arasaka/actions/review@v1
+        with:
+          pr_number: ${{ github.event.pull_request.number }}
+          base_branch: ${{ github.event.pull_request.base.ref }}
+
+      - name: Run PR review
+        id: run
+        uses: mzpkdev/preemclaud/arasaka@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token || secrets.GH_APP_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          model: ${{ inputs.model }}
+          artifact_mode: "review"
+          artifact_pr_number: ${{ github.event.pull_request.number }}
+          artifact_max_revisions: ${{ inputs.max_revisions }}
+          base_branch: ${{ github.event.pull_request.base.ref }}
+          allowed_bots: "claude[bot],arasaka-net[bot]"

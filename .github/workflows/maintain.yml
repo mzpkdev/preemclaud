@@ -1,0 +1,87 @@
+name: Arasaka Maintain
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        type: string
+        required: false
+        default: ""
+      stale_days:
+        type: string
+        required: false
+        default: "30"
+      stale_label:
+        type: string
+        required: false
+        default: "stale"
+      max_actions:
+        type: string
+        required: false
+        default: "10"
+      dry_run:
+        type: string
+        required: false
+        default: "false"
+      base_branch:
+        type: string
+        required: false
+        default: ""
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+      GH_APP_TOKEN:
+        required: false
+      GH_APP_PRIVATE_KEY:
+        required: false
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Generate app token
+        id: app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: "3218980"
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build maintain preset
+        id: preset
+        uses: mzpkdev/preemclaud/arasaka/actions/maintain@v1
+        with:
+          stale_days: ${{ inputs.stale_days }}
+          stale_label: ${{ inputs.stale_label }}
+          max_actions: ${{ inputs.max_actions }}
+          dry_run: ${{ inputs.dry_run }}
+
+      - name: Run maintenance
+        id: run
+        uses: mzpkdev/preemclaud/arasaka@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token || secrets.GH_APP_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          model: ${{ inputs.model }}
+          artifact_mode: "maintain"
+          artifact_stale_label: ${{ inputs.stale_label }}
+          artifact_dry_run: ${{ inputs.dry_run }}
+          artifact_max_actions: ${{ inputs.max_actions }}
+          base_branch: ${{ inputs.base_branch }}
+          allowed_bots: "github-actions[bot],arasaka-net[bot]"

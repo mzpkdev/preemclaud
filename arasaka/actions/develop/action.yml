@@ -1,0 +1,76 @@
+name: "Arasaka Develop Preset"
+description: "Generate prompt, system prompt, and Claude args for issue-driven implementation"
+
+inputs:
+  issue_number:
+    description: "Issue number to implement"
+    required: true
+  branch_name:
+    description: "Already-created working branch for the implementation"
+    required: true
+  base_branch:
+    description: "Base branch for the pull request"
+    required: true
+  run_url:
+    description: "URL of the workflow run for the in-progress comment"
+    required: false
+    default: ""
+  pr_number:
+    description: "PR number for revision context (omit for fresh implementations)"
+    required: false
+    default: ""
+  ci_failure:
+    description: "Set to 'true' when triggered by CI check failure"
+    required: false
+    default: ""
+  github_token:
+    description: "GitHub token override for API calls (defaults to github.token)"
+    required: false
+    default: ""
+outputs:
+  prompt:
+    description: "Issue implementation prompt"
+    value: ${{ steps.preset.outputs.prompt }}
+  system_prompt:
+    description: "Issue implementation system prompt"
+    value: ${{ steps.preset.outputs.system_prompt }}
+  claude_args:
+    description: "Claude CLI arguments for issue implementation"
+    value: ${{ steps.preset.outputs.claude_args }}
+  progress_comment_id:
+    description: "Comment ID of the in-progress comment posted on the issue"
+    value: ${{ steps.progress.outputs.comment_id }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: progress
+      if: inputs.run_url != ''
+      shell: bash
+      env:
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        RUN_URL: ${{ inputs.run_url }}
+        GH_TOKEN: ${{ inputs.github_token || github.token }}
+        ARASAKA_ROOT: ${{ github.action_path }}/../..
+      run: |
+        TEMPLATE="${ARASAKA_ROOT}/content/artifacts/issue-comment/templates/in-progress.md"
+        CONTENT=$(sed "s|{run_url}|${RUN_URL}|g" "$TEMPLATE")
+        ASSET_BASE="https://raw.githubusercontent.com/mzpkdev/preemclaud/main/arasaka/assets"
+        BODY=$(printf '<img src="%s/issue-in-progress.svg" />\n\n<img src="%s/divider.svg" />\n\n%s\n\n<img src="%s/footer.svg" />' \
+          "$ASSET_BASE" "$ASSET_BASE" "$CONTENT" "$ASSET_BASE")
+        COMMENT_URL=$(gh issue comment "$ISSUE_NUMBER" \
+          --repo "$GITHUB_REPOSITORY" \
+          --body "$BODY")
+        COMMENT_ID=$(echo "$COMMENT_URL" | grep -o '[0-9]*$')
+        echo "comment_id=$COMMENT_ID" >> "$GITHUB_OUTPUT"
+
+    - id: preset
+      shell: bash
+      env:
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        BRANCH_NAME: ${{ inputs.branch_name }}
+        BASE_BRANCH: ${{ inputs.base_branch }}
+        PR_NUMBER: ${{ inputs.pr_number }}
+        CI_FAILURE: ${{ inputs.ci_failure }}
+      run: |
+        python3 "${GITHUB_ACTION_PATH}/../../scripts/write_preset.py" develop

@@ -1,0 +1,32 @@
+name: "Arasaka Review Preset"
+description: "Generate prompt, system prompt, and Claude args for automatic PR review"
+
+inputs:
+  pr_number:
+    description: "Pull request number to review"
+    required: true
+  base_branch:
+    description: "Base branch for diff comparison"
+    required: true
+
+outputs:
+  prompt:
+    description: "PR review prompt"
+    value: ${{ steps.preset.outputs.prompt }}
+  system_prompt:
+    description: "PR review system prompt"
+    value: ${{ steps.preset.outputs.system_prompt }}
+  claude_args:
+    description: "Claude CLI arguments for PR review"
+    value: ${{ steps.preset.outputs.claude_args }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: preset
+      shell: bash
+      env:
+        PR_NUMBER: ${{ inputs.pr_number }}
+        BASE_BRANCH: ${{ inputs.base_branch }}
+      run: |
+        python3 "${GITHUB_ACTION_PATH}/../../scripts/write_preset.py" review

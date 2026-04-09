@@ -1,0 +1,69 @@
+name: Arasaka Queue
+
+on:
+  workflow_call:
+    inputs:
+      model:
+        type: string
+        required: false
+        default: ""
+      queue_max_issues:
+        type: string
+        required: false
+        default: "7"
+      base_branch:
+        type: string
+        required: false
+        default: ""
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+      GH_APP_TOKEN:
+        required: false
+      GH_APP_PRIVATE_KEY:
+        required: false
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: read
+    steps:
+      - name: Generate app token
+        id: app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: "3218980"
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build queue preset
+        id: preset
+        uses: mzpkdev/preemclaud/arasaka/actions/queue@v1
+        with:
+          queue_max_issues: ${{ inputs.queue_max_issues }}
+
+      - name: Run queue planner
+        id: run
+        uses: mzpkdev/preemclaud/arasaka@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token || secrets.GH_APP_TOKEN }}
+          prompt: ${{ steps.preset.outputs.prompt }}
+          system_prompt: ${{ steps.preset.outputs.system_prompt }}
+          claude_args: ${{ steps.preset.outputs.claude_args }}
+          model: ${{ inputs.model }}
+          artifact_mode: "queue"
+          base_branch: ${{ inputs.base_branch }}
+          allowed_bots: "github-actions[bot],arasaka-net[bot]"

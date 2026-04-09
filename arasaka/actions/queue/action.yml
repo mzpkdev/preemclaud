@@ -1,0 +1,34 @@
+name: "Arasaka Queue Preset"
+description: "Generate prompt, system prompt, and Claude args for autonomous queue creation"
+
+inputs:
+  queue_max_issues:
+    description: "Maximum number of issues to create in a single run"
+    required: false
+    default: "7"
+  backlog_label:
+    description: "Preferred backlog label to apply when the repository already uses it"
+    required: false
+    default: "auto-generated"
+
+outputs:
+  prompt:
+    description: "Queue generation prompt"
+    value: ${{ steps.preset.outputs.prompt }}
+  system_prompt:
+    description: "Queue generation system prompt"
+    value: ${{ steps.preset.outputs.system_prompt }}
+  claude_args:
+    description: "Claude CLI arguments for queue generation"
+    value: ${{ steps.preset.outputs.claude_args }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: preset
+      shell: bash
+      env:
+        QUEUE_MAX_ISSUES: ${{ inputs.queue_max_issues }}
+        BACKLOG_LABEL: ${{ inputs.backlog_label }}
+      run: |
+        python3 "${GITHUB_ACTION_PATH}/../../scripts/write_preset.py" queue

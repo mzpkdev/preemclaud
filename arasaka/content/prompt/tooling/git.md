@@ -1,0 +1,4 @@
+- Stage: Bash(git add <files>)
+- Commit: Bash(git commit -m "<message>")
+- Push: Bash(${GIT_PUSH_WRAPPER} origin ${CLAUDE_BRANCH_OR_HEAD})
+- Delete: Bash(git rm <files>)

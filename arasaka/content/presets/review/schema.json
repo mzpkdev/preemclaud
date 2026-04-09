@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "verdict": { "type": "string", "enum": ["findings", "no_findings"] },
+    "summary": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "severity": { "type": "string", "enum": ["high", "medium", "low"] },
+          "file": { "type": "string" },
+          "line": { "type": "integer" },
+          "title": { "type": "string" },
+          "detail": { "type": "string" }
+        },
+        "required": ["severity", "file", "line", "title", "detail"],
+        "additionalProperties": false
+      }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["verdict", "summary", "findings", "residual_risks"],
+  "additionalProperties": false
+}
