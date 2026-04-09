@@ -60,6 +60,7 @@ import { setupClaudeCodeSettings } from "../../upstream/base-action/src/setup-cl
 import { installPlugins } from "../../upstream/base-action/src/install-plugins.ts";
 import { preparePrompt } from "../../upstream/base-action/src/prepare-prompt.ts";
 import { runClaude } from "../../upstream/base-action/src/run-claude.ts";
+import type { ClaudeOptions } from "../../upstream/base-action/src/run-claude.ts";
 import type { ClaudeRunResult } from "../../upstream/base-action/src/run-claude-sdk.ts";
 
 // ─── Our custom prompt builder ─────────────────────────────────────
@@ -128,6 +129,40 @@ async function installClaudeCode(): Promise<void> {
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// runClaudeWithRetry — retries on transient API errors (429/529)
+// ═══════════════════════════════════════════════════════════════════
+
+const TRANSIENT_ERROR_RE = /API Error: (?:429|529)\b|overloaded_error|rate_limit/i;
+const MAX_SDK_ATTEMPTS = 3;
+const SDK_RETRY_DELAYS = [30_000, 60_000];
+
+async function runClaudeWithRetry(
+  promptPath: string,
+  options: ClaudeOptions,
+): Promise<ClaudeRunResult> {
+  for (let attempt = 1; attempt <= MAX_SDK_ATTEMPTS; attempt++) {
+    try {
+      return await runClaude(promptPath, options);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const isTransient = TRANSIENT_ERROR_RE.test(message);
+
+      if (!isTransient || attempt === MAX_SDK_ATTEMPTS) {
+        throw error;
+      }
+
+      const delay = SDK_RETRY_DELAYS[attempt - 1];
+      console.log(
+        `[arasaka] Transient API error on attempt ${attempt}/${MAX_SDK_ATTEMPTS}, retrying in ${delay / 1000}s: ${message}`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  throw new Error("unreachable");
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -350,7 +385,7 @@ async function run() {
     const systemPromptValue =
       process.env.SYSTEM_PROMPT || SYSTEM_PROMPT || "\n";
 
-    const claudeResult: ClaudeRunResult = await runClaude(promptConfig.path, {
+    const claudeResult: ClaudeRunResult = await runClaudeWithRetry(promptConfig.path, {
       claudeArgs: prepareResult.claudeArgs,
       systemPrompt: systemPromptValue,
       model: process.env.ANTHROPIC_MODEL,
