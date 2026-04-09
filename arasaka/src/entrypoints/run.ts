@@ -460,6 +460,21 @@ async function run() {
           : claudeResult.structuredOutput;
 
       core.setOutput("structured_output", publishedStructuredOutput);
+
+      // Fail the workflow job when the review check conclusion is "failure"
+      // so branch protection can block the merge. The next `synchronize`
+      // event (after a revision push) will re-run the workflow and the
+      // pre-flight cap check will auto-pass, unblocking the merge.
+      if (artifactMode === "review" && publishedStructuredOutput) {
+        try {
+          const parsed = JSON.parse(publishedStructuredOutput);
+          if (parsed.check_conclusion === "failure") {
+            core.setFailed("Review found high-severity findings");
+          }
+        } catch {
+          // Non-fatal — structured output may not be valid JSON
+        }
+      }
     }
     core.setOutput("conclusion", claudeResult.conclusion);
   } catch (error) {
