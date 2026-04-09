@@ -336,6 +336,48 @@ async function run() {
     baseBranch = prepareResult.branchInfo.baseBranch;
     prepareCompleted = true;
 
+    // Review cap pre-flight: skip Claude entirely when the review cap is
+    // already reached — avoids burning API credits on a discarded review.
+    if (process.env.ARTIFACT_MODE === "review" && octokit) {
+      const prNumber = Number(process.env.ARTIFACT_PR_NUMBER) || 0;
+      const maxReviews = Number(process.env.ARTIFACT_MAX_REVIEWS) || 1;
+      if (prNumber > 0) {
+        const { owner, repo } = context.repository;
+        const { data: existingReviews } = await octokit.rest.pulls.listReviews({
+          owner,
+          repo,
+          pull_number: prNumber,
+          per_page: 100,
+        });
+        const botReviewCount = existingReviews.filter(
+          (r: { user?: { type?: string } }) => r.user?.type === "Bot",
+        ).length;
+        if (botReviewCount >= maxReviews) {
+          console.log(
+            `[arasaka] Review cap reached (${botReviewCount} >= ${maxReviews}), skipping Claude run`,
+          );
+          const headSha = (context.payload as { pull_request?: { head?: { sha?: string } } })
+            .pull_request?.head?.sha;
+          if (headSha) {
+            await octokit.rest.checks.create({
+              owner,
+              repo,
+              name: "arasaka/review",
+              head_sha: headSha,
+              status: "completed",
+              conclusion: "success",
+              output: {
+                title: "Arasaka review — advisory only (review cap reached)",
+                summary: "Review cap reached; skipped.",
+              },
+            });
+          }
+          core.setOutput("conclusion", "success");
+          return;
+        }
+      }
+    }
+
     // Phase 2: Install Claude Code CLI
     await installClaudeCode();
 

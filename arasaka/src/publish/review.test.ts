@@ -148,6 +148,7 @@ describe("review publication", () => {
       }),
     });
 
+    expect(createReview).not.toHaveBeenCalled();
     expect(createCheck).toHaveBeenCalledWith(
       expect.objectContaining({
         conclusion: "success",
@@ -157,6 +158,7 @@ describe("review publication", () => {
       }),
     );
     expect(result.check_conclusion).toBe("success");
+    expect(result.review_url).toBe("");
 
     if (originalEnv === undefined) {
       delete process.env.ARTIFACT_MAX_REVIEWS;

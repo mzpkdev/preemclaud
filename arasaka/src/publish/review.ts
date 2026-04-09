@@ -150,9 +150,29 @@ export async function publishReviewOutput(params: {
   ).length;
   const capReached = botReviewCount >= maxReviews;
 
-  const checkConclusion = capReached
-    ? "success"
-    : getReviewCheckConclusion(parsed.verdict, parsed.findings);
+  if (capReached) {
+    const { data: checkRun } = await octokit.rest.checks.create({
+      owner,
+      repo,
+      name: REVIEW_CHECK_NAME,
+      head_sha: headSha,
+      status: "completed",
+      conclusion: "success",
+      output: {
+        title: "Arasaka review — advisory only (review cap reached)",
+        summary: parsed.summary,
+      },
+    });
+
+    return {
+      review_url: "",
+      event,
+      check_run_url: checkRun.html_url ?? "",
+      check_conclusion: "success",
+    };
+  }
+
+  const checkConclusion = getReviewCheckConclusion(parsed.verdict, parsed.findings);
 
   const { data: review } = await octokit.rest.pulls.createReview({
     owner,
@@ -172,11 +192,9 @@ export async function publishReviewOutput(params: {
           )
           .join("\n");
 
-  const checkTitle = capReached
-    ? "Arasaka review — advisory only (review cap reached)"
-    : checkConclusion === "failure"
-      ? "Arasaka review found issues"
-      : "Arasaka review found no actionable issues";
+  const checkTitle = checkConclusion === "failure"
+    ? "Arasaka review found issues"
+    : "Arasaka review found no actionable issues";
 
   const { data: checkRun } = await octokit.rest.checks.create({
     owner,
@@ -193,9 +211,7 @@ export async function publishReviewOutput(params: {
     },
   });
 
-  if (!capReached) {
-    await dispatchRevisionIfNeeded(octokit, context, parsed.verdict, prNumber);
-  }
+  await dispatchRevisionIfNeeded(octokit, context, parsed.verdict, prNumber);
 
   return {
     review_url: review.html_url ?? "",
