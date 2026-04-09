@@ -141,28 +141,36 @@ export async function publishDevelopOutput(params: {
 
   await enableAutoMerge(octokit, pullRequestNodeId);
 
-  const issueCommentBody = renderIssueCommentBody({
-    summary: parsed.issue_comment.summary,
-    verification: parsed.issue_comment.verification,
-    followUps: parsed.issue_comment.follow_ups,
-    prUrl: pullRequestUrl,
-  });
+  let issueCommentUrl = "";
 
-  const progressCommentId = Number(process.env.ARTIFACT_PROGRESS_COMMENT_ID) || 0;
+  // Only post an issue comment on initial PR creation. Revision runs
+  // (PR already exists) should only produce commits — no issue chatter.
+  if (action === "created") {
+    const issueCommentBody = renderIssueCommentBody({
+      summary: parsed.issue_comment.summary,
+      verification: parsed.issue_comment.verification,
+      followUps: parsed.issue_comment.follow_ups,
+      prUrl: pullRequestUrl,
+    });
 
-  const { data: comment } = progressCommentId
-    ? await octokit.rest.issues.updateComment({
-        owner,
-        repo,
-        comment_id: progressCommentId,
-        body: issueCommentBody,
-      })
-    : await octokit.rest.issues.createComment({
-        owner,
-        repo,
-        issue_number: issueNumber,
-        body: issueCommentBody,
-      });
+    const progressCommentId = Number(process.env.ARTIFACT_PROGRESS_COMMENT_ID) || 0;
+
+    const { data: comment } = progressCommentId
+      ? await octokit.rest.issues.updateComment({
+          owner,
+          repo,
+          comment_id: progressCommentId,
+          body: issueCommentBody,
+        })
+      : await octokit.rest.issues.createComment({
+          owner,
+          repo,
+          issue_number: issueNumber,
+          body: issueCommentBody,
+        });
+
+    issueCommentUrl = comment.html_url;
+  }
 
   return {
     status: "implemented",
@@ -172,6 +180,6 @@ export async function publishDevelopOutput(params: {
       title: pullRequestTitle,
       action,
     },
-    issue_comment_url: comment.html_url,
+    issue_comment_url: issueCommentUrl,
   };
 }
