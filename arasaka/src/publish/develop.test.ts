@@ -43,7 +43,7 @@ describe("develop publication", () => {
         repository: { owner: "example", repo: "repo" },
       } as any,
       issueNumber: 5,
-      branchName: "claude/issue-5",
+      branchName: "arasaka/issue-5",
       baseBranch: "main",
       rawStructuredOutput: JSON.stringify({
         status: "implemented",
@@ -55,7 +55,7 @@ describe("develop publication", () => {
           assumptions: ["No IE11 support needed"],
         },
         issue_comment: {
-          summary: "Implemented the fix on claude/issue-5.",
+          summary: "Implemented the fix on arasaka/issue-5.",
           verification: ["npm test"],
           follow_ups: [],
         },

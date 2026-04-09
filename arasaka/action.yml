@@ -23,7 +23,7 @@ inputs:
   branch_prefix:
     description: "Prefix for Claude branches"
     required: false
-    default: "claude/"
+    default: "arasaka/"
   branch_name_template:
     description: "Template for branch naming"
     required: false

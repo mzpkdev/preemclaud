@@ -143,7 +143,7 @@ jobs:
 ### Develop
 
 Discovers bot-created issues (`github-actions[bot]`) that don't yet have a work branch and implements them. Branch
-existence is the dedup mechanism — if `claude/issue-{N}` exists, that issue is skipped. Failed runs self-heal because
+existence is the dedup mechanism — if `arasaka/issue-{N}` exists, that issue is skipped. Failed runs self-heal because
 the branch is only created once work starts. Also supports direct `@arasaka` comment triggers for immediate work on any
 issue (including human-created ones).
 
@@ -170,7 +170,7 @@ The `repository_dispatch` trigger enables the review→develop revision loop. Wh
 | Input            | Default        | Purpose                                           |
 | ---------------- | -------------- | ------------------------------------------------- |
 | `trigger_phrase` | `@arasaka`     | Comment trigger for direct issue / PR-thread work |
-| `branch_prefix`  | `claude/`      | Prefix used for generated work branches           |
+| `branch_prefix`  | `arasaka/`     | Prefix used for generated work branches           |
 | `base_branch`    | _repo default_ | Base branch override                              |
 
 ### Review

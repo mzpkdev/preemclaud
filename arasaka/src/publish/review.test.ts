@@ -196,7 +196,7 @@ describe("review publication", () => {
         repository: { owner: "example", repo: "repo" },
         payload: {
           pull_request: {
-            head: { sha: "cap123", ref: "claude/issue-1" },
+            head: { sha: "cap123", ref: "arasaka/issue-1" },
             base: { ref: "main" },
             body: "Closes #1",
           },

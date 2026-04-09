@@ -241,14 +241,14 @@ describe("updateCommentBody — Arasaka-specific", () => {
     it("includes branch and PR links when provided", () => {
       const input: CommentUpdateInput = {
         ...baseInput,
-        branchName: "claude/issue-42",
+        branchName: "arasaka/issue-42",
         prLink:
-          "\n[Create a PR](https://github.com/owner/repo/compare/main...claude/issue-42)",
+          "\n[Create a PR](https://github.com/owner/repo/compare/main...arasaka/issue-42)",
         triggerUsername: "testuser",
       };
 
       const result = updateCommentBody(input);
-      expect(result).toContain("• [`claude/issue-42`]");
+      expect(result).toContain("• [`arasaka/issue-42`]");
       expect(result).toContain("• [Create PR ➔]");
     });
   });
