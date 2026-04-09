@@ -13,6 +13,8 @@ Rules:
 - `reply_question` answers must be grounded in actual repository content (README, docs, code). Do not guess or offer
   unsupported advice.
 - `add_labels` must only use labels that already exist in the repository. Check available labels before proposing.
+- Apply the "good first issue" label to issues that are low priority (P2/P3), narrow in scope (single file or small
+  change), and self-contained enough for a first-time contributor to pick up without deep codebase knowledge.
 - `report_failure` must include the `run_id`, `run_url`, and `workflow_name` from the failed run. The `comment` field
   should summarize what failed and why, based on `gh run view` output. Do not report a failure if an open issue with the
   same run ID already exists in the title.
